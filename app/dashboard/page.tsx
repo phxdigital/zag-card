@@ -5,7 +5,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import QRCode from 'qrcodejs2';
 import ColorThief from 'color-thief-ts';
 import Cropper from 'cropperjs';
-import 'cropperjs/dist/index.css'; // <-- ESTA É A LINHA CORRIGIDA
+import 'cropperjs/dist/cropper.css'; // <-- ESTA É A LINHA CORRIGIDA
 import { 
     Upload, Crop, Wand2, MessageCircle, Instagram, Facebook, Link as LinkIcon, 
     ShoppingCart, Globe, Wifi, DollarSign, BookOpen, MapPin, Phone, Mail, Info, 
@@ -565,7 +565,7 @@ export default function DashboardPage() {
                             </div>
                          </div>
                          <div className="mt-8 flex justify-center">
-                             <button onClick={handleSaveAll} disabled={isSaving} className="w-full max-w-md bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300 disabled:bg-green-400">
+                             <button disabled={isSaving} className="w-full max-w-md bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300 disabled:bg-green-400">
                                  {isSaving ? 'Salvando...' : 'Salvar e Publicar'}
                              </button>
                         </div>
