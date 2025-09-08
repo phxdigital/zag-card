@@ -13,7 +13,11 @@
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.57.2",
+    "color-thief-ts": "^1.1.1",
+    "cropperjs": "^2.0.1",
+    "lucide-react": "^0.542.0",
     "next": "15.5.2",
+    "qrcodejs2": "^0.0.2",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
