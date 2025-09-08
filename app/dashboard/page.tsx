@@ -1,5 +1,5 @@
 'use client';
-
+// Este é um teste para forçar o commit
 import { useState, useEffect, useRef } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import QRCode from 'qrcodejs2';
