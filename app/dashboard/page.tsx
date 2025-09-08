@@ -10,7 +10,7 @@ import {
     Upload, Crop, Wand2, MessageCircle, Instagram, Facebook, Link as LinkIcon, 
     ShoppingCart, Globe, Wifi, DollarSign, BookOpen, MapPin, Phone, Mail, Info, 
     Star, Image as ImageIcon, Video, PlusCircle, Edit, Trash2, Smartphone, CreditCard, 
-    User, Circle, Square, Edit2, Key, AtSign, Hash, Banknote
+    User, Circle, Square
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -180,10 +180,9 @@ export default function DashboardPage() {
         return IconComponent ? <IconComponent {...props} /> : null;
     };
 
-    // --- Renderização ---
     return (
         <>
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                 <header className="mb-8 flex items-center space-x-4">
                     <Image src="/logo.png" alt="Logo Zag Card" width={64} height={64} className="h-12 w-auto"/>
                     <div>
@@ -230,7 +229,7 @@ export default function DashboardPage() {
                                     </div>
                                     <div>
                                         <div className="flex items-center mb-2">
-                                            <input id="text-enabled-checkbox" type="checkbox" checked={config.isTextEnabled} onChange={(e) => handleConfigChange('isTextEnabled', e.target.checked)} className="h-4 w-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500"/>
+                                            <input id="text-enabled-checkbox" type="checkbox" checked={!!config.isTextEnabled} onChange={(e) => handleConfigChange('isTextEnabled', e.target.checked)} className="h-4 w-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500"/>
                                             <label htmlFor="text-enabled-checkbox" className="ml-2 block text-sm font-medium text-slate-700">Adicionar texto?</label>
                                         </div>
                                         <input type="text" id="card-text" placeholder="Seu Nome ou Empresa" value={config.cardText} onChange={(e) => handleConfigChange('cardText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 disabled:bg-slate-100" disabled={!config.isTextEnabled}/>
@@ -294,7 +293,6 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* ETAPA 2: LANDING PAGE */}
                     <div className={activeStep === 2 ? '' : 'hidden'}>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-y-auto" style={{maxHeight: '85vh'}}>
@@ -375,7 +373,7 @@ export default function DashboardPage() {
                                     <div className="flex-shrink-0 mx-auto mt-2"><div className="phone-notch"></div></div>
                                     <div id="phone-content-preview" style={{backgroundColor: config.landingPageBgColor, backgroundImage: config.landingPageBgImage ? `url('${config.landingPageBgImage}')` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }} className="flex-grow overflow-y-auto preview-content p-4">
                                         <div className="flex flex-col items-center text-center">
-                                            <img src={logoDataUrl || ''} alt="Logo Preview" className={`object-contain mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{width: `${config.landingPageLogoSize}px`, height: `${config.landingPageLogoSize}px`}} />
+                                            <img src={logoDataUrl || ''} alt="Logo Preview" className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{width: `${config.landingPageLogoSize}px`, height: `${config.landingPageLogoSize}px`}} />
                                             <h1 className="text-2xl font-bold text-slate-800 break-words">{config.landingPageTitleText}</h1>
                                             <p className={`text-slate-600 mt-1 px-4 break-words ${config.landingPageSubtitleText ? '' : 'hidden'}`}>{config.landingPageSubtitleText}</p>
                                             <div className="w-full mt-6 flex justify-center items-center space-x-4">
