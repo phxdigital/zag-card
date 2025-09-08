@@ -185,7 +185,7 @@ export default function DashboardPage() {
         <>
             <div className="max-w-7xl mx-auto">
                 <header className="mb-8 flex items-center space-x-4">
-                    <Image src="/logo.png" alt="Logo Zag Card" width={64} height={64} className="h-12 w-auto rounded-lg"/>
+                    <Image src="/logo.png" alt="Logo Zag Card" width={64} height={64} className="h-12 w-auto"/>
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900">Configure seu Zag Card</h1>
                         <p className="text-slate-500 mt-1">Siga as etapas para personalizar seu produto.</p>
