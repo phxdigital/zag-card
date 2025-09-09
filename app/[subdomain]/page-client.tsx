@@ -21,7 +21,7 @@
     else {
         window.open(url, '_blank', 'noopener,noreferrer');
     }
-};
+} // A CHAVE AQUI FOI CORRIGIDA DE }; PARA }
 
 return (
     <main 
