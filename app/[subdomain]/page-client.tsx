@@ -17,11 +17,10 @@
         });
     } else if (url.startsWith('WIFI:')) {
         alert('Aponte a câmera do seu celular para o QR Code no cartão para conectar ao Wi-Fi.');
-    }
-    else {
+    } else {
         window.open(url, '_blank', 'noopener,noreferrer');
     }
-} // A CHAVE AQUI FOI CORRIGIDA DE }; PARA }
+};
 
 return (
     <main 
@@ -60,7 +59,7 @@ return (
                         <a key={key} href={socialInfo.baseUrl + value} target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-slate-800 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
                             <LucideIcon name={socialInfo.icon} />
                         </a>
-                    )
+                    );
                 })}
             </div>
 
