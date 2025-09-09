@@ -54,7 +54,7 @@ const LucideIcon = ({ name, size = 24, className, ...props }: {
     name: IconName; 
     size?: number; 
     className?: string; 
-    [key: string]: any;
+    [key: string]: string | number | undefined;
 }) => {
     const icons: { [key in IconName]: React.ElementType } = {
         'message-circle': MessageCircle,

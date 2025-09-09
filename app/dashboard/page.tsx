@@ -558,7 +558,7 @@ export default function DashboardPage() {
         }
     };
 
-    interface LinkEditorData extends Partial<Omit<CustomLink, 'id'>> {}
+    type LinkEditorData = Partial<Omit<CustomLink, 'id'>>;
 
     const openLinkEditor = (link: CustomLink | null = null, defaults: Partial<Omit<CustomLink, 'id'>> = {}) => {
         setEditingLink(link);
