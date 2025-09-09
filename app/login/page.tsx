@@ -1,63 +1,29 @@
-'use client';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
+import PageClient from './page-client';
+import type { PageConfig } from './page-client'; // Import type from client component
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { useEffect, useState } from 'react';
+export default async function SubdomainPage({ params }: { params: { subdomain: string } }) {
+const supabase = createServerComponentClient({ cookies });
+const { subdomain } = params;
 
-export default function LoginPage() {
-  const supabase = createClientComponentClient();
-  const [isMounted, setIsMounted] = useState(false);
+// --- Busca os dados da página no Supabase ---
+const { data: pageData, error } = await supabase
+    .from('pages') // Sua tabela no Supabase
+    .select('config, logo_url') // As colunas que você precisa
+    .eq('subdomain', subdomain)
+    .single();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+// Se não encontrar, mostra uma página 404
+if (error || !pageData) {
+    notFound();
+}
 
-  if (!isMounted) {
-    return null; 
-  }
+// Passa os dados para o componente de cliente
+const config: PageConfig = pageData.config || {};
+const logoUrl = pageData.logo_url || 'https://placehold.co/100x100/e2e8f0/64748b?text=Logo';
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg">
-        <div className="flex justify-center mb-6">
-            <img src="/logo.png" alt="Zag Card Logo" className="h-12"/>
-        </div>
-        <h2 className="text-2xl font-bold text-center text-slate-800 mb-6">Acesse sua conta</h2>
-        <Auth
-          supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
-          theme="light"
-          providers={['google', 'github']}
-          redirectTo={`${location.origin}/auth/callback`}
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: 'Seu e-mail',
-                password_label: 'Sua senha',
-                email_input_placeholder: 'exemplo@email.com',
-                password_input_placeholder: '••••••••',
-                button_label: 'Entrar',
-                social_provider_text: 'Entrar com {{provider}}',
-                link_text: 'Já tem uma conta? Entre aqui',
-              },
-              sign_up: {
-                email_label: 'Seu e-mail',
-                password_label: 'Crie uma senha',
-                button_label: 'Cadastrar',
-                social_provider_text: 'Cadastrar com {{provider}}',
-                link_text: 'Não tem uma conta? Cadastre-se',
-              },
-              forgotten_password: {
-                email_label: 'E-mail',
-                password_label: 'Sua senha',
-                button_label: 'Enviar instruções',
-                link_text: 'Esqueceu sua senha?',
-              },
-            },
-          }}
-        />
-      </div>
-    </div>
-  );
+return <PageClient config={config} logoUrl={logoUrl} />;
+
 }

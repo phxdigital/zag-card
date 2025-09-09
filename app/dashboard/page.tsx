@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+// import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'; // Será usado no futuro
 import QRCode from 'qrcodejs2';
-import ColorThief from 'color-thief-ts';
 import Cropper from 'cropperjs';
-import 'cropperjs/dist/cropper.css'; // <-- ESTA É A LINHA CORRIGIDA
+import 'cropperjs/dist/cropper.css';
 import { 
     Upload, Crop, Wand2, MessageCircle, Instagram, Facebook, Link as LinkIcon, 
     ShoppingCart, Globe, Wifi, DollarSign, BookOpen, MapPin, Phone, Mail, Info, 
@@ -27,11 +26,13 @@ type PageConfig = {
     landingPageBgColor?: string; landingPageBgImage?: string | null; landingPageTitleText?: string;
     landingPageSubtitleText?: string; landingPageLogoShape?: 'circle' | 'square'; landingPageLogoSize?: number;
 };
+type IconName = 'shopping-cart' | 'link' | 'dollar-sign' | 'wifi' | 'globe' | 'book-open' | 'map-pin' | 'phone' | 'mail' | 'info' | 'star' | 'image' | 'video' | 'plus-circle' | 'edit' | 'trash-2' | 'user' | 'circle' | 'square' | 'message-circle' | 'instagram' | 'facebook';
+
 
 // --- Componentes ---
 
-const LucideIcon = ({ name, ...props }: { name: string, [key: string]: any }) => {
-    const icons: { [key: string]: React.ElementType } = { 
+const LucideIcon = ({ name, ...props }: { name: IconName, [key: string]: any }) => {
+    const icons: { [key in IconName]: React.ElementType } = { 
         'message-circle': MessageCircle, 'instagram': Instagram, 'facebook': Facebook, 
         'shopping-cart': ShoppingCart, 'link': LinkIcon, 'dollar-sign': DollarSign, 
         'wifi': Wifi, 'globe': Globe, 'book-open': BookOpen, 'map-pin': MapPin, 
@@ -78,7 +79,7 @@ const LinkEditorModal = ({ initialData, link, onSave, onClose, icons }: { initia
                     <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-md">
                         {icons.map(icon => (
                             <div key={icon} onClick={() => setData({...data, icon})} className={`icon-picker-item p-2 border rounded-md flex items-center justify-center cursor-pointer hover:bg-amber-100 ${data.icon === icon ? 'selected' : ''}`}>
-                                <LucideIcon name={icon} size={20}/>
+                                <LucideIcon name={icon as IconName} size={20}/>
                             </div>
                         ))}
                     </div>
@@ -224,7 +225,7 @@ const PixConfigModal = ({ onClose, onSave }: { onClose: () => void, onSave: (dat
                 <div className={`space-y-3 ${!isSimple ? '' : 'hidden'}`}>
                     <p className="text-sm text-slate-600 mb-3">Cole o código "PIX Copia e Cola" gerado pelo seu banco.</p>
                      <div>
-                        <label htmlFor="pix-code-advanced" className="block text-sm font-medium text-slate-700 mb-1">Código PIX "Copia e Cola"</label>
+                        <label htmlFor="pix-code-advanced" className="block text-sm font-medium text-slate-700 mb-1">Código PIX &quot;Copia e Cola&quot;</label>
                         <textarea id="pix-code-advanced" rows={3} placeholder="00020126..." className="w-full px-3 py-2 border border-slate-300 rounded-md"></textarea>
                     </div>
                 </div>
@@ -521,7 +522,7 @@ export default function DashboardPage() {
                                                 {config.customLinks?.map(link => (
                                                     <div key={link.id} className="flex items-center justify-between bg-slate-50 p-2 rounded-md">
                                                         <div className="flex items-center gap-2">
-                                                           {link.icon && <LucideIcon name={link.icon} className="w-5 h-5 text-slate-600" />}
+                                                           {link.icon && <LucideIcon name={link.icon as IconName} className="w-5 h-5 text-slate-600" />}
                                                            <span className="text-sm font-medium">{link.text}</span>
                                                         </div>
                                                         <div>
@@ -547,14 +548,14 @@ export default function DashboardPage() {
                                             <div className="w-full mt-6 flex justify-center items-center space-x-4">
                                                 {Object.entries(config.socialLinks || {}).map(([key, value]) => value && (
                                                     <a key={key} href="#" className="w-12 h-12 bg-slate-800 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
-                                                        <LucideIcon name={(socialMediaConfig as any)[key]?.icon || 'link'} />
+                                                        <LucideIcon name={(socialMediaConfig as any)[key]?.icon as IconName} />
                                                     </a>
                                                 ))}
                                             </div>
                                             <div className="w-full mt-6 space-y-3">
                                                {config.customLinks?.map(link => (
                                                     <a key={link.id} href="#" style={{color: link.textColor, background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1}} className="w-full flex items-center justify-center gap-3 font-semibold py-3 px-4 rounded-lg transition-transform duration-200 hover:scale-105">
-                                                        {link.icon && <LucideIcon name={link.icon} className="w-5 h-5 flex-shrink-0" />}
+                                                        {link.icon && <LucideIcon name={link.icon as IconName} className="w-5 h-5 flex-shrink-0" />}
                                                         <span>{link.text}</span>
                                                     </a>
                                                 ))}
@@ -577,7 +578,7 @@ export default function DashboardPage() {
                  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg space-y-4">
                         <h2 className="text-2xl font-bold">Recortar Logo</h2>
-                        <div className="w-full h-64 bg-slate-100"><img ref={cropperImageRef} src={logoDataUrl || ''} className="max-w-full"/></div>
+                        <div className="w-full h-64 bg-slate-100"><img ref={cropperImageRef} alt="Imagem para recortar" src={logoDataUrl || ''} className="max-w-full"/></div>
                         <div className="flex justify-end gap-4 pt-4">
                             <button onClick={() => setShowCropperModal(false)} className="bg-slate-200 text-slate-800 font-bold py-2 px-6 rounded-lg hover:bg-slate-300">Cancelar</button>
                             <button onClick={handleSaveCrop} className="bg-slate-800 text-white font-bold py-2 px-6 rounded-lg hover:bg-slate-900">Salvar Recorte</button>
