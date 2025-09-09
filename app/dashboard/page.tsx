@@ -1,4 +1,60 @@
-'use client';import React, { useState, useEffect, useRef } from 'react';// import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'; // Será usado no futuroimport QRCode from 'qrcodejs2';import Cropper from 'cropperjs';import 'cropperjs/dist/cropper.css';import {Upload, Crop, Wand2, MessageCircle, Instagram, Facebook, Link as LinkIcon,ShoppingCart, Globe, Wifi, DollarSign, BookOpen, MapPin, Phone, Mail, Info,Star, Image as ImageIcon, Video, PlusCircle, Edit, Trash2, Smartphone, CreditCard,User, Circle, Square} from 'lucide-react';import Image from 'next/image';// --- Tipos de Dados ---type SocialLinks = { [key: string]: string };type CustomLink = {id: number; text: string; url: string; icon: string | null;styleType: 'solid' | 'gradient'; bgColor1: string; bgColor2: string; textColor: string;};type PageConfig = {cardText?: string; isTextEnabled?: boolean; cardBgColor?: string; cardTextColor?: string;cardBackBgColor?: string; logoSize?: number; qrCodeSize?: number; clientLogoBackSize?: number;qrCodePosition?: string; socialLinks?: SocialLinks; customLinks?: CustomLink[];landingPageBgColor?: string; landingPageBgImage?: string | null; landingPageTitleText?: string;landingPageSubtitleText?: string; landingPageLogoShape?: 'circle' | 'square'; landingPageLogoSize?: number;};type IconName = 'shopping-cart' | 'link' | 'dollar-sign' | 'wifi' | 'globe' | 'book-open' | 'map-pin' | 'phone' | 'mail' | 'info' | 'star' | 'image' | 'video' | 'plus-circle' | 'edit' | 'trash-2' | 'user' | 'circle' | 'square' | 'message-circle' | 'instagram' | 'facebook';// --- Componentes ---const LucideIcon = ({ name, ...props }: { name: IconName, [key: string]: any }) => {const icons: { [key in IconName]: React.ElementType } = {'message-circle': MessageCircle, 'instagram': Instagram, 'facebook': Facebook,'shopping-cart': ShoppingCart, 'link': LinkIcon, 'dollar-sign': DollarSign,'wifi': Wifi, 'globe': Globe, 'book-open': BookOpen, 'map-pin': MapPin,'phone': Phone, 'mail': Mail, 'info': Info, 'star': Star, 'image': ImageIcon,'video': Video, 'plus-circle': PlusCircle, 'edit': Edit, 'trash-2': Trash2,'user': User, 'circle': Circle, 'square': Square};const IconComponent = icons[name];return IconComponent ? <IconComponent {...props} /> : null;};const LinkEditorModal = ({ initialData, link, onSave, onClose, icons }: { initialData?: Partial<Omit<CustomLink, 'id'>>, link: CustomLink | null, onSave: (data: Omit<CustomLink, 'id'>) => void, onClose: () => void, icons: string[] }) => {const [data, setData] = useState({text: link?.text || initialData?.text || '',url: link?.url || '',icon: link?.icon || null,styleType: link?.styleType || 'solid',bgColor1: link?.bgColor1 || '#1e293b',bgColor2: link?.bgColor2 || '#475569',textColor: link?.textColor || '#ffffff',});const handleSubmit = () => {
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+// import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'; // Será usado no futuro
+import QRCode from 'qrcodejs2';
+import Cropper from 'cropperjs';
+import 'cropperjs/dist/cropper.css';
+import {
+Upload, Crop, Wand2, MessageCircle, Instagram, Facebook, Link as LinkIcon,
+ShoppingCart, Globe, Wifi, DollarSign, BookOpen, MapPin, Phone, Mail, Info,
+Star, Image as ImageIcon, Video, PlusCircle, Edit, Trash2, Smartphone, CreditCard,
+User, Circle, Square
+} from 'lucide-react';
+import Image from 'next/image';
+
+// --- Tipos de Dados ---
+type SocialLinks = { [key: string]: string };
+type CustomLink = {
+id: number; text: string; url: string; icon: string | null;
+styleType: 'solid' | 'gradient'; bgColor1: string; bgColor2: string; textColor: string;
+};
+type PageConfig = {
+cardText?: string; isTextEnabled?: boolean; cardBgColor?: string; cardTextColor?: string;
+cardBackBgColor?: string; logoSize?: number; qrCodeSize?: number; clientLogoBackSize?: number;
+qrCodePosition?: string; socialLinks?: SocialLinks; customLinks?: CustomLink[];
+landingPageBgColor?: string; landingPageBgImage?: string | null; landingPageTitleText?: string;
+landingPageSubtitleText?: string; landingPageLogoShape?: 'circle' | 'square'; landingPageLogoSize?: number;
+};
+type IconName = 'shopping-cart' | 'link' | 'dollar-sign' | 'wifi' | 'globe' | 'book-open' | 'map-pin' | 'phone' | 'mail' | 'info' | 'star' | 'image' | 'video' | 'plus-circle' | 'edit' | 'trash-2' | 'user' | 'circle' | 'square' | 'message-circle' | 'instagram' | 'facebook';
+
+// --- Componentes ---
+
+const LucideIcon = ({ name, ...props }: { name: IconName; [key: string]: string | number }) => {
+const icons: { [key in IconName]: React.ElementType } = {
+'message-circle': MessageCircle, 'instagram': Instagram, 'facebook': Facebook,
+'shopping-cart': ShoppingCart, 'link': LinkIcon, 'dollar-sign': DollarSign,
+'wifi': Wifi, 'globe': Globe, 'book-open': BookOpen, 'map-pin': MapPin,
+'phone': Phone, 'mail': Mail, 'info': Info, 'star': Star, 'image': ImageIcon,
+'video': Video, 'plus-circle': PlusCircle, 'edit': Edit, 'trash-2': Trash2,
+'user': User, 'circle': Circle, 'square': Square
+};
+const IconComponent = icons[name];
+return IconComponent ? <IconComponent {...props} /> : null;
+};
+
+const LinkEditorModal = ({ initialData, link, onSave, onClose, icons }: { initialData?: Partial<Omit<CustomLink, 'id'>>, link: CustomLink | null, onSave: (data: Omit<CustomLink, 'id'>) => void, onClose: () => void, icons: string[] }) => {
+const [data, setData] = useState({
+text: link?.text || initialData?.text || '',
+url: link?.url || '',
+icon: link?.icon || null,
+styleType: link?.styleType || 'solid',
+bgColor1: link?.bgColor1 || '#1e293b',
+bgColor2: link?.bgColor2 || '#475569',
+textColor: link?.textColor || '#ffffff',
+});
+
+const handleSubmit = () => {
     if (!data.text || !data.url) {
         alert('Texto e URL são obrigatórios.'); return;
     }
@@ -54,7 +110,13 @@ return (
         </div>
     </div>
 );
-};const WifiConfigModal = ({ onClose, onSave }: { onClose: () => void, onSave: (data: Omit<CustomLink, 'id'>) => void }) => {const [isSimple, setIsSimple] = useState(true);const handleSave = () => {
+
+};
+
+const WifiConfigModal = ({ onClose, onSave }: { onClose: () => void, onSave: (data: Omit<CustomLink, 'id'>) => void }) => {
+const [isSimple, setIsSimple] = useState(true);
+
+const handleSave = () => {
     let linkData;
     if (isSimple) {
         const password = (document.getElementById('wifi-password-simple') as HTMLInputElement).value.trim();
@@ -113,7 +175,13 @@ return (
         </div>
     </div>
 )
-};const PixConfigModal = ({ onClose, onSave }: { onClose: () => void, onSave: (data: Omit<CustomLink, 'id'>) => void }) => {const [isSimple, setIsSimple] = useState(true);const handleSave = () => {
+
+};
+
+const PixConfigModal = ({ onClose, onSave }: { onClose: () => void, onSave: (data: Omit<CustomLink, 'id'>) => void }) => {
+const [isSimple, setIsSimple] = useState(true);
+
+const handleSave = () => {
     let linkData;
     if (isSimple) {
         const keyType = (document.getElementById('pix-key-type') as HTMLSelectElement).value;
@@ -169,7 +237,33 @@ return (
         </div>
     </div>
 )
-};// --- Componente Principal da Página ---export default function DashboardPage() {const [config, setConfig] = useState<PageConfig>({cardText: '', isTextEnabled: false, cardBgColor: '#FFFFFF', cardTextColor: '#1e293b',cardBackBgColor: '#e2e8f0', logoSize: 60, qrCodeSize: 35, clientLogoBackSize: 35,qrCodePosition: 'justify-start', socialLinks: {}, customLinks: [], landingPageBgColor: '#F8FAFC',landingPageBgImage: null, landingPageTitleText: '', landingPageSubtitleText: '',landingPageLogoShape: 'circle', landingPageLogoSize: 96,});const [activeStep, setActiveStep] = useState(1);const [subdomain, setSubdomain] = useState('');const [logoDataUrl, setLogoDataUrl] = useState<string | null>('https://www.google.com/search?q=https://placehold.co/150x150/e2e8f0/64748b%3Ftext%3DLogo');const qrcodePreviewRef = useRef<HTMLDivElement>(null);const cropperImageRef = useRef<HTMLImageElement>(null);const [cropper, setCropper] = useState<Cropper | null>(null);const [isSaving, setIsSaving] = useState(false);const [showCropperModal, setShowCropperModal] = useState(false);const [showLinkEditorModal, setShowLinkEditorModal] = useState(false);const [showWifiModal, setShowWifiModal] = useState(false);const [showPixModal, setShowPixModal] = useState(false);const [showEmojiPicker, setShowEmojiPicker] = useState(false);const [editingLink, setEditingLink] = useState<CustomLink | null>(null);const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📍', '📞', '💡', '🔥', '🎉', '👋'];
+
+};
+
+// --- Componente Principal da Página ---
+export default function DashboardPage() {
+const [config, setConfig] = useState<PageConfig>({
+cardText: '', isTextEnabled: false, cardBgColor: '#FFFFFF', cardTextColor: '#1e293b',
+cardBackBgColor: '#e2e8f0', logoSize: 60, qrCodeSize: 35, clientLogoBackSize: 35,
+qrCodePosition: 'justify-start', socialLinks: {}, customLinks: [], landingPageBgColor: '#F8FAFC',
+landingPageBgImage: null, landingPageTitleText: '', landingPageSubtitleText: '',
+landingPageLogoShape: 'circle', landingPageLogoSize: 96,
+});
+const [activeStep, setActiveStep] = useState(1);
+const [subdomain, setSubdomain] = useState('');
+const [logoDataUrl, setLogoDataUrl] = useState<string | null>('https://www.google.com/search?q=https://placehold.co/150x150/e2e8f0/64748b%3Ftext%3DLogo');
+const qrcodePreviewRef = useRef<HTMLDivElement>(null);
+const cropperImageRef = useRef<HTMLImageElement>(null);
+const [cropper, setCropper] = useState<Cropper | null>(null);
+const [isSaving, setIsSaving] = useState(false);
+const [showCropperModal, setShowCropperModal] = useState(false);
+const [showLinkEditorModal, setShowLinkEditorModal] = useState(false);
+const [showWifiModal, setShowWifiModal] = useState(false);
+const [showPixModal, setShowPixModal] = useState(false);
+const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
+
+const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📍', '📞', '💡', '🔥', '🎉', '👋'];
 const availableIcons = [ 'shopping-cart', 'link', 'dollar-sign', 'wifi', 'globe', 'book-open', 'map-pin', 'phone', 'mail', 'info', 'star', 'image', 'video' ];
 
 useEffect(() => {
@@ -181,7 +275,7 @@ useEffect(() => {
     }
 }, [subdomain]);
 
-const handleConfigChange = (key: keyof PageConfig, value: any) => {
+const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
     setConfig(prev => ({ ...prev, [key]: value }));
 };
 
@@ -255,11 +349,13 @@ const deleteCustomLink = (id: number) => {
     setConfig(prev => ({...prev, customLinks: prev.customLinks?.filter(l => l.id !== id)}));
 };
 
+const socialLinksEntries = Object.entries(config.socialLinks || {});
+
 return (
     <>
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
              <header className="mb-8 flex items-center space-x-4">
-                <Image src="/logo.png" alt="Logo Zag Card" width={64} height={64} className="h-12 w-auto"/>
+                <Image src="/logo.png" alt="Zag Card Logo" width={64} height={64} className="h-12 w-auto"/>
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">Configure seu Zag Card</h1>
                     <p className="text-slate-500 mt-1">Siga as etapas para personalizar seu produto.</p>
@@ -285,7 +381,7 @@ return (
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                             <p className="text-center font-semibold mb-4">Frente</p>
                             <div style={{ backgroundColor: config.cardBgColor }} className="card-preview mx-auto rounded-xl shadow-lg flex flex-col items-center justify-center p-4 transition-colors duration-300 border">
-                                <img src={logoDataUrl || ''} alt="Logo Preview" className="object-contain mb-2" style={{ width: `${config.logoSize}%`, height: `${config.logoSize}%` }}/>
+                                <Image src={logoDataUrl || ''} alt="Logo Preview" width={200} height={200} className="object-contain mb-2" style={{ width: `${config.logoSize}%`, height: `${config.logoSize}%` }}/>
                                 {config.isTextEnabled && <p style={{color: config.cardTextColor}} className="font-semibold text-lg text-center">{config.cardText}</p>}
                             </div>
                             <div className="mt-6 space-y-4 max-w-sm mx-auto">
@@ -325,7 +421,7 @@ return (
                          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                             <p className="text-center font-semibold mb-4">Verso</p>
                             <div style={{backgroundColor: config.cardBackBgColor}} className="card-preview mx-auto rounded-xl shadow-lg p-4 border relative overflow-hidden">
-                                {logoDataUrl && <img src={logoDataUrl} alt="Logo Verso" className="object-contain absolute transition-all duration-300" style={{ opacity: 1, width: `${config.clientLogoBackSize}%`, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}/>}
+                                {logoDataUrl && <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300" style={{ opacity: 1, width: `${config.clientLogoBackSize}%`, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}/>}
                                 <div className={`absolute inset-0 p-4 flex items-center ${config.qrCodePosition}`}>
                                     <div ref={qrcodePreviewRef} className="bg-white p-1 rounded-md aspect-square" style={{ width: `${config.qrCodeSize}%` }}></div>
                                 </div>
@@ -450,15 +546,15 @@ return (
                                 <div className="flex-shrink-0 mx-auto mt-2"><div className="phone-notch"></div></div>
                                 <div id="phone-content-preview" style={{backgroundColor: config.landingPageBgColor, backgroundImage: config.landingPageBgImage ? `url('${config.landingPageBgImage}')` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }} className="flex-grow overflow-y-auto preview-content p-4">
                                     <div className="flex flex-col items-center text-center">
-                                        <img src={logoDataUrl || ''} alt="Logo Preview" className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{width: `${config.landingPageLogoSize}px`, height: `${config.landingPageLogoSize}px`}} />
+                                        <Image src={logoDataUrl || ''} alt="Logo Preview" width={config.landingPageLogoSize} height={config.landingPageLogoSize} className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} />
                                         <h1 className="text-2xl font-bold text-slate-800 break-words">{config.landingPageTitleText}</h1>
                                         <p className={`text-slate-600 mt-1 px-4 break-words ${config.landingPageSubtitleText ? '' : 'hidden'}`}>{config.landingPageSubtitleText}</p>
                                         <div className="w-full mt-6 flex justify-center items-center space-x-4">
-                                            {Object.entries(config.socialLinks || {}).map(([key, value]) => {
-                                                const socialInfo = (socialMediaConfig as any)[key];
+                                            {socialLinksEntries.map(([key, value]) => {
+                                                const socialInfo = socialMediaConfig[key as keyof typeof socialMediaConfig];
                                                 return value && (
                                                 <a key={key} href="#" className="w-12 h-12 bg-slate-800 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
-                                                    <LucideIcon name={socialInfo?.icon as IconName} />
+                                                    <LucideIcon name={socialInfo?.icon} />
                                                 </a>
                                             )})}
                                         </div>
@@ -502,4 +598,5 @@ return (
         {showPixModal && <PixConfigModal onClose={() => setShowPixModal(false)} onSave={(linkData) => {saveCustomLink(linkData); setShowPixModal(false);}} />}
     </>
 );
+
 }
