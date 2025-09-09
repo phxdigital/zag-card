@@ -6,7 +6,6 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import type { User } from '@supabase/auth-helpers-nextjs';
 
 export default function LoginPage() {
     const supabase = createClientComponentClient();

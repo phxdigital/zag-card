@@ -2,29 +2,31 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import PageClient from './page-client';
-import type { PageConfig } from './page-client'; // Import type from client component
+import type { PageConfig } from './page-client';
 
-export default async function SubdomainPage({ params }: { params: { subdomain: string } }) {
-const supabase = createServerComponentClient({ cookies });
-const { subdomain } = params;
-
-// --- Busca os dados da página no Supabase ---
-const { data: pageData, error } = await supabase
-    .from('pages') // Sua tabela no Supabase
-    .select('config, logo_url') // As colunas que você precisa
-    .eq('subdomain', subdomain)
-    .single();
-
-// Se não encontrar, mostra uma página 404
-if (error || !pageData) {
-    notFound();
+interface SubdomainPageProps {
+    params: Promise<{ subdomain: string }>;
 }
 
-// Passa os dados para o componente de cliente
-const config: PageConfig = pageData.config || {};
-const logoUrl = pageData.logo_url || 'https://placehold.co/100x100/e2e8f0/64748b?text=Logo';
+export default async function SubdomainPage({ params }: SubdomainPageProps) {
+    const supabase = createServerComponentClient({ cookies });
+    const { subdomain } = await params;
 
-return <PageClient config={config} logoUrl={logoUrl} />;
+    // --- Busca os dados da página no Supabase ---
+    const { data: pageData, error } = await supabase
+        .from('pages') // Sua tabela no Supabase
+        .select('config, logo_url') // As colunas que você precisa
+        .eq('subdomain', subdomain)
+        .single();
 
+    // Se não encontrar, mostra uma página 404
+    if (error || !pageData) {
+        notFound();
+    }
+
+    // Passa os dados para o componente de cliente
+    const config: PageConfig = pageData.config || {};
+    const logoUrl = pageData.logo_url || 'https://placehold.co/100x100/e2e8f0/64748b?text=Logo';
+
+    return <PageClient config={config} logoUrl={logoUrl} />;
 }
-
