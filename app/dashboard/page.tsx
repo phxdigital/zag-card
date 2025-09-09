@@ -1142,11 +1142,13 @@ export default function DashboardPage() {
                     <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg space-y-4">
                         <h2 className="text-2xl font-bold">Recortar Logo</h2>
                         <div className="w-full h-64 bg-slate-100">
-                            <img 
+                            <Image 
                                 ref={cropperImageRef} 
                                 alt="Imagem para recortar" 
                                 src={logoDataUrl || ''} 
-                                className="max-w-full"
+                                width={400}
+                                height={256}
+                                className="max-w-full object-contain"
                             />
                         </div>
                         <div className="flex justify-end gap-4 pt-4">
