@@ -17,10 +17,7 @@ export default function LoginPage() {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
-                setUser(session.user);
                 router.push('/dashboard');
-            } else if (event === 'SIGNED_OUT') {
-                setUser(null);
             }
             setLoading(false);
         });
