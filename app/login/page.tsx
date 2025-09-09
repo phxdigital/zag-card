@@ -10,7 +10,6 @@ import Image from 'next/image';
 export default function LoginPage() {
     const supabase = createClientComponentClient();
     const router = useRouter();
-    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
