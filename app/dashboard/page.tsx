@@ -43,16 +43,6 @@ const IconComponent = icons[name];
 return IconComponent ? <IconComponent {...props} /> : null;
 };
 
-const [isSaving, setIsSaving] = useState(false);
-
-// Para desabilitar erro de any:
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const handleSomething = (data: any) => {
-
-// Para desabilitar warning de img:
-{/* eslint-disable-next-line @next/next/no-img-element */}
-<img src="..." alt="..." />
-
 const LinkEditorModal = ({ initialData, link, onSave, onClose, icons }: { initialData?: Partial<Omit<CustomLink, 'id'>>, link: CustomLink | null, onSave: (data: Omit<CustomLink, 'id'>) => void, onClose: () => void, icons: string[] }) => {
 const [data, setData] = useState({
 text: link?.text || initialData?.text || '',
