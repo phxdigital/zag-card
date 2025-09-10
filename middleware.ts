@@ -40,7 +40,7 @@ export async function middleware(req: NextRequest) {
   const isMainDomain = mainDomains.some(domain => 
     host === domain || 
     host === `www.${domain}` || 
-    host?.endsWith(`.${domain}`)
+    host?.endsWith('.vercel.app') // Inclui todos os deploys do Vercel
   );
   
   // Se for subdomínio e estiver na raiz, reescrever para a rota do subdomínio
