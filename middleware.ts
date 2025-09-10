@@ -6,37 +6,47 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
   const { pathname } = req.nextUrl;
 
-  // Se o usuário não está logado e tenta acessar o dashboard, redireciona para login
-  if (!session && pathname.startsWith('/dashboard')) {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/login';
-    return NextResponse.redirect(redirectUrl);
+  // Ignorar rotas que não precisam de middleware
+  if (
+    pathname.startsWith('/_next') || 
+    pathname.startsWith('/api') || 
+    pathname.includes('.') || // arquivos estáticos
+    pathname === '/favicon.ico'
+  ) {
+    return res;
   }
 
-  // Lógica de subdomínio
-  const url = req.nextUrl;
+  // Autenticação apenas para rotas protegidas
+  if (pathname.startsWith('/dashboard')) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      const redirectUrl = req.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Lógica de subdomínio apenas para requests específicos
   const host = req.headers.get('host');
   const subdomain = host?.split('.')[0];
   
-  // Evitar reescrever para rotas de API, assets, etc.
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api')) {
-    return res;
-  }
+  // Verificar se é um subdomínio válido (não www, não domínio principal)
+  const mainDomains = ['localhost', 'meuzag.com', 'zag-card.vercel.app'];
+  const isMainDomain = mainDomains.some(domain => 
+    host === domain || 
+    host === `www.${domain}` || 
+    host?.endsWith(`.${domain}`)
+  );
   
-  // Evitar reescrever para o domínio principal ou rotas base
-  const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'meuzag.com'; // Adicione seu domínio principal no .env.local
-  if (host === mainDomain || host === `www.${mainDomain}` || pathname !== '/') {
-      return res;
-  }
-
-  if (subdomain && subdomain !== 'www') {
-    url.pathname = `/${subdomain}${pathname}`;
+  // Se for subdomínio e estiver na raiz, reescrever para a rota do subdomínio
+  if (subdomain && subdomain !== 'www' && !isMainDomain && pathname === '/') {
+    const url = req.nextUrl.clone();
+    url.pathname = `/${subdomain}`;
     return NextResponse.rewrite(url);
   }
   
@@ -45,13 +55,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'
   ],
 };
-
