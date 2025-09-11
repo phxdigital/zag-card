@@ -263,7 +263,6 @@ export default function DashboardPage() {
     const cropperImageRef = useRef<HTMLImageElement>(null);
     const [cropper, setCropper] = useState<Cropper | null>(null);
     
-    const [isSaving, setIsSaving] = useState(false);
     const [showCropperModal, setShowCropperModal] = useState(false);
     const [showLinkEditorModal, setShowLinkEditorModal] = useState(false);
     const [showWifiModal, setShowWifiModal] = useState(false);
@@ -360,15 +359,6 @@ export default function DashboardPage() {
     const deleteCustomLink = (id: number) => {
         setConfig(prev => ({...prev, customLinks: prev.customLinks?.filter(l => l.id !== id)}));
     };
-    
-    const handleSaveAll = () => {
-        setIsSaving(true);
-        console.log("Salvando:", config);
-        setTimeout(() => {
-            setIsSaving(false);
-            alert("Salvo com sucesso (simulação)!");
-        }, 1000);
-    }
     
     if (!isClient) {
         return (
