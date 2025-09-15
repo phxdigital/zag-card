@@ -62,10 +62,11 @@ export default function DashboardPage() {
     const qrcodePreviewRef = useRef<HTMLDivElement>(null);
 
     const availableIcons = ['image'];
-    const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋'];
+    const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋', '🙌', '👍', '😎', '🎁', '🛒', '🔗', '🧭', '💬', '📧', '☎️', '📍', '💼', '🏷️', '🆕', '🏆', '🖼️', '🎬'];
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
     const [showLinkEditor, setShowLinkEditor] = useState(false);
+    const [QRCode, setQRCode] = useState<any>(null);
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
@@ -129,16 +130,44 @@ export default function DashboardPage() {
         }));
     };
 
+    // Load from localStorage on mount
     useEffect(() => {
-        if (qrcodePreviewRef.current) {
-            qrcodePreviewRef.current.innerHTML = '';
-            const box = document.createElement('div');
-            box.style.width = '100%';
-            box.style.height = '100%';
-            box.style.background = '#000';
-            qrcodePreviewRef.current.appendChild(box);
-        }
-    }, [subdomain, config.qrCodeSize]);
+        try {
+            const saved = localStorage.getItem('zag-dashboard-config');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                setConfig((prev) => ({ ...prev, ...(parsed.config || {}) }));
+                if (typeof parsed.subdomain === 'string') setSubdomain(parsed.subdomain);
+                if (typeof parsed.logoDataUrl === 'string') setLogoDataUrl(parsed.logoDataUrl);
+            }
+        } catch {}
+    }, []);
+
+    // Dynamic import for QRCode library
+    useEffect(() => {
+        let mounted = true;
+        import('qrcodejs2')
+            .then((mod) => {
+                if (mounted) setQRCode(() => (mod as any).default || (mod as any));
+            })
+            .catch(() => {});
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    // Render QR code whenever dependencies change
+    useEffect(() => {
+        if (!QRCode || !qrcodePreviewRef.current || !subdomain) return;
+        qrcodePreviewRef.current.innerHTML = '';
+        const size = Math.round(2.56 * (config.qrCodeSize || 35)); // 25-50% -> 64-128px
+        // eslint-disable-next-line new-cap
+        new QRCode(qrcodePreviewRef.current, {
+            text: `https://${subdomain}.meuzag.com`,
+            width: size,
+            height: size,
+        });
+    }, [QRCode, subdomain, config.qrCodeSize]);
 
     return (
         <>
@@ -283,7 +312,7 @@ export default function DashboardPage() {
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-y-auto" style={{ maxHeight: '85vh' }}>
                                     <div className="space-y-6">
                                         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                            <p className="text-sm font-medium text-blue-800">Design do cartão salvo! Agora, personalize a sua página de links.</p>
+                                            <p className="text-sm font-medium text-blue-800">Design do cartão salvo! Agora, personalize a sua página de botões.</p>
                                         </div>
                                         <fieldset className="border-t pt-4">
                                             <legend className="text-lg font-semibold text-slate-800 -mt-7 px-2 bg-white">Conteúdo da Página</legend>
@@ -323,7 +352,7 @@ export default function DashboardPage() {
                                         </fieldset>
 
                                         <fieldset className="border-t pt-4">
-                                            <legend className="text-lg font-semibold text-slate-800 -mt-7 px-2 bg-white">Links Personalizados (até 4)</legend>
+                                            <legend className="text-lg font-semibold text-slate-800 -mt-7 px-2 bg-white">Botões Personalizados (até 4)</legend>
                                             <div className="space-y-4 mt-4">
                                                 <button onClick={() => openLinkEditor(null)} className="w-full bg-amber-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-amber-600 flex items-center justify-center gap-2">
                                                     <PlusCircle /> Adicionar Novo Botão
@@ -376,8 +405,24 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-8 flex justify-center">
-                                <button className="w-full max-w-md bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300" onClick={() => alert('Funcionalidade de salvar será implementada!')}>
+                            <div className="mt-8 flex flex-col md:flex-row md:justify-between gap-3">
+                                <button className="w-full md:w-auto bg-slate-200 text-slate-800 font-bold py-3 px-4 rounded-lg hover:bg-slate-300" onClick={() => setActiveStep(1)}>
+                                    Voltar
+                                </button>
+                                <button
+                                    className="w-full md:w-auto bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300"
+                                    onClick={() => {
+                                        try {
+                                            localStorage.setItem(
+                                                'zag-dashboard-config',
+                                                JSON.stringify({ config, subdomain, logoDataUrl })
+                                            );
+                                            alert('Configurações salvas com sucesso!');
+                                        } catch {
+                                            alert('Não foi possível salvar localmente.');
+                                        }
+                                    }}
+                                >
                                     Salvar e Publicar
                                 </button>
                             </div>
