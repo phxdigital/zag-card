@@ -35,6 +35,11 @@ type PageConfig = {
     landingPageLogoSize?: number;
 };
 
+type QRCodeOptions = { text: string; width: number; height: number };
+interface QRCodeConstructor {
+    new (element: HTMLElement, options: QRCodeOptions): unknown;
+}
+
 export default function DashboardPage() {
     const [config, setConfig] = useState<PageConfig>({
         cardText: '',
@@ -66,7 +71,7 @@ export default function DashboardPage() {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
     const [showLinkEditor, setShowLinkEditor] = useState(false);
-    const [QRCode, setQRCode] = useState<any>(null);
+    const [QRCode, setQRCode] = useState<QRCodeConstructor | null>(null);
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
@@ -148,7 +153,14 @@ export default function DashboardPage() {
         let mounted = true;
         import('qrcodejs2')
             .then((mod) => {
-                if (mounted) setQRCode(() => (mod as any).default || (mod as any));
+                if (!mounted) return;
+                const factory = (() => {
+                    const maybeDefault = (mod as unknown as { default?: unknown }).default;
+                    if (typeof maybeDefault === 'function') return maybeDefault as unknown as QRCodeConstructor;
+                    if (typeof (mod as unknown) === 'function') return mod as unknown as QRCodeConstructor;
+                    return null;
+                })();
+                if (factory) setQRCode(() => factory);
             })
             .catch(() => {});
         return () => {
@@ -161,7 +173,6 @@ export default function DashboardPage() {
         if (!QRCode || !qrcodePreviewRef.current || !subdomain) return;
         qrcodePreviewRef.current.innerHTML = '';
         const size = Math.round(2.56 * (config.qrCodeSize || 35)); // 25-50% -> 64-128px
-        // eslint-disable-next-line new-cap
         new QRCode(qrcodePreviewRef.current, {
             text: `https://${subdomain}.meuzag.com`,
             width: size,
