@@ -40,6 +40,8 @@ type PageConfig = {
     logoRotationFront?: number; // degrees
     logoRotationBack?: number; // degrees
     landingFont?: string;
+    landingPageTitleColor?: string;
+    landingPageSubtitleColor?: string;
 };
 
 type QRCodeOptions = { text: string; width: number; height: number };
@@ -92,6 +94,8 @@ export default function DashboardPage() {
         logoRotationFront: 0,
         logoRotationBack: 0,
         landingFont: 'Inter',
+        landingPageTitleColor: '#1e293b',
+        landingPageSubtitleColor: '#64748b',
     });
 
     const [activeStep, setActiveStep] = useState(1);
@@ -219,7 +223,7 @@ export default function DashboardPage() {
 
     const addSocialPreset = (kind: 'whatsapp' | 'instagram' | 'facebook' | 'youtube' | 'twitter') => {
         const presets: { [k in typeof kind]: { text: string; url: string; icon: IconName; color: string } } = {
-            whatsapp: { text: 'WhatsApp', url: 'https://wa.me/', icon: 'message-circle', color: '#16a34a' },
+            whatsapp: { text: 'WhatsApp', url: 'https://wa.me/+55', icon: 'message-circle', color: '#16a34a' },
             instagram: { text: 'Instagram', url: 'https://instagram.com/', icon: 'instagram', color: '#DB2777' },
             facebook: { text: 'Facebook', url: 'https://facebook.com/', icon: 'facebook', color: '#2563EB' },
             youtube: { text: 'YouTube', url: 'https://youtube.com/', icon: 'youtube', color: '#DC2626' },
@@ -464,6 +468,16 @@ export default function DashboardPage() {
                                                     </select>
                                                     <p className="text-xs text-slate-500 mt-1">Aplicada ao título e subtítulo.</p>
                                                 </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-2">Cor do Título</label>
+                                                        <input type="color" value={config.landingPageTitleColor || '#1e293b'} onChange={(e) => handleConfigChange('landingPageTitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-2">Cor do Subtítulo</label>
+                                                        <input type="color" value={config.landingPageSubtitleColor || '#64748b'} onChange={(e) => handleConfigChange('landingPageSubtitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                                    </div>
+                                                </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-2">Botões rápidos (sociais)</label>
                                                 <div className="flex flex-wrap gap-2">
@@ -524,8 +538,8 @@ export default function DashboardPage() {
                                                         <ImageIcon className="w-8 h-8 text-slate-400" />
                                                     </div>
                                                 )}
-                                                <h1 className="text-xl font-bold text-slate-800 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})` }}>{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
-                                                {config.landingPageSubtitleText && <p className="text-slate-600 text-sm px-2 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})` }}>{config.landingPageSubtitleText}</p>}
+                                                <h1 className="text-xl font-bold break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageTitleColor || '#1e293b' }}>{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
+                                                {config.landingPageSubtitleText && <p className="text-sm px-2 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageSubtitleColor || '#64748b' }}>{config.landingPageSubtitleText}</p>}
                                                 <div className="w-full flex flex-wrap justify-center items-center gap-3">
                                                     {config.customLinks?.map((link) => (
                                                         <div key={link.id} className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
@@ -592,7 +606,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
     const getSocialBaseUrl = (icon: string | null) => {
         if (!icon) return '';
         const baseUrls: { [key: string]: string } = {
-            'message-circle': 'https://wa.me/',
+            'message-circle': 'https://wa.me/+55',
             'instagram': 'https://instagram.com/',
             'facebook': 'https://facebook.com/',
             'youtube': 'https://youtube.com/',
@@ -604,7 +618,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
     const getSocialPlaceholder = (icon: string | null) => {
         if (!icon) return '';
         const placeholders: { [key: string]: string } = {
-            'message-circle': 'Ex: +5511999999999',
+            'message-circle': 'Ex: 11999999999 (código de área + número)',
             'instagram': 'Ex: @seuusuario',
             'facebook': 'Ex: seuusuario',
             'youtube': 'Ex: @seucanal',
