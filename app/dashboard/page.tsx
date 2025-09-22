@@ -65,7 +65,7 @@ export default function DashboardPage() {
         landingPageLogoShape: 'circle',
         landingPageLogoSize: 96,
         logoOpacityFront: 1,
-        logoOpacityBack: 0.3,
+        logoOpacityBack: 1,
         logoRotationFront: 0,
         logoRotationBack: 0,
     });
@@ -85,7 +85,7 @@ export default function DashboardPage() {
     const [showLogoEditor, setShowLogoEditor] = useState(false);
     const [editorZoom, setEditorZoom] = useState(1);
     const [editorOffset, setEditorOffset] = useState({ x: 0, y: 0 });
-    const dragRef = useRef<{ dragging: boolean; startX: number; startY: number; origX: number; origY: number }>({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
+    const dragRef = useRef<{ dragging: boolean; startX: number; startY: number; origX: number; origY: number; touchDist?: number; startZoom?: number }>({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
@@ -188,7 +188,7 @@ export default function DashboardPage() {
         qrcodePreviewRef.current.innerHTML = '';
         const size = Math.round(2.56 * (config.qrCodeSize || 35)); // 25-50% -> 64-128px
         new QRCode(qrcodePreviewRef.current, {
-            text: `https://${subdomain}.meuzag.com`,
+            text: `https://${subdomain}.zagcnfc.com.br`,
             width: size,
             height: size,
         });
@@ -256,9 +256,10 @@ export default function DashboardPage() {
         if (!n) return;
         r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
         const bg = `rgb(${r}, ${g}, ${b})`;
+        // Use exact background and derive readable text
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         const text = luminance > 0.6 ? '#111827' : '#ffffff';
-        setConfig(prev => ({ ...prev, cardBgColor: bg, cardTextColor: text, landingPageBgColor: bg }));
+        setConfig(prev => ({ ...prev, cardBackBgColor: bg, cardBgColor: bg, cardTextColor: text, landingPageBgColor: '#ffffff' }));
         alert('Cores sugeridas com base na sua logo foram aplicadas.');
     };
 
@@ -266,7 +267,7 @@ export default function DashboardPage() {
         <>
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                 <header className="mb-8 flex items-center space-x-4">
-                    <Image src="/logo-zag.png" alt="Zag Card Logo" width={64} height={64} className="h-12 w-auto" />
+                    <Image src="/logo-zag.png" alt="Zag Card Logo" width={128} height={128} className="h-24 w-auto" />
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900">Configure seu Zag Card</h1>
                         <p className="text-slate-500 mt-1">Siga as etapas para personalizar seu produto.</p>
@@ -336,7 +337,7 @@ export default function DashboardPage() {
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Frente) ({config.logoRotationFront || 0}°)</label>
-                                                <input type="range" min={-45} max={45} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                <input type="range" min={-180} max={180} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                             </div>
                                         </div>
                                         <div>
@@ -394,7 +395,7 @@ export default function DashboardPage() {
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Verso) ({config.logoRotationBack || 0}°)</label>
-                                                <input type="range" min={-45} max={45} value={config.logoRotationBack || 0} onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                <input type="range" min={-180} max={180} value={config.logoRotationBack || 0} onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                             </div>
                                         </div>
                                         <div>
@@ -439,7 +440,7 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Subtítulo (opcional)</label>
-                                                    <div className="relative">
+                                                <div className="relative">
                                                         <input type="text" placeholder="Sua frase de efeito aqui" value={config.landingPageSubtitleText || ''} onChange={(e) => handleConfigChange('landingPageSubtitleText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md pr-10" />
                                                         <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600">😊</button>
                                                     </div>
@@ -462,7 +463,7 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-2">Botões rápidos (sociais)</label>
-                                                    <div className="flex flex-wrap gap-2">
+                                                <div className="flex flex-wrap gap-2">
                                                         <button onClick={() => addSocialPreset('whatsapp')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><MessageCircle size={14}/> WhatsApp</button>
                                                         <button onClick={() => addSocialPreset('instagram')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Instagram size={14}/> Instagram</button>
                                                         <button onClick={() => addSocialPreset('facebook')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Facebook size={14}/> Facebook</button>
@@ -473,6 +474,10 @@ export default function DashboardPage() {
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo na Página ({config.landingPageLogoSize}px)</label>
                                                     <input type="range" min={48} max={128} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo da Página</label>
+                                                    <input type="color" value={config.landingPageBgColor || '#ffffff'} onChange={(e) => handleConfigChange('landingPageBgColor', e.target.value)} className="w-24 h-10 border border-slate-300 rounded-md" />
                                                 </div>
                                             </div>
                                         </fieldset>
@@ -518,11 +523,10 @@ export default function DashboardPage() {
                                                 )}
                                                 <h1 className="text-xl font-bold text-slate-800 break-words">{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
                                                 {config.landingPageSubtitleText && <p className="text-slate-600 text-sm px-2 break-words">{config.landingPageSubtitleText}</p>}
-                                                <div className="w-full space-y-2">
+                                                <div className="w-full flex flex-wrap justify-center items-center gap-3">
                                                     {config.customLinks?.map((link) => (
-                                                        <div key={link.id} style={{ color: link.textColor, background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }} className="w-full flex items-center justify-center gap-2 font-semibold py-2 px-3 rounded-lg text-sm">
+                                                        <div key={link.id} className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
                                                             {link.icon && <IconForName name={link.icon as IconName} />}
-                                                            <span>{link.text}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -570,7 +574,37 @@ export default function DashboardPage() {
                 <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onMouseUp={() => (dragRef.current.dragging = false)}>
                     <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl space-y-4">
                         <h2 className="text-2xl font-bold">Editar logo</h2>
-                        <div className="relative w-full h-80 bg-slate-100 rounded-lg overflow-hidden border">
+                        <div className="relative w-full h-80 bg-slate-100 rounded-lg overflow-hidden border"
+                            onTouchStart={(e) => {
+                                if (e.touches.length === 1) {
+                                    const t = e.touches[0];
+                                    dragRef.current.dragging = true;
+                                    dragRef.current.startX = t.clientX;
+                                    dragRef.current.startY = t.clientY;
+                                    dragRef.current.origX = editorOffset.x;
+                                    dragRef.current.origY = editorOffset.y;
+                                } else if (e.touches.length === 2) {
+                                    const [a, b] = [e.touches[0], e.touches[1]];
+                                    const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+                                    dragRef.current.touchDist = dist;
+                                    dragRef.current.startZoom = editorZoom;
+                                }
+                            }}
+                            onTouchMove={(e) => {
+                                if (e.touches.length === 1 && dragRef.current.dragging) {
+                                    const t = e.touches[0];
+                                    const dx = t.clientX - dragRef.current.startX;
+                                    const dy = t.clientY - dragRef.current.startY;
+                                    setEditorOffset({ x: dragRef.current.origX + dx, y: dragRef.current.origY + dy });
+                                } else if (e.touches.length === 2 && dragRef.current.touchDist && dragRef.current.startZoom) {
+                                    const [a, b] = [e.touches[0], e.touches[1]];
+                                    const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+                                    const ratio = dist / dragRef.current.touchDist;
+                                    setEditorZoom(Math.min(3, Math.max(0.5, dragRef.current.startZoom * ratio)));
+                                }
+                            }}
+                            onTouchEnd={() => { dragRef.current.dragging = false; dragRef.current.touchDist = undefined; dragRef.current.startZoom = undefined; }}
+                        >
                             <div
                                 className="absolute inset-0 cursor-move"
                                 onMouseDown={(e) => {
