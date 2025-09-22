@@ -13,6 +13,7 @@ type CustomLink = {
     bgColor1: string;
     bgColor2: string;
     textColor: string;
+    isSocial?: boolean;
 };
 
 type PageConfig = {
@@ -38,6 +39,7 @@ type PageConfig = {
     logoOpacityBack?: number;
     logoRotationFront?: number; // degrees
     logoRotationBack?: number; // degrees
+    landingFont?: string;
 };
 
 type QRCodeOptions = { text: string; width: number; height: number };
@@ -68,6 +70,7 @@ export default function DashboardPage() {
         logoOpacityBack: 1,
         logoRotationFront: 0,
         logoRotationBack: 0,
+        landingFont: 'Inter',
     });
 
     const [activeStep, setActiveStep] = useState(1);
@@ -203,8 +206,8 @@ export default function DashboardPage() {
             twitter: { text: 'Twitter/X', url: 'https://twitter.com/', icon: 'twitter', color: '#0ea5e9' },
         } as const;
         const p = presets[kind];
-        const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: p.color, bgColor2: p.color, textColor: '#ffffff' };
-        if ((config.customLinks?.length || 0) >= 4) {
+        const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: p.color, bgColor2: p.color, textColor: '#ffffff', isSocial: true };
+        if ((config.customLinks?.filter(b => !b.isSocial).length || 0) >= 4) {
             alert('Você pode adicionar no máximo 4 botões.');
             return;
         }
@@ -289,7 +292,7 @@ export default function DashboardPage() {
                         <span className="font-semibold hidden md:block">Landing Page</span>
                     </div>
                 </div>
-
+                
                 <main>
                     {activeStep === 1 && (
                         <div>
@@ -317,25 +320,13 @@ export default function DashboardPage() {
                                             <input type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" />
                                             <p className="text-xs text-slate-400 mt-1">Tamanho máximo: 5MB.</p>
                                         </div>
-                                        {logoDataUrl && (
-                                            <div className="grid grid-cols-2 gap-2 text-sm">
-                                                <button className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 p-2 rounded-md" onClick={() => setShowLogoEditor(true)}>
-                                                    <Crop className="w-4 h-4" /> Editar logo
-                                                </button>
-                                                <a href="https://www.remove.bg/upload" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 p-2 rounded-md">
-                                                    <Wand2 className="w-4 h-4" /> Remover Fundo
-                                                </a>
-                                            </div>
-                                        )}
-                                        <div className="flex items-center gap-2">
-                                            <button onClick={suggestColorsFromLogo} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-md text-sm">Sugerir paleta pela logo</button>
-                                        </div>
+                                        {/* Removed logo editor and color suggestion per request */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Frente) ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
                                                 <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                             </div>
-                                            <div>
+                                        <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Frente) ({config.logoRotationFront || 0}°)</label>
                                                 <input type="range" min={-180} max={180} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                             </div>
@@ -389,7 +380,7 @@ export default function DashboardPage() {
                                         </div>
                                         <hr />
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
+                                        <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Verso) ({Math.round((config.logoOpacityBack ?? 0.3) * 100)}%)</label>
                                                 <input type="range" min={10} max={100} value={Math.round((config.logoOpacityBack ?? 0.3) * 100)} onChange={(e) => handleConfigChange('logoOpacityBack', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                             </div>
@@ -422,7 +413,7 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     )}
-
+                    
                     {activeStep === 2 && (
                         <div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -440,7 +431,7 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Subtítulo (opcional)</label>
-                                                <div className="relative">
+                                                    <div className="relative">
                                                         <input type="text" placeholder="Sua frase de efeito aqui" value={config.landingPageSubtitleText || ''} onChange={(e) => handleConfigChange('landingPageSubtitleText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md pr-10" />
                                                         <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600">😊</button>
                                                     </div>
@@ -462,6 +453,17 @@ export default function DashboardPage() {
                                                     </div>
                                                 </div>
                                                 <div>
+                                                    <label className="block text-sm font-medium text-slate-700 mb-2">Fonte da Página</label>
+                                                    <select value={config.landingFont || 'Inter'} onChange={(e) => handleConfigChange('landingFont', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md">
+                                                        <option value="Inter">Inter</option>
+                                                        <option value="Roboto">Roboto</option>
+                                                        <option value="Poppins">Poppins</option>
+                                                        <option value="Montserrat">Montserrat</option>
+                                                        <option value="Open Sans">Open Sans</option>
+                                                    </select>
+                                                    <p className="text-xs text-slate-500 mt-1">Aplicada ao título e subtítulo.</p>
+                                                </div>
+                                                <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-2">Botões rápidos (sociais)</label>
                                                 <div className="flex flex-wrap gap-2">
                                                         <button onClick={() => addSocialPreset('whatsapp')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><MessageCircle size={14}/> WhatsApp</button>
@@ -481,7 +483,7 @@ export default function DashboardPage() {
                                                 </div>
                                             </div>
                                         </fieldset>
-
+                                        
                                         <fieldset className="border-t pt-4">
                                             <legend className="text-lg font-semibold text-slate-800 -mt-7 px-2 bg-white">Botões Personalizados (até 4)</legend>
                                             <div className="space-y-4 mt-4">
@@ -493,7 +495,7 @@ export default function DashboardPage() {
                                                         <div key={link.id} className="flex items-center justify-between bg-slate-50 p-2 rounded-md">
                                                             <div className="flex items-center gap-2">
                                                                 {link.icon && <IconForName name={link.icon as IconName} className="w-5 h-5 text-slate-600" />}
-                                                                <span className="text-sm font-medium">{link.text}</span>
+                                                                <span className="text-sm font-medium">{link.text} {link.isSocial && <em className="text-xs text-slate-500 italic">({link.url}coloque-seu-dado)</em>}</span>
                                                             </div>
                                                             <div>
                                                                 <button onClick={() => openLinkEditor(link)} className="p-1 text-slate-500 hover:text-slate-800"><Edit size={16} /></button>
@@ -521,8 +523,8 @@ export default function DashboardPage() {
                                                         <ImageIcon className="w-8 h-8 text-slate-400" />
                                                     </div>
                                                 )}
-                                                <h1 className="text-xl font-bold text-slate-800 break-words">{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
-                                                {config.landingPageSubtitleText && <p className="text-slate-600 text-sm px-2 break-words">{config.landingPageSubtitleText}</p>}
+                                                <h1 className="text-xl font-bold text-slate-800 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})` }}>{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
+                                                {config.landingPageSubtitleText && <p className="text-slate-600 text-sm px-2 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})` }}>{config.landingPageSubtitleText}</p>}
                                                 <div className="w-full flex flex-wrap justify-center items-center gap-3">
                                                     {config.customLinks?.map((link) => (
                                                         <div key={link.id} className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
@@ -539,7 +541,7 @@ export default function DashboardPage() {
                                 <button className="w-full md:w-auto bg-slate-200 text-slate-800 font-bold py-3 px-4 rounded-lg hover:bg-slate-300" onClick={() => setActiveStep(1)}>
                                     Voltar
                                 </button>
-                                <button
+                                <button 
                                     className="w-full md:w-auto bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300"
                                     onClick={() => {
                                         try {
@@ -560,7 +562,7 @@ export default function DashboardPage() {
                     )}
                 </main>
             </div>
-
+            
             {showLinkEditor && (
                 <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg space-y-4">
@@ -570,104 +572,7 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {showLogoEditor && logoDataUrl && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onMouseUp={() => (dragRef.current.dragging = false)}>
-                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl space-y-4">
-                        <h2 className="text-2xl font-bold">Editar logo</h2>
-                        <div className="relative w-full h-80 bg-slate-100 rounded-lg overflow-hidden border"
-                            onTouchStart={(e) => {
-                                if (e.touches.length === 1) {
-                                    const t = e.touches[0];
-                                    dragRef.current.dragging = true;
-                                    dragRef.current.startX = t.clientX;
-                                    dragRef.current.startY = t.clientY;
-                                    dragRef.current.origX = editorOffset.x;
-                                    dragRef.current.origY = editorOffset.y;
-                                } else if (e.touches.length === 2) {
-                                    const [a, b] = [e.touches[0], e.touches[1]];
-                                    const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-                                    dragRef.current.touchDist = dist;
-                                    dragRef.current.startZoom = editorZoom;
-                                }
-                            }}
-                            onTouchMove={(e) => {
-                                if (e.touches.length === 1 && dragRef.current.dragging) {
-                                    const t = e.touches[0];
-                                    const dx = t.clientX - dragRef.current.startX;
-                                    const dy = t.clientY - dragRef.current.startY;
-                                    setEditorOffset({ x: dragRef.current.origX + dx, y: dragRef.current.origY + dy });
-                                } else if (e.touches.length === 2 && dragRef.current.touchDist && dragRef.current.startZoom) {
-                                    const [a, b] = [e.touches[0], e.touches[1]];
-                                    const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-                                    const ratio = dist / dragRef.current.touchDist;
-                                    setEditorZoom(Math.min(3, Math.max(0.5, dragRef.current.startZoom * ratio)));
-                                }
-                            }}
-                            onTouchEnd={() => { dragRef.current.dragging = false; dragRef.current.touchDist = undefined; dragRef.current.startZoom = undefined; }}
-                        >
-                            <div
-                                className="absolute inset-0 cursor-move"
-                                onMouseDown={(e) => {
-                                    dragRef.current.dragging = true;
-                                    dragRef.current.startX = e.clientX;
-                                    dragRef.current.startY = e.clientY;
-                                    dragRef.current.origX = editorOffset.x;
-                                    dragRef.current.origY = editorOffset.y;
-                                }}
-                                onMouseMove={(e) => {
-                                    if (!dragRef.current.dragging) return;
-                                    const dx = e.clientX - dragRef.current.startX;
-                                    const dy = e.clientY - dragRef.current.startY;
-                                    setEditorOffset({ x: dragRef.current.origX + dx, y: dragRef.current.origY + dy });
-                                }}
-                            >
-                                {/* Visible crop area (square) */}
-                                <div className="absolute inset-10 border-2 border-white/80 rounded-md pointer-events-none"></div>
-                                <img
-                                    src={logoDataUrl}
-                                    alt="logo"
-                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none"
-                                    style={{ transform: `translate(-50%, -50%) translate(${editorOffset.x}px, ${editorOffset.y}px) scale(${editorZoom})` }}
-                                    draggable={false}
-                                />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Zoom ({Math.round(editorZoom * 100)}%)</label>
-                                <input type="range" min={50} max={300} value={Math.round(editorZoom * 100)} onChange={(e) => setEditorZoom(Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                                <button className="px-4 py-2 rounded-md bg-slate-200 hover:bg-slate-300" onClick={() => { setEditorZoom(1); setEditorOffset({ x: 0, y: 0 }); }}>Resetar</button>
-                                <button className="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900" onClick={async () => {
-                                    const container = document.createElement('canvas');
-                                    const size = 512;
-                                    container.width = size; container.height = size;
-                                    const ctx = container.getContext('2d');
-                                    if (!ctx) return;
-                                    const img = new window.Image();
-                                    img.crossOrigin = 'anonymous';
-                                    img.src = logoDataUrl;
-                                    await new Promise(res => { img.onload = () => res(undefined); img.onerror = () => res(undefined); });
-                                    // map editor coords to image draw
-                                    const scale = editorZoom;
-                                    const offsetX = editorOffset.x;
-                                    const offsetY = editorOffset.y;
-                                    const drawW = img.width * scale;
-                                    const drawH = img.height * scale;
-                                    const centerX = size / 2 + offsetX;
-                                    const centerY = size / 2 + offsetY;
-                                    ctx.clearRect(0,0,size,size);
-                                    ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
-                                    setLogoDataUrl(container.toDataURL('image/png'));
-                                    setShowLogoEditor(false);
-                                }}>Aplicar</button>
-                                <button className="px-4 py-2 rounded-md bg-slate-200 hover:bg-slate-300" onClick={() => setShowLogoEditor(false)}>Cancelar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Removed logo editor per request */}
         </>
     );
 }
@@ -683,9 +588,21 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
         textColor: initial?.textColor || '#ffffff',
     });
 
+    const getSocialPlaceholder = (icon: string | null) => {
+        if (!icon) return '';
+        const placeholders: { [key: string]: string } = {
+            'message-circle': 'Ex: +5511999999999',
+            'instagram': 'Ex: @seuusuario',
+            'facebook': 'Ex: seuusuario',
+            'youtube': 'Ex: @seucanal',
+            'twitter': 'Ex: @seuusuario',
+        };
+        return placeholders[icon] || '';
+    };
+
     const handleSubmit = () => {
         if (!data.text || !data.url) {
-            alert('Texto e URL são obrigatórios.');
+            alert('Texto e URL são obrigatórios.'); 
             return;
         }
         onSave(data);
@@ -693,50 +610,53 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
     return (
         <div className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Texto do Botão</label>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Texto do Botão</label>
                 <input type="text" value={data.text} onChange={(e) => setData({ ...data, text: e.target.value })} placeholder="Ex: Meu Site" className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-            </div>
+                </div>
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">URL / Link</label>
                 <input type="text" value={data.url} onChange={(e) => setData({ ...data, url: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 border border-slate-300 rounded-md" />
+                {getSocialPlaceholder(data.icon) && (
+                    <p className="text-xs text-slate-500 mt-1 italic">{getSocialPlaceholder(data.icon)}</p>
+                )}
             </div>
-            <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
-                <div className="grid grid-cols-6 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-md">
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
+                    <div className="grid grid-cols-6 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-md">
                     <div onClick={() => setData({ ...data, icon: null })} className={`p-2 border rounded-md flex items-center justify-center cursor-pointer hover:bg-amber-100 ${data.icon === null ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`}>
-                        <span className="text-xs">Nenhum</span>
-                    </div>
+                            <span className="text-xs">Nenhum</span>
+                        </div>
                     {icons.map((icon) => (
                         <div key={icon} onClick={() => setData({ ...data, icon })} className={`p-2 border rounded-md flex items-center justify-center cursor-pointer hover:bg-amber-100 ${data.icon === icon ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`}>
                             <ImageIcon className="w-4 h-4" />
-                        </div>
-                    ))}
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
-            <div className="border-t pt-4 space-y-3">
-                <div className="flex items-center">
+                <div className="border-t pt-4 space-y-3">
+                    <div className="flex items-center">
                     <input id="gradient-toggle" type="checkbox" checked={data.styleType === 'gradient'} onChange={(e) => setData({ ...data, styleType: e.target.checked ? 'gradient' : 'solid' })} className="h-4 w-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500" />
                     <label htmlFor="gradient-toggle" className="ml-2 block text-sm text-gray-900">Usar fundo gradiente</label>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo 1</label>
-                        <input type="color" value={data.bgColor1} onChange={(e) => setData({ ...data, bgColor1: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
                     </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo 1</label>
+                        <input type="color" value={data.bgColor1} onChange={(e) => setData({ ...data, bgColor1: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
+                        </div>
                     {data.styleType === 'gradient' && (
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo 2</label>
                             <input type="color" value={data.bgColor2} onChange={(e) => setData({ ...data, bgColor2: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
                         </div>
                     )}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Texto</label>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Texto</label>
                         <input type="color" value={data.textColor} onChange={(e) => setData({ ...data, textColor: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className="flex justify-end gap-4 pt-4">
+                <div className="flex justify-end gap-4 pt-4">
                 <button onClick={onCancel} className="bg-slate-200 text-slate-800 font-bold py-2 px-6 rounded-lg hover:bg-slate-300">Cancelar</button>
                 <button onClick={handleSubmit} className="bg-slate-800 text-white font-bold py-2 px-6 rounded-lg hover:bg-slate-900">Salvar</button>
             </div>
