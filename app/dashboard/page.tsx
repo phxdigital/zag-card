@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { CreditCard, Smartphone, Crop, Wand2, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon } from 'lucide-react';
+import { CreditCard, Smartphone, Crop, Wand2, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter } from 'lucide-react';
 
 type CustomLink = {
     id: number;
@@ -33,6 +33,11 @@ type PageConfig = {
     landingPageSubtitleText?: string;
     landingPageLogoShape?: 'circle' | 'square';
     landingPageLogoSize?: number;
+    // new options
+    logoOpacityFront?: number;
+    logoOpacityBack?: number;
+    logoRotationFront?: number; // degrees
+    logoRotationBack?: number; // degrees
 };
 
 type QRCodeOptions = { text: string; width: number; height: number };
@@ -59,6 +64,10 @@ export default function DashboardPage() {
         landingPageSubtitleText: '',
         landingPageLogoShape: 'circle',
         landingPageLogoSize: 96,
+        logoOpacityFront: 1,
+        logoOpacityBack: 0.3,
+        logoRotationFront: 0,
+        logoRotationBack: 0,
     });
 
     const [activeStep, setActiveStep] = useState(1);
@@ -66,12 +75,17 @@ export default function DashboardPage() {
     const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
     const qrcodePreviewRef = useRef<HTMLDivElement>(null);
 
-    const availableIcons = ['image'];
+    type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter';
+    const availableIcons: IconName[] = ['message-circle','instagram','facebook','youtube','twitter','globe','map-pin','phone','mail','shopping-cart','link','image'];
     const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋', '🙌', '👍', '😎', '🎁', '🛒', '🔗', '🧭', '💬', '📧', '☎️', '📍', '💼', '🏷️', '🆕', '🏆', '🖼️', '🎬'];
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
     const [showLinkEditor, setShowLinkEditor] = useState(false);
     const [QRCode, setQRCode] = useState<QRCodeConstructor | null>(null);
+    const [showLogoEditor, setShowLogoEditor] = useState(false);
+    const [editorZoom, setEditorZoom] = useState(1);
+    const [editorOffset, setEditorOffset] = useState({ x: 0, y: 0 });
+    const dragRef = useRef<{ dragging: boolean; startX: number; startY: number; origX: number; origY: number }>({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
@@ -180,6 +194,74 @@ export default function DashboardPage() {
         });
     }, [QRCode, subdomain, config.qrCodeSize]);
 
+    const addSocialPreset = (kind: 'whatsapp' | 'instagram' | 'facebook' | 'youtube' | 'twitter') => {
+        const presets: { [k in typeof kind]: { text: string; url: string; icon: IconName; color: string } } = {
+            whatsapp: { text: 'WhatsApp', url: 'https://wa.me/', icon: 'message-circle', color: '#16a34a' },
+            instagram: { text: 'Instagram', url: 'https://instagram.com/', icon: 'instagram', color: '#DB2777' },
+            facebook: { text: 'Facebook', url: 'https://facebook.com/', icon: 'facebook', color: '#2563EB' },
+            youtube: { text: 'YouTube', url: 'https://youtube.com/', icon: 'youtube', color: '#DC2626' },
+            twitter: { text: 'Twitter/X', url: 'https://twitter.com/', icon: 'twitter', color: '#0ea5e9' },
+        } as const;
+        const p = presets[kind];
+        const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: p.color, bgColor2: p.color, textColor: '#ffffff' };
+        if ((config.customLinks?.length || 0) >= 4) {
+            alert('Você pode adicionar no máximo 4 botões.');
+            return;
+        }
+        setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
+    };
+
+    const IconForName = ({ name, className, size = 16 }: { name: IconName; className?: string; size?: number }) => {
+        const map: Record<IconName, React.ElementType> = {
+            'message-circle': MessageCircle,
+            instagram: Instagram,
+            facebook: Facebook,
+            globe: Globe,
+            'map-pin': MapPin,
+            phone: Phone,
+            mail: Mail,
+            'shopping-cart': ShoppingCart,
+            link: LinkIcon,
+            image: ImageIcon,
+            youtube: Youtube,
+            twitter: Twitter,
+        };
+        const C = map[name];
+        return <C className={className} size={size} />;
+    };
+
+    const suggestColorsFromLogo = async () => {
+        if (!logoDataUrl) return;
+        const img = document.createElement('img');
+        img.crossOrigin = 'anonymous';
+        img.src = logoDataUrl;
+        await new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+        });
+        const canvas = document.createElement('canvas');
+        const w = 64, h = 64;
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let r = 0, g = 0, b = 0, n = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            const a = data[i + 3];
+            if (a < 10) continue;
+            r += data[i]; g += data[i + 1]; b += data[i + 2];
+            n++;
+        }
+        if (!n) return;
+        r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+        const bg = `rgb(${r}, ${g}, ${b})`;
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        const text = luminance > 0.6 ? '#111827' : '#ffffff';
+        setConfig(prev => ({ ...prev, cardBgColor: bg, cardTextColor: text, landingPageBgColor: bg }));
+        alert('Cores sugeridas com base na sua logo foram aplicadas.');
+    };
+
     return (
         <>
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -215,7 +297,7 @@ export default function DashboardPage() {
                                     <p className="text-center font-semibold mb-4">Frente</p>
                                     <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex flex-col items-center justify-center p-4 transition-colors duration-300 border">
                                         {logoDataUrl ? (
-                                            <Image src={logoDataUrl} alt="Logo Preview" width={120} height={120} className="object-contain mb-2" style={{ width: `${config.logoSize}%`, height: 'auto', maxHeight: '60%' }} />
+                                            <Image src={logoDataUrl} alt="Logo Preview" width={120} height={120} className="object-contain mb-2" style={{ width: `${config.logoSize}%`, height: 'auto', maxHeight: '60%', opacity: config.logoOpacityFront ?? 1, transform: `rotate(${config.logoRotationFront || 0}deg)` }} />
                                         ) : (
                                             <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center mb-2">
                                                 <ImageIcon className="w-8 h-8 text-slate-400" />
@@ -236,17 +318,30 @@ export default function DashboardPage() {
                                         </div>
                                         {logoDataUrl && (
                                             <div className="grid grid-cols-2 gap-2 text-sm">
-                                                <button className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 p-2 rounded-md">
-                                                    <Crop className="w-4 h-4" /> Recortar Logo (em breve)
+                                                <button className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 p-2 rounded-md" onClick={() => setShowLogoEditor(true)}>
+                                                    <Crop className="w-4 h-4" /> Editar logo
                                                 </button>
                                                 <a href="https://www.remove.bg/upload" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 p-2 rounded-md">
                                                     <Wand2 className="w-4 h-4" /> Remover Fundo
                                                 </a>
                                             </div>
                                         )}
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={suggestColorsFromLogo} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-md text-sm">Sugerir paleta pela logo</button>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Frente) ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
+                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Frente) ({config.logoRotationFront || 0}°)</label>
+                                                <input type="range" min={-45} max={45} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            </div>
+                                        </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo ({config.logoSize}%)</label>
-                                            <input type="range" min={30} max={90} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            <input type="range" min={30} max={150} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                         </div>
                                         <div>
                                             <div className="flex items-center mb-2">
@@ -271,7 +366,7 @@ export default function DashboardPage() {
                                     <p className="text-center font-semibold mb-4">Verso</p>
                                     <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg p-4 border relative overflow-hidden">
                                         {logoDataUrl && (
-                                            <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300 opacity-30" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+                                            <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: '50%', transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3 }} />
                                         )}
                                         <div className={`absolute inset-0 p-4 flex items-center ${config.qrCodePosition}`}>
                                             <div ref={qrcodePreviewRef} className="bg-white p-1 rounded-md aspect-square" style={{ width: `${config.qrCodeSize}%` }} />
@@ -292,6 +387,16 @@ export default function DashboardPage() {
                                             <input type="color" value={config.cardBackBgColor} onChange={(e) => handleConfigChange('cardBackBgColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
                                         </div>
                                         <hr />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Verso) ({Math.round((config.logoOpacityBack ?? 0.3) * 100)}%)</label>
+                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityBack ?? 0.3) * 100)} onChange={(e) => handleConfigChange('logoOpacityBack', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Verso) ({config.logoRotationBack || 0}°)</label>
+                                                <input type="range" min={-45} max={45} value={config.logoRotationBack || 0} onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            </div>
+                                        </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho do QR Code ({config.qrCodeSize}%)</label>
                                             <input type="range" min={25} max={50} value={config.qrCodeSize} onChange={(e) => handleConfigChange('qrCodeSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
@@ -356,6 +461,16 @@ export default function DashboardPage() {
                                                     </div>
                                                 </div>
                                                 <div>
+                                                    <label className="block text-sm font-medium text-slate-700 mb-2">Botões rápidos (sociais)</label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <button onClick={() => addSocialPreset('whatsapp')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><MessageCircle size={14}/> WhatsApp</button>
+                                                        <button onClick={() => addSocialPreset('instagram')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Instagram size={14}/> Instagram</button>
+                                                        <button onClick={() => addSocialPreset('facebook')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Facebook size={14}/> Facebook</button>
+                                                        <button onClick={() => addSocialPreset('youtube')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Youtube size={14}/> YouTube</button>
+                                                        <button onClick={() => addSocialPreset('twitter')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Twitter size={14}/> Twitter</button>
+                                                    </div>
+                                                </div>
+                                                <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo na Página ({config.landingPageLogoSize}px)</label>
                                                     <input type="range" min={48} max={128} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                                 </div>
@@ -372,7 +487,7 @@ export default function DashboardPage() {
                                                     {config.customLinks?.map((link) => (
                                                         <div key={link.id} className="flex items-center justify-between bg-slate-50 p-2 rounded-md">
                                                             <div className="flex items-center gap-2">
-                                                                {link.icon && <ImageIcon className="w-5 h-5 text-slate-600" />}
+                                                                {link.icon && <IconForName name={link.icon as IconName} className="w-5 h-5 text-slate-600" />}
                                                                 <span className="text-sm font-medium">{link.text}</span>
                                                             </div>
                                                             <div>
@@ -406,7 +521,7 @@ export default function DashboardPage() {
                                                 <div className="w-full space-y-2">
                                                     {config.customLinks?.map((link) => (
                                                         <div key={link.id} style={{ color: link.textColor, background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }} className="w-full flex items-center justify-center gap-2 font-semibold py-2 px-3 rounded-lg text-sm">
-                                                            {link.icon && <ImageIcon className="w-4 h-4" />}
+                                                            {link.icon && <IconForName name={link.icon as IconName} />}
                                                             <span>{link.text}</span>
                                                         </div>
                                                     ))}
@@ -447,6 +562,75 @@ export default function DashboardPage() {
                     <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg space-y-4">
                         <h2 className="text-2xl font-bold">{editingLink ? 'Editar Botão' : 'Adicionar Novo Botão'}</h2>
                         <LinkEditorForm initial={editingLink || null} icons={availableIcons} onCancel={() => setShowLinkEditor(false)} onSave={saveCustomLink} />
+                    </div>
+                </div>
+            )}
+
+            {showLogoEditor && logoDataUrl && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onMouseUp={() => (dragRef.current.dragging = false)}>
+                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl space-y-4">
+                        <h2 className="text-2xl font-bold">Editar logo</h2>
+                        <div className="relative w-full h-80 bg-slate-100 rounded-lg overflow-hidden border">
+                            <div
+                                className="absolute inset-0 cursor-move"
+                                onMouseDown={(e) => {
+                                    dragRef.current.dragging = true;
+                                    dragRef.current.startX = e.clientX;
+                                    dragRef.current.startY = e.clientY;
+                                    dragRef.current.origX = editorOffset.x;
+                                    dragRef.current.origY = editorOffset.y;
+                                }}
+                                onMouseMove={(e) => {
+                                    if (!dragRef.current.dragging) return;
+                                    const dx = e.clientX - dragRef.current.startX;
+                                    const dy = e.clientY - dragRef.current.startY;
+                                    setEditorOffset({ x: dragRef.current.origX + dx, y: dragRef.current.origY + dy });
+                                }}
+                            >
+                                {/* Visible crop area (square) */}
+                                <div className="absolute inset-10 border-2 border-white/80 rounded-md pointer-events-none"></div>
+                                <img
+                                    src={logoDataUrl}
+                                    alt="logo"
+                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none"
+                                    style={{ transform: `translate(-50%, -50%) translate(${editorOffset.x}px, ${editorOffset.y}px) scale(${editorZoom})` }}
+                                    draggable={false}
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Zoom ({Math.round(editorZoom * 100)}%)</label>
+                                <input type="range" min={50} max={300} value={Math.round(editorZoom * 100)} onChange={(e) => setEditorZoom(Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                                <button className="px-4 py-2 rounded-md bg-slate-200 hover:bg-slate-300" onClick={() => { setEditorZoom(1); setEditorOffset({ x: 0, y: 0 }); }}>Resetar</button>
+                                <button className="px-4 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-900" onClick={async () => {
+                                    const container = document.createElement('canvas');
+                                    const size = 512;
+                                    container.width = size; container.height = size;
+                                    const ctx = container.getContext('2d');
+                                    if (!ctx) return;
+                                    const img = new window.Image();
+                                    img.crossOrigin = 'anonymous';
+                                    img.src = logoDataUrl;
+                                    await new Promise(res => { img.onload = () => res(undefined); img.onerror = () => res(undefined); });
+                                    // map editor coords to image draw
+                                    const scale = editorZoom;
+                                    const offsetX = editorOffset.x;
+                                    const offsetY = editorOffset.y;
+                                    const drawW = img.width * scale;
+                                    const drawH = img.height * scale;
+                                    const centerX = size / 2 + offsetX;
+                                    const centerY = size / 2 + offsetY;
+                                    ctx.clearRect(0,0,size,size);
+                                    ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
+                                    setLogoDataUrl(container.toDataURL('image/png'));
+                                    setShowLogoEditor(false);
+                                }}>Aplicar</button>
+                                <button className="px-4 py-2 rounded-md bg-slate-200 hover:bg-slate-300" onClick={() => setShowLogoEditor(false)}>Cancelar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

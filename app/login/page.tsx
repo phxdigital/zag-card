@@ -38,7 +38,7 @@ export default function LoginPage() {
             <div className="w-full max-w-md space-y-6">
                 <div className="text-center">
                     <Image 
-                        src="/logo.png" 
+                        src="/logo-zag.png" 
                         alt="Zag Card Logo" 
                         width={128} 
                         height={128} 
