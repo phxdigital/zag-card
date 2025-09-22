@@ -47,6 +47,27 @@ interface QRCodeConstructor {
     new (element: HTMLElement, options: QRCodeOptions): unknown;
 }
 
+type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter';
+
+const IconForName = ({ name, className, size = 16 }: { name: IconName; className?: string; size?: number }) => {
+    const map: Record<IconName, React.ElementType> = {
+        'message-circle': MessageCircle,
+        instagram: Instagram,
+        facebook: Facebook,
+        globe: Globe,
+        'map-pin': MapPin,
+        phone: Phone,
+        mail: Mail,
+        'shopping-cart': ShoppingCart,
+        link: LinkIcon,
+        image: ImageIcon,
+        youtube: Youtube,
+        twitter: Twitter,
+    };
+    const C = map[name];
+    return <C className={className} size={size} />;
+};
+
 export default function DashboardPage() {
     const [config, setConfig] = useState<PageConfig>({
         cardText: '',
@@ -78,9 +99,8 @@ export default function DashboardPage() {
     const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
     const qrcodePreviewRef = useRef<HTMLDivElement>(null);
 
-    type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter';
     const availableIcons: IconName[] = ['message-circle','instagram','facebook','youtube','twitter','globe','map-pin','phone','mail','shopping-cart','link','image'];
-    const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋', '🙌', '👍', '😎', '🎁', '🛒', '🔗', '🧭', '💬', '📧', '☎️', '📍', '💼', '🏷️', '🆕', '🏆', '🖼️', '🎬'];
+    const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋', '🙌', '👍', '😎', '🎁', '🛒', '🔗', '🧭', '💬', '📧', '☎️', '📍', '💼', '🏷️', '🆕', '🏆', '🖼️', '🎬', '🌟', '💫', '🎯', '🎊', '🎈', '🎂', '🍰', '☕', '🌺', '🌸', '🌻', '🌷', '🌹', '🌿', '🍀', '🌈', '☀️', '🌙', '⭐', '💎', '🎪', '🎨', '🎭', '🎪', '🎸', '🎵', '🎶', '🎤', '🎧', '📷', '📹', '🎥', '💻', '📱', '⌚', '📺', '🔊', '🎮', '🕹️', '🎲', '🃏', '🎴', '🀄', '🎯', '🏹', '🎣', '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🏒', '🏑', '🏏', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🏊', '🚴', '🚵', '🤸', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🏊', '🚴', '🚵'];
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
     const [showLinkEditor, setShowLinkEditor] = useState(false);
@@ -191,7 +211,7 @@ export default function DashboardPage() {
         qrcodePreviewRef.current.innerHTML = '';
         const size = Math.round(2.56 * (config.qrCodeSize || 35)); // 25-50% -> 64-128px
         new QRCode(qrcodePreviewRef.current, {
-            text: `https://${subdomain}.zagcnfc.com.br`,
+            text: `https://${subdomain}.zagnfc.com.br`,
             width: size,
             height: size,
         });
@@ -212,25 +232,6 @@ export default function DashboardPage() {
             return;
         }
         setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
-    };
-
-    const IconForName = ({ name, className, size = 16 }: { name: IconName; className?: string; size?: number }) => {
-        const map: Record<IconName, React.ElementType> = {
-            'message-circle': MessageCircle,
-            instagram: Instagram,
-            facebook: Facebook,
-            globe: Globe,
-            'map-pin': MapPin,
-            phone: Phone,
-            mail: Mail,
-            'shopping-cart': ShoppingCart,
-            link: LinkIcon,
-            image: ImageIcon,
-            youtube: Youtube,
-            twitter: Twitter,
-        };
-        const C = map[name];
-        return <C className={className} size={size} />;
     };
 
     const suggestColorsFromLogo = async () => {
@@ -301,7 +302,7 @@ export default function DashboardPage() {
                                     <p className="text-center font-semibold mb-4">Frente</p>
                                     <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex flex-col items-center justify-center p-4 transition-colors duration-300 border">
                                         {logoDataUrl ? (
-                                            <Image src={logoDataUrl} alt="Logo Preview" width={120} height={120} className="object-contain mb-2" style={{ width: `${config.logoSize}%`, height: 'auto', maxHeight: '60%', opacity: config.logoOpacityFront ?? 1, transform: `rotate(${config.logoRotationFront || 0}deg)` }} />
+                                            <Image src={logoDataUrl} alt="Logo Preview" width={120} height={120} className="object-contain mb-2" style={{ width: `${config.logoSize || 100}px`, height: `${config.logoSize || 100}px`, opacity: config.logoOpacityFront ?? 1, transform: `rotate(${config.logoRotationFront || 0}deg)` }} />
                                         ) : (
                                             <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center mb-2">
                                                 <ImageIcon className="w-8 h-8 text-slate-400" />
@@ -588,6 +589,18 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
         textColor: initial?.textColor || '#ffffff',
     });
 
+    const getSocialBaseUrl = (icon: string | null) => {
+        if (!icon) return '';
+        const baseUrls: { [key: string]: string } = {
+            'message-circle': 'https://wa.me/',
+            'instagram': 'https://instagram.com/',
+            'facebook': 'https://facebook.com/',
+            'youtube': 'https://youtube.com/',
+            'twitter': 'https://twitter.com/',
+        };
+        return baseUrls[icon] || '';
+    };
+
     const getSocialPlaceholder = (icon: string | null) => {
         if (!icon) return '';
         const placeholders: { [key: string]: string } = {
@@ -616,7 +629,18 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                 </div>
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">URL / Link</label>
-                <input type="text" value={data.url} onChange={(e) => setData({ ...data, url: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 border border-slate-300 rounded-md" />
+                <div className="flex">
+                    <span className="px-3 py-2 bg-slate-100 border border-r-0 border-slate-300 rounded-l-md text-sm text-slate-600">
+                        {getSocialBaseUrl(data.icon) || 'https://'}
+                    </span>
+                    <input 
+                        type="text" 
+                        value={data.url.replace(getSocialBaseUrl(data.icon), '')} 
+                        onChange={(e) => setData({ ...data, url: getSocialBaseUrl(data.icon) + e.target.value })} 
+                        placeholder={getSocialBaseUrl(data.icon) ? "seuusuario" : "exemplo.com"} 
+                        className="flex-1 px-3 py-2 border border-slate-300 rounded-r-md" 
+                    />
+                </div>
                 {getSocialPlaceholder(data.icon) && (
                     <p className="text-xs text-slate-500 mt-1 italic">{getSocialPlaceholder(data.icon)}</p>
                 )}
@@ -629,7 +653,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                         </div>
                     {icons.map((icon) => (
                         <div key={icon} onClick={() => setData({ ...data, icon })} className={`p-2 border rounded-md flex items-center justify-center cursor-pointer hover:bg-amber-100 ${data.icon === icon ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`}>
-                            <ImageIcon className="w-4 h-4" />
+                            <IconForName name={icon as IconName} className="w-4 h-4 text-slate-600" />
                             </div>
                         ))}
                     </div>
