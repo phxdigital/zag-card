@@ -73,6 +73,7 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
                             width={120} 
                             height={120} 
                             className="mx-auto"
+                            style={{ width: 'auto', height: 'auto' }}
                         />
                     </div>
                 </div>
