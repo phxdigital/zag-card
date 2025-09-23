@@ -33,6 +33,10 @@ export default function MyPagesPage() {
     loadPages();
   }, []);
 
+  useEffect(() => {
+    console.log('Estado deleteConfirm mudou para:', deleteConfirm);
+  }, [deleteConfirm]);
+
   const loadPages = async () => {
     try {
       const response = await fetch('/api/pages');
@@ -301,7 +305,9 @@ export default function MyPagesPage() {
                     <button
                       onClick={() => {
                         console.log('Botão de deletar clicado para página ID:', page.id);
+                        console.log('Estado deleteConfirm antes:', deleteConfirm);
                         setDeleteConfirm(page.id);
+                        console.log('setDeleteConfirm chamado com:', page.id);
                       }}
                       className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
                     >
@@ -317,6 +323,7 @@ export default function MyPagesPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
+        console.log('Modal sendo renderizado com deleteConfirm:', deleteConfirm),
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
