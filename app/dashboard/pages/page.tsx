@@ -49,9 +49,16 @@ export default function MyPagesPage() {
 
   const handleDelete = async (pageId: string) => {
     try {
+      console.log('Tentando deletar página com ID:', pageId, 'Tipo:', typeof pageId);
+      
       const response = await fetch(`/api/pages/${pageId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+
+      console.log('Resposta da API:', response.status, response.statusText);
 
       if (response.ok) {
         setPages(pages.filter(page => page.id !== pageId));
@@ -60,6 +67,7 @@ export default function MyPagesPage() {
         alert('Página excluída com sucesso!');
       } else {
         const errorData = await response.json();
+        console.error('Erro da API:', errorData);
         alert(`Erro ao deletar página: ${errorData.error || 'Erro desconhecido'}`);
       }
     } catch (error) {

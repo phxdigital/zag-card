@@ -97,11 +97,18 @@ export async function DELETE(
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const { id } = await params;
     
+    console.log('DELETE request for page ID:', id);
+    
     // Verificar autenticação
     const { data: { session } } = await supabase.auth.getSession();
+    console.log('Session exists:', !!session);
+    
     if (!session) {
+      console.log('No session found, returning 401');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    console.log('User ID:', session.user.id);
 
     // Deletar página (RLS garante que só o dono pode deletar)
     const { error } = await supabase
@@ -111,11 +118,14 @@ export async function DELETE(
       .eq('user_id', session.user.id); // Dupla verificação de segurança
 
     if (error) {
+      console.error('Supabase delete error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    console.log('Page deleted successfully');
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('DELETE API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
