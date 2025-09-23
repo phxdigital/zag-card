@@ -43,6 +43,7 @@ export default function LoginPage() {
                         width={256} 
                         height={256} 
                         className="mx-auto h-40 w-auto" 
+                        style={{ width: 'auto', height: 'auto' }}
                         priority
                     />
                     <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-slate-900">

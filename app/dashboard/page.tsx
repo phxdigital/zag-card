@@ -355,7 +355,7 @@ export default function DashboardPage() {
             
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                 <header className="mb-8 flex items-center space-x-4">
-                    <Image src="/logo-zag.png" alt="Zag Card Logo" width={128} height={128} className="h-24 w-auto" />
+                    <Image src="/logo-zag.png" alt="Zag Card Logo" width={128} height={128} className="h-24 w-auto" style={{ width: 'auto', height: 'auto' }} />
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900">Configure seu Zag Card</h1>
                         <p className="text-slate-500 mt-1">Siga as etapas para personalizar seu produto.</p>
@@ -524,7 +524,7 @@ export default function DashboardPage() {
                                         <div className={`absolute inset-0 p-4 flex items-center ${config.qrCodePosition}`}>
                                             <div ref={qrcodePreviewRef} className="bg-white p-1 rounded-md aspect-square" style={{ width: `${config.qrCodeSize}%` }} />
                                         </div>
-                                        <Image src="/logo-zag.png" alt="Logo Zag Card" width={80} height={24} className="absolute bottom-3 right-3 h-5 w-auto object-contain" />
+                                        <Image src="/logo-zag.png" alt="Logo Zag Card" width={80} height={24} className="absolute bottom-3 right-3 h-5 w-auto object-contain" style={{ width: 'auto', height: 'auto' }} />
                                     </div>
                                     <div className="mt-6 space-y-4 max-w-sm mx-auto">
                                         <h3 className="font-bold text-lg border-b pb-2">Personalizar Verso</h3>
