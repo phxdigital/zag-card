@@ -27,6 +27,10 @@ export type PageConfig = {
     landingPageSubtitleText?: string;
     landingPageLogoShape?: 'circle' | 'square';
     landingPageLogoSize?: number;
+    landingPageTitleColor?: string;
+    landingPageSubtitleColor?: string;
+    removeLogoBackground?: boolean;
+    landingFont?: string;
     socialLinks?: { [key: string]: string };
     customLinks?: CustomLink[];
 };
@@ -127,12 +131,24 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                     priority
                 />
 
-                <h1 className="text-3xl font-bold text-slate-800 break-words">
+                <h1 
+                    className="text-3xl font-bold break-words"
+                    style={{ 
+                        color: config.landingPageTitleColor || '#1e293b',
+                        fontFamily: config.landingFont ? `var(--font-${config.landingFont.toLowerCase().replace(' ', '-')})` : undefined
+                    }}
+                >
                     {config.landingPageTitleText || 'Bem-vindo(a)!'}
                 </h1>
                 
                 {config.landingPageSubtitleText && (
-                    <p className="text-slate-600 mt-2 px-4 break-words">
+                    <p 
+                        className="mt-2 px-4 break-words"
+                        style={{ 
+                            color: config.landingPageSubtitleColor || '#64748b',
+                            fontFamily: config.landingFont ? `var(--font-${config.landingFont.toLowerCase().replace(' ', '-')})` : undefined
+                        }}
+                    >
                         {config.landingPageSubtitleText}
                     </p>
                 )}
@@ -158,9 +174,28 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                     })}
                 </div>
 
-                {/* Custom Links */}
-                <div className="w-full mt-6 space-y-3">
-                    {config.customLinks?.map(link => (
+                {/* Botões Sociais (Redondos) */}
+                <div className="w-full flex flex-wrap justify-center items-center gap-3 mt-6 mb-4">
+                    {config.customLinks?.filter(link => link.isSocial).map((link) => (
+                        <button
+                            key={link.id}
+                            onClick={() => handleLinkClick(link.url)}
+                            style={{
+                                background: link.styleType === 'gradient' 
+                                    ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
+                                    : link.bgColor1
+                            }}
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            aria-label={link.text}
+                        >
+                            {link.icon && <LucideIcon name={link.icon as IconName} size={20} />}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Botões Personalizados (Retangulares) */}
+                <div className="w-full space-y-3">
+                    {config.customLinks?.filter(link => !link.isSocial).map(link => (
                         <button 
                             key={link.id} 
                             onClick={() => handleLinkClick(link.url)}

@@ -2,7 +2,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CreditCard, Smartphone, Crop, Wand2, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter } from 'lucide-react';
+import { canCreatePages } from '@/lib/config';
 
 type CustomLink = {
     id: number;
@@ -26,6 +29,7 @@ type PageConfig = {
     qrCodeSize?: number;
     clientLogoBackSize?: number;
     qrCodePosition?: 'justify-start' | 'justify-end';
+    logoPosition?: 'left' | 'center' | 'right';
     socialLinks?: { [key: string]: string };
     customLinks?: CustomLink[];
     landingPageBgColor?: string;
@@ -39,6 +43,7 @@ type PageConfig = {
     logoOpacityBack?: number;
     logoRotationFront?: number; // degrees
     logoRotationBack?: number; // degrees
+    removeLogoBackground?: boolean;
     landingFont?: string;
     landingPageTitleColor?: string;
     landingPageSubtitleColor?: string;
@@ -71,16 +76,19 @@ const IconForName = ({ name, className, size = 16 }: { name: IconName; className
 };
 
 export default function DashboardPage() {
+    const router = useRouter();
+    const [hasActiveSubscription, setHasActiveSubscription] = useState(canCreatePages());
     const [config, setConfig] = useState<PageConfig>({
         cardText: '',
         isTextEnabled: false,
         cardBgColor: '#FFFFFF',
         cardTextColor: '#1e293b',
         cardBackBgColor: '#e2e8f0',
-        logoSize: 60,
+        logoSize: 40,
         qrCodeSize: 35,
         clientLogoBackSize: 35,
         qrCodePosition: 'justify-start',
+        logoPosition: 'center',
         socialLinks: {},
         customLinks: [],
         landingPageBgColor: '#F8FAFC',
@@ -93,6 +101,7 @@ export default function DashboardPage() {
         logoOpacityBack: 1,
         logoRotationFront: 0,
         logoRotationBack: 0,
+        removeLogoBackground: false,
         landingFont: 'Inter',
         landingPageTitleColor: '#1e293b',
         landingPageSubtitleColor: '#64748b',
@@ -110,12 +119,52 @@ export default function DashboardPage() {
     const [showLinkEditor, setShowLinkEditor] = useState(false);
     const [QRCode, setQRCode] = useState<QRCodeConstructor | null>(null);
     const [showLogoEditor, setShowLogoEditor] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [savingMessage, setSavingMessage] = useState('');
+    const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null);
+    const [checkingSubdomain, setCheckingSubdomain] = useState(false);
+    const subdomainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [editorZoom, setEditorZoom] = useState(1);
     const [editorOffset, setEditorOffset] = useState({ x: 0, y: 0 });
     const dragRef = useRef<{ dragging: boolean; startX: number; startY: number; origX: number; origY: number; touchDist?: number; startZoom?: number }>({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const checkSubdomainAvailability = async (subdomainToCheck: string) => {
+        if (!subdomainToCheck || subdomainToCheck.length < 3) {
+            setSubdomainAvailable(null);
+            return;
+        }
+
+        console.log('Verificando subdomínio:', subdomainToCheck);
+        setCheckingSubdomain(true);
+        try {
+            const response = await fetch('/api/check-subdomain', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ subdomain: subdomainToCheck }),
+            });
+
+            console.log('Resposta da API:', response.status);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Dados da resposta:', data);
+                setSubdomainAvailable(!data.exists);
+            } else {
+                console.error('Erro na resposta:', response.status);
+                setSubdomainAvailable(null);
+            }
+        } catch (error) {
+            console.error('Erro ao verificar subdomínio:', error);
+            setSubdomainAvailable(null);
+        } finally {
+            setCheckingSubdomain(false);
+        }
     };
 
     const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,8 +205,8 @@ export default function DashboardPage() {
                 customLinks: prev.customLinks?.map((l) => (l.id === editingLink.id ? { ...l, ...linkData } : l)),
             }));
         } else {
-            if ((config.customLinks?.length || 0) >= 4) {
-                alert('Você pode adicionar no máximo 4 links personalizados.');
+            if ((config.customLinks?.filter(b => !b.isSocial).length || 0) >= 4) {
+                alert('Você pode adicionar no máximo 4 botões personalizados.');
                 return;
             }
             setConfig((prev) => ({
@@ -221,6 +270,15 @@ export default function DashboardPage() {
         });
     }, [QRCode, subdomain, config.qrCodeSize]);
 
+    // Limpar timeout quando componente for desmontado
+    useEffect(() => {
+        return () => {
+            if (subdomainTimeoutRef.current) {
+                clearTimeout(subdomainTimeoutRef.current);
+            }
+        };
+    }, []);
+
     const addSocialPreset = (kind: 'whatsapp' | 'instagram' | 'facebook' | 'youtube' | 'twitter') => {
         const presets: { [k in typeof kind]: { text: string; url: string; icon: IconName; color: string } } = {
             whatsapp: { text: 'WhatsApp', url: 'https://wa.me/+55', icon: 'message-circle', color: '#16a34a' },
@@ -231,10 +289,7 @@ export default function DashboardPage() {
         } as const;
         const p = presets[kind];
         const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: p.color, bgColor2: p.color, textColor: '#ffffff', isSocial: true };
-        if ((config.customLinks?.filter(b => !b.isSocial).length || 0) >= 4) {
-            alert('Você pode adicionar no máximo 4 botões.');
-            return;
-        }
+        // Botões sociais são ilimitados
         setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
     };
 
@@ -271,8 +326,62 @@ export default function DashboardPage() {
         alert('Cores sugeridas com base na sua logo foram aplicadas.');
     };
 
+    // Componente de verificação de pagamento
+    const PaymentRequired = () => (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+                <div className="text-center">
+                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                        <CreditCard className="h-6 w-6 text-blue-600" />
+                        </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        Assinatura Necessária
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                        Para criar páginas NFC, você precisa de uma assinatura ativa. 
+                        Escolha um plano e comece a criar suas páginas personalizadas.
+                    </p>
+                    <div className="space-y-3">
+                        <Link
+                            href="/dashboard/payments"
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 inline-block"
+                        >
+                            Ver Planos e Preços
+                        </Link>
+                        <p className="text-sm text-gray-500">
+                            A partir de R$ 29,90/mês
+                        </p>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    );
+
+    // Se não tem assinatura ativa, mostrar tela de pagamento
+    if (!hasActiveSubscription) {
+        return <PaymentRequired />;
+    }
+
     return (
         <>
+            {/* Banner de Desenvolvimento */}
+            {canCreatePages() && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
+                    <div className="flex">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm text-yellow-700">
+                                <strong>Modo de Desenvolvimento:</strong> Você pode criar páginas sem pagamento para testar o sistema.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                 <header className="mb-8 flex items-center space-x-4">
                     <Image src="/logo-zag.png" alt="Zag Card Logo" width={128} height={128} className="h-24 w-auto" />
@@ -304,14 +413,30 @@ export default function DashboardPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                     <p className="text-center font-semibold mb-4">Frente</p>
-                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex flex-col items-center justify-center p-4 transition-colors duration-300 border">
-                                        {logoDataUrl ? (
-                                            <Image src={logoDataUrl} alt="Logo Preview" width={120} height={120} className="object-contain mb-2" style={{ width: `${config.logoSize || 100}px`, height: `${config.logoSize || 100}px`, opacity: config.logoOpacityFront ?? 1, transform: `rotate(${config.logoRotationFront || 0}deg)` }} />
-                                        ) : (
-                                            <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center mb-2">
-                                                <ImageIcon className="w-8 h-8 text-slate-400" />
-                                            </div>
-                                        )}
+                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex flex-col justify-center p-4 transition-colors duration-300 border">
+                                        <div className={`flex ${config.logoPosition === 'left' ? 'justify-start' : config.logoPosition === 'right' ? 'justify-end' : 'justify-center'} items-center mb-2`}>
+                                            {logoDataUrl ? (
+                                                <Image 
+                                                    src={logoDataUrl} 
+                                                    alt="Logo Preview" 
+                                                    width={120} 
+                                                    height={120} 
+                                                    className="object-contain" 
+                                                style={{ 
+                                                    width: `${config.logoSize || 40}%`, 
+                                                    height: `${config.logoSize || 40}%`, 
+                                                    opacity: config.logoOpacityFront ?? 1, 
+                                                    transform: `rotate(${config.logoRotationFront || 0}deg)`,
+                                                    filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
+                                                    mixBlendMode: config.removeLogoBackground ? 'multiply' : 'normal'
+                                                }}
+                                                />
+                                            ) : (
+                                                <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center">
+                                                    <ImageIcon className="w-8 h-8 text-slate-400" />
+                                                </div>
+                                            )}
+                                        </div>
                                         {config.isTextEnabled && (
                                             <p style={{ color: config.cardTextColor }} className="font-semibold text-lg text-center">
                                                 {config.cardText || 'Seu Nome'}
@@ -325,6 +450,41 @@ export default function DashboardPage() {
                                             <input type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" />
                                             <p className="text-xs text-slate-400 mt-1">Tamanho máximo: 5MB.</p>
                                         </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">Posicionamento da Logo</label>
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    onClick={() => handleConfigChange('logoPosition', 'left')}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        config.logoPosition === 'left' 
+                                                            ? 'bg-blue-600 text-white' 
+                                                            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                    }`}
+                                                >
+                                                    Esquerda
+                                                </button>
+                                                <button
+                                                    onClick={() => handleConfigChange('logoPosition', 'center')}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        config.logoPosition === 'center' 
+                                                            ? 'bg-blue-600 text-white' 
+                                                            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                    }`}
+                                                >
+                                                    Centro
+                                                </button>
+                                                <button
+                                                    onClick={() => handleConfigChange('logoPosition', 'right')}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        config.logoPosition === 'right' 
+                                                            ? 'bg-blue-600 text-white' 
+                                                            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                    }`}
+                                                >
+                                                    Direita
+                                                </button>
+                                            </div>
+                                        </div>
                                         {/* Removed logo editor and color suggestion per request */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
@@ -337,8 +497,14 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                         <div>
+                                            <label className="flex items-center space-x-2">
+                                                <input type="checkbox" checked={config.removeLogoBackground || false} onChange={(e) => handleConfigChange('removeLogoBackground', e.target.checked)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                                <span className="text-sm font-medium text-slate-700">Remover fundo da logo</span>
+                                            </label>
+                                        </div>
+                                        <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo ({config.logoSize}%)</label>
-                                            <input type="range" min={30} max={150} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            <input type="range" min={20} max={70} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                         </div>
                                         <div>
                                             <div className="flex items-center mb-2">
@@ -375,9 +541,43 @@ export default function DashboardPage() {
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Seu Subdomínio</label>
                                             <div className="flex">
-                                                <input type="text" placeholder="sua-empresa" value={subdomain} onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} className="w-full px-3 py-2 border border-slate-300 rounded-l-md shadow-sm" />
-                                                <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-50 text-slate-500 sm:text-sm">.meuzag.com</span>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="sua-empresa" 
+                                                    value={subdomain} 
+                                                    onChange={(e) => {
+                                                        const newSubdomain = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                                                        setSubdomain(newSubdomain);
+                                                        
+                                                        // Limpar timeout anterior
+                                                        if (subdomainTimeoutRef.current) {
+                                                            clearTimeout(subdomainTimeoutRef.current);
+                                                        }
+                                                        
+                                                        // Verificar disponibilidade após 500ms de inatividade
+                                                        subdomainTimeoutRef.current = setTimeout(() => {
+                                                            checkSubdomainAvailability(newSubdomain);
+                                                        }, 500);
+                                                    }} 
+                                                    className={`w-full px-3 py-2 border rounded-l-md shadow-sm ${
+                                                        subdomainAvailable === true ? 'border-green-500' : 
+                                                        subdomainAvailable === false ? 'border-red-500' : 
+                                                        'border-slate-300'
+                                                    }`} 
+                                                />
+                                                <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-50 text-slate-500 sm:text-sm">.zagnfc.com.br</span>
                                             </div>
+                                            {subdomain && subdomain.length >= 3 && (
+                                                <div className="mt-1 text-sm">
+                                                    {checkingSubdomain ? (
+                                                        <span className="text-blue-600">Verificando disponibilidade...</span>
+                                                    ) : subdomainAvailable === true ? (
+                                                        <span className="text-green-600">✓ Subdomínio disponível</span>
+                                                    ) : subdomainAvailable === false ? (
+                                                        <span className="text-red-600">✗ Subdomínio já existe</span>
+                                                    ) : null}
+                                                </div>
+                                            )}
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
@@ -472,15 +672,15 @@ export default function DashboardPage() {
                                                     <div>
                                                         <label className="block text-sm font-medium text-slate-700 mb-2">Cor do Título</label>
                                                         <input type="color" value={config.landingPageTitleColor || '#1e293b'} onChange={(e) => handleConfigChange('landingPageTitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
-                                                    </div>
-                                                    <div>
+                                            </div>
+                                                <div>
                                                         <label className="block text-sm font-medium text-slate-700 mb-2">Cor do Subtítulo</label>
                                                         <input type="color" value={config.landingPageSubtitleColor || '#64748b'} onChange={(e) => handleConfigChange('landingPageSubtitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-2">Botões rápidos (sociais)</label>
-                                                <div className="flex flex-wrap gap-2">
+                                                    <div className="flex flex-wrap gap-2">
                                                         <button onClick={() => addSocialPreset('whatsapp')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><MessageCircle size={14}/> WhatsApp</button>
                                                         <button onClick={() => addSocialPreset('instagram')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Instagram size={14}/> Instagram</button>
                                                         <button onClick={() => addSocialPreset('facebook')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Facebook size={14}/> Facebook</button>
@@ -500,7 +700,7 @@ export default function DashboardPage() {
                                         </fieldset>
                                         
                                         <fieldset className="border-t pt-4">
-                                            <legend className="text-lg font-semibold text-slate-800 -mt-7 px-2 bg-white">Botões Personalizados (até 4)</legend>
+                                            <legend className="text-lg font-semibold text-slate-800 -mt-7 px-2 bg-white">Botões Personalizados (até 4) + Sociais (ilimitados)</legend>
                                             <div className="space-y-4 mt-4">
                                                 <button onClick={() => openLinkEditor(null)} className="w-full bg-amber-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-amber-600 flex items-center justify-center gap-2">
                                                     <PlusCircle /> Adicionar Novo Botão
@@ -540,10 +740,20 @@ export default function DashboardPage() {
                                                 )}
                                                 <h1 className="text-xl font-bold break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageTitleColor || '#1e293b' }}>{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
                                                 {config.landingPageSubtitleText && <p className="text-sm px-2 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageSubtitleColor || '#64748b' }}>{config.landingPageSubtitleText}</p>}
-                                                <div className="w-full flex flex-wrap justify-center items-center gap-3">
-                                                    {config.customLinks?.map((link) => (
-                                                        <div key={link.id} className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
-                                                            {link.icon && <IconForName name={link.icon as IconName} />}
+                                                {/* Botões Sociais (Redondos) */}
+                                                <div className="w-full flex flex-wrap justify-center items-center gap-3 mb-4">
+                                                    {config.customLinks?.filter(link => link.isSocial).map((link) => (
+                                                        <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
+                                                            {link.icon && <IconForName name={link.icon as IconName} size={20} />}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                
+                                                {/* Botões Personalizados (Retangulares) */}
+                                                <div className="w-full flex flex-col items-center gap-2">
+                                                    {config.customLinks?.filter(link => !link.isSocial).map((link) => (
+                                                        <div key={link.id} className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
+                                                            <span className="text-sm font-medium">{link.text}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -558,15 +768,61 @@ export default function DashboardPage() {
                                 </button>
                                 <button 
                                     className="w-full md:w-auto bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300"
-                                    onClick={() => {
+                                    onClick={async () => {
+                                        // Verificar se o subdomínio está disponível
+                                        if (subdomainAvailable === false) {
+                                            alert('Este subdomínio já está em uso. Escolha outro nome.');
+                                            return;
+                                        }
+
+                                        if (!subdomain || subdomain.length < 3) {
+                                            alert('Por favor, escolha um subdomínio válido (mínimo 3 caracteres).');
+                                            return;
+                                        }
+
+                                        setSaving(true);
+                                        setSavingMessage('Salvando página...');
+                                        
                                         try {
+                                            // Salvar no localStorage como backup
                                             localStorage.setItem(
                                                 'zag-dashboard-config',
                                                 JSON.stringify({ config, subdomain, logoDataUrl })
                                             );
-                                            alert('Configurações salvas com sucesso!');
-                                        } catch {
-                                            alert('Não foi possível salvar localmente.');
+
+                                            // Simular progresso
+                                            await new Promise(resolve => setTimeout(resolve, 500));
+                                            setSavingMessage('Publicando página...');
+
+                                            // Salvar no banco de dados
+                                            const response = await fetch('/api/pages', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                body: JSON.stringify({
+                                                    subdomain,
+                                                    config,
+                                                    logo_url: logoDataUrl
+                                                }),
+                                            });
+
+                                            if (!response.ok) {
+                                                const error = await response.json();
+                                                throw new Error(error.error || 'Erro ao salvar');
+                                            }
+
+                                            setSavingMessage('Redirecionando...');
+                                            await new Promise(resolve => setTimeout(resolve, 300));
+                                            
+                                            const pageData = await response.json();
+                                            router.push(`/success?subdomain=${subdomain}&pageId=${pageData.id}`);
+                                        } catch (error) {
+                                            console.error('Erro ao salvar:', error);
+                                            alert('Erro ao salvar: ' + (error as Error).message);
+                                        } finally {
+                                            setSaving(false);
+                                            setSavingMessage('');
                                         }
                                     }}
                                 >
@@ -587,6 +843,36 @@ export default function DashboardPage() {
                 </div>
             )}
 
+            {/* Modal de loading durante salvamento */}
+            {saving && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+                        <div className="text-center">
+                            <div className="relative inline-block mb-6">
+                                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                </div>
+                                <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-xs font-bold">✓</span>
+                                </div>
+                            </div>
+                            
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                {savingMessage}
+                            </h2>
+                            
+                            <p className="text-gray-600 mb-6">
+                                Por favor, aguarde enquanto processamos sua página...
+                            </p>
+                            
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '70%' }}></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Removed logo editor per request */}
         </>
     );
@@ -595,7 +881,7 @@ export default function DashboardPage() {
 function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomLink | null; onSave: (d: Omit<CustomLink, 'id'>) => void; onCancel: () => void; icons: string[] }) {
     const [data, setData] = useState({
         text: initial?.text || '',
-        url: initial?.url || '',
+        url: initial?.url || (initial?.isSocial ? getSocialBaseUrl(initial?.icon) : ''),
         icon: initial?.icon || null as string | null,
         styleType: (initial?.styleType || 'solid') as 'solid' | 'gradient',
         bgColor1: initial?.bgColor1 || '#1e293b',
@@ -641,8 +927,8 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                     <label className="block text-sm font-medium text-slate-700 mb-1">Texto do Botão</label>
                 <input type="text" value={data.text} onChange={(e) => setData({ ...data, text: e.target.value })} placeholder="Ex: Meu Site" className="w-full px-3 py-2 border border-slate-300 rounded-md" />
                 </div>
-            <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">URL / Link</label>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">URL / Link</label>
                 <div className="flex">
                     <span className="px-3 py-2 bg-slate-100 border border-r-0 border-slate-300 rounded-l-md text-sm text-slate-600">
                         {getSocialBaseUrl(data.icon) || 'https://'}
@@ -658,7 +944,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                 {getSocialPlaceholder(data.icon) && (
                     <p className="text-xs text-slate-500 mt-1 italic">{getSocialPlaceholder(data.icon)}</p>
                 )}
-            </div>
+                </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
                     <div className="grid grid-cols-6 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-md">

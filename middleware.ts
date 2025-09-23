@@ -36,7 +36,7 @@ export async function middleware(req: NextRequest) {
   const subdomain = host?.split('.')[0];
   
   // Verificar se é um subdomínio válido (não www, não domínio principal)
-  const mainDomains = ['localhost', 'meuzag.com', 'zag-card.vercel.app'];
+  const mainDomains = ['localhost', 'meuzag.com', 'zagnfc.com.br', 'zag-card.vercel.app'];
   const isMainDomain = mainDomains.some(domain => 
     host === domain || 
     host === `www.${domain}` || 
