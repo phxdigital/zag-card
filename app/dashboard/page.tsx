@@ -379,12 +379,12 @@ export default function DashboardPage() {
                                     <p className="text-center font-semibold mb-4">Frente</p>
                                     <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex flex-col justify-center p-4 transition-colors duration-300 border">
                                         <div className={`flex ${config.logoPosition === 'left' ? 'justify-start' : config.logoPosition === 'right' ? 'justify-end' : 'justify-center'} items-center mb-2`}>
-                                            {logoDataUrl ? (
-                                                <Image 
-                                                    src={logoDataUrl} 
-                                                    alt="Logo Preview" 
-                                                    width={120} 
-                                                    height={120} 
+                                        {logoDataUrl ? (
+                                            <Image 
+                                                src={logoDataUrl} 
+                                                alt="Logo Preview" 
+                                                width={120} 
+                                                height={120} 
                                                     className="object-contain" 
                                                 style={{ 
                                                     width: `${config.logoSize || 40}%`, 
@@ -394,12 +394,12 @@ export default function DashboardPage() {
                                                     filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
                                                     mixBlendMode: config.removeLogoBackground ? 'multiply' : 'normal'
                                                 }}
-                                                />
-                                            ) : (
+                                            />
+                                        ) : (
                                                 <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center">
-                                                    <ImageIcon className="w-8 h-8 text-slate-400" />
-                                                </div>
-                                            )}
+                                                <ImageIcon className="w-8 h-8 text-slate-400" />
+                                            </div>
+                                        )}
                                         </div>
                                         {config.isTextEnabled && (
                                             <p style={{ color: config.cardTextColor }} className="font-semibold text-lg text-center">
@@ -417,7 +417,7 @@ export default function DashboardPage() {
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">Posicionamento da Logo</label>
                                             <div className="flex space-x-2">
-                                                <button
+                                                <button 
                                                     onClick={() => handleConfigChange('logoPosition', 'left')}
                                                     className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                                                         config.logoPosition === 'left' 
@@ -451,7 +451,7 @@ export default function DashboardPage() {
                                         </div>
                                         {/* Removed logo editor and color suggestion per request */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
+                                        <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Frente) ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
                                                 <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                             </div>
@@ -709,7 +709,7 @@ export default function DashboardPage() {
                                                     {config.customLinks?.filter(link => link.isSocial).map((link) => (
                                                         <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
                                                             {link.icon && <IconForName name={link.icon as IconName} size={20} />}
-                                                        </div>
+                                                            </div>
                                                     ))}
                                                 </div>
                                                 

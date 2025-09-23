@@ -36,12 +36,12 @@ export async function middleware(req: NextRequest) {
   const subdomain = host?.split('.')[0];
   
   // Verificar se é um subdomínio válido (não www, não domínio principal)
-  const mainDomains = ['localhost', 'meuzag.com', 'zagnfc.com.br', 'zag-card.vercel.app'];
+  const mainDomains = ['localhost', 'meuzag.com', 'zag-card.vercel.app'];
   const isMainDomain = mainDomains.some(domain => 
     host === domain || 
     host === `www.${domain}` || 
     host?.endsWith('.vercel.app') // Inclui todos os deploys do Vercel
-  );
+  ) || host === 'zagnfc.com.br' || host === 'www.zagnfc.com.br';
   
   // Se for subdomínio e estiver na raiz, reescrever para a rota do subdomínio
   if (subdomain && subdomain !== 'www' && !isMainDomain && pathname === '/') {
