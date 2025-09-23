@@ -14,7 +14,7 @@ import {
 import Image from 'next/image';
 
 interface Page {
-  id: string;
+  id: string | number;
   subdomain: string;
   title: string;
   subtitle: string;
@@ -27,7 +27,7 @@ interface Page {
 export default function MyPagesPage() {
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | number | null>(null);
 
   useEffect(() => {
     loadPages();
@@ -47,7 +47,7 @@ export default function MyPagesPage() {
     }
   };
 
-  const handleDelete = async (pageId: string) => {
+  const handleDelete = async (pageId: string | number) => {
     try {
       console.log('Tentando deletar página com ID:', pageId, 'Tipo:', typeof pageId);
       
