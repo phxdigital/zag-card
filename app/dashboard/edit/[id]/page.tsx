@@ -20,7 +20,10 @@ import {
   ShoppingCart, 
   Link as LinkIcon, 
   Youtube, 
-  Twitter 
+  Twitter,
+  PlusCircle,
+  Edit,
+  Trash2
 } from 'lucide-react';
 
 type CustomLink = {
