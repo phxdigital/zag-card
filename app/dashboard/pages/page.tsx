@@ -48,8 +48,12 @@ export default function MyPagesPage() {
   };
 
   const handleDelete = async (pageId: string | number) => {
+    console.log('=== INÍCIO DO DELETE ===');
+    console.log('PageId recebido:', pageId, 'Tipo:', typeof pageId);
+    console.log('deleteConfirm atual:', deleteConfirm);
+    
     try {
-      console.log('Tentando deletar página com ID:', pageId, 'Tipo:', typeof pageId);
+      console.log('Fazendo requisição DELETE para:', `/api/pages/${pageId}`);
       
       const response = await fetch(`/api/pages/${pageId}`, {
         method: 'DELETE',
@@ -58,21 +62,35 @@ export default function MyPagesPage() {
         },
       });
 
-      console.log('Resposta da API:', response.status, response.statusText);
+      console.log('Resposta recebida:');
+      console.log('- Status:', response.status);
+      console.log('- StatusText:', response.statusText);
+      console.log('- Headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
+        console.log('✅ Sucesso! Removendo página da lista...');
         setPages(pages.filter(page => page.id !== pageId));
         setDeleteConfirm(null);
-        // Mostrar mensagem de sucesso
         alert('Página excluída com sucesso!');
+        console.log('=== DELETE CONCLUÍDO COM SUCESSO ===');
       } else {
-        const errorData = await response.json();
-        console.error('Erro da API:', errorData);
+        console.log('❌ Erro na resposta da API');
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.log('Dados do erro:', errorData);
+        } catch (parseError) {
+          console.log('Erro ao fazer parse do JSON:', parseError);
+          errorData = { error: 'Erro desconhecido' };
+        }
         alert(`Erro ao deletar página: ${errorData.error || 'Erro desconhecido'}`);
+        console.log('=== DELETE FALHOU ===');
       }
     } catch (error) {
-      console.error('Erro ao deletar página:', error);
-      alert('Erro ao deletar página: Verifique sua conexão e tente novamente');
+      console.error('❌ Erro na requisição:', error);
+      console.error('Stack trace:', error.stack);
+      alert(`Erro ao deletar página: ${error.message || 'Verifique sua conexão e tente novamente'}`);
+      console.log('=== DELETE FALHOU COM EXCEÇÃO ===');
     }
   };
 
@@ -281,7 +299,10 @@ export default function MyPagesPage() {
                       <ExternalLink className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => setDeleteConfirm(page.id)}
+                      onClick={() => {
+                        console.log('Botão de deletar clicado para página ID:', page.id);
+                        setDeleteConfirm(page.id);
+                      }}
                       className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -296,6 +317,7 @@ export default function MyPagesPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
+        console.log('Modal de confirmação sendo renderizado com deleteConfirm:', deleteConfirm),
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
@@ -330,7 +352,10 @@ export default function MyPagesPage() {
               </div>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
-                  onClick={() => handleDelete(deleteConfirm)}
+                  onClick={() => {
+                    console.log('Botão de confirmação clicado, deleteConfirm:', deleteConfirm);
+                    handleDelete(deleteConfirm);
+                  }}
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
                 >
                   Sim, Excluir Permanentemente
