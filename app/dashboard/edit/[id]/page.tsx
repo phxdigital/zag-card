@@ -93,6 +93,8 @@ export default function EditPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [savingMessage, setSavingMessage] = useState('');
+    const [showLinkEditor, setShowLinkEditor] = useState(false);
+    const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
     const [config, setConfig] = useState<PageConfig>({
         cardText: '',
         isTextEnabled: false,
@@ -198,6 +200,33 @@ export default function EditPage() {
         const p = presets[kind];
         const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: p.color, bgColor2: p.color, textColor: '#ffffff', isSocial: true };
         setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
+    };
+
+    const saveCustomLink = (linkData: Omit<CustomLink, 'id'>) => {
+        if (editingLink) {
+            // Edit existing link
+            setConfig(prev => ({
+                ...prev,
+                customLinks: prev.customLinks?.map(link => 
+                    link.id === editingLink.id ? { ...linkData, id: editingLink.id } : link
+                ) || []
+            }));
+        } else {
+            // Add new link
+            setConfig(prev => ({
+                ...prev,
+                customLinks: [...(prev.customLinks || []), { ...linkData, id: Date.now() }]
+            }));
+        }
+        setShowLinkEditor(false);
+        setEditingLink(null);
+    };
+
+    const deleteCustomLink = (id: number) => {
+        setConfig(prev => ({
+            ...prev,
+            customLinks: prev.customLinks?.filter(link => link.id !== id) || []
+        }));
     };
 
 
@@ -665,6 +694,54 @@ export default function EditPage() {
                                     <button onClick={() => addSocialPreset('twitter')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Twitter size={14}/> Twitter</button>
                                 </div>
                             </div>
+
+                            {/* Custom Links Management */}
+                            <div>
+                                <div className="flex justify-between items-center mb-4">
+                                    <label className="block text-sm font-medium text-slate-700">Botões Personalizados</label>
+                                    <button 
+                                        onClick={() => setShowLinkEditor(true)} 
+                                        className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700 flex items-center gap-1"
+                                    >
+                                        <PlusCircle size={14} /> Adicionar
+                                    </button>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    {config.customLinks?.map((link) => (
+                                        <div key={link.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                            <div className="flex items-center space-x-3">
+                                                {link.icon && <IconForName name={link.icon as IconName} size={16} />}
+                                                <span className="font-medium">{link.text}</span>
+                                                <span className="text-xs text-slate-500">{link.isSocial ? '(Social)' : '(Personalizado)'}</span>
+                                            </div>
+                                            <div className="flex space-x-2">
+                                                <button 
+                                                    onClick={() => {
+                                                        setEditingLink(link);
+                                                        setShowLinkEditor(true);
+                                                    }} 
+                                                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                                                >
+                                                    <Edit size={12} /> Editar
+                                                </button>
+                                                <button 
+                                                    onClick={() => deleteCustomLink(link.id)} 
+                                                    className="text-red-600 hover:text-red-800 text-sm flex items-center gap-1"
+                                                >
+                                                    <Trash2 size={12} /> Excluir
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    
+                                    {(!config.customLinks || config.customLinks.length === 0) && (
+                                        <div className="text-center py-4 text-slate-500 text-sm">
+                                            Nenhum botão personalizado adicionado ainda.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -688,6 +765,170 @@ export default function EditPage() {
                     )}
                 </div>
             </div>
+
+            {/* Link Editor Modal */}
+            {showLinkEditor && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg space-y-4">
+                        <h2 className="text-2xl font-bold">{editingLink ? 'Editar Botão' : 'Adicionar Novo Botão'}</h2>
+                        <LinkEditorForm 
+                            initial={editingLink || null} 
+                            icons={['message-circle', 'instagram', 'facebook', 'youtube', 'twitter', 'globe', 'map-pin', 'phone', 'mail', 'shopping-cart', 'link', 'image']} 
+                            onCancel={() => {
+                                setShowLinkEditor(false);
+                                setEditingLink(null);
+                            }} 
+                            onSave={saveCustomLink} 
+                        />
+                    </div>
+                </div>
+            )}
         </div>
+    );
+}
+
+function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomLink | null; onSave: (d: Omit<CustomLink, 'id'>) => void; onCancel: () => void; icons: string[] }) {
+    const getSocialBaseUrl = (icon: string | null) => {
+        if (!icon) return '';
+        const baseUrls: { [key: string]: string } = {
+            'message-circle': 'https://wa.me/+55',
+            'instagram': 'https://instagram.com/',
+            'facebook': 'https://facebook.com/',
+            'youtube': 'https://youtube.com/',
+            'twitter': 'https://twitter.com/',
+        };
+        return baseUrls[icon] || '';
+    };
+
+    const [formData, setFormData] = useState({
+        text: initial?.text || '',
+        url: initial?.url || '',
+        icon: initial?.icon || '',
+        styleType: initial?.styleType || 'solid' as const,
+        bgColor1: initial?.bgColor1 || '#3b82f6',
+        bgColor2: initial?.bgColor2 || '#3b82f6',
+        textColor: initial?.textColor || '#ffffff',
+        isSocial: initial?.isSocial || false
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave(formData);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Texto do Botão</label>
+                <input
+                    type="text"
+                    value={formData.text}
+                    onChange={(e) => setFormData(prev => ({ ...prev, text: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                    required
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">URL</label>
+                <input
+                    type="url"
+                    value={formData.url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                    required
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
+                <select
+                    value={formData.icon}
+                    onChange={(e) => {
+                        const newIcon = e.target.value;
+                        setFormData(prev => ({ 
+                            ...prev, 
+                            icon: newIcon,
+                            url: newIcon ? getSocialBaseUrl(newIcon) + prev.url : prev.url
+                        }));
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                >
+                    <option value="">Selecione um ícone</option>
+                    {icons.map(icon => (
+                        <option key={icon} value={icon}>{icon}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Estilo</label>
+                <div className="flex space-x-2">
+                    <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, styleType: 'solid' }))}
+                        className={`px-3 py-1 rounded text-sm ${formData.styleType === 'solid' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+                    >
+                        Sólido
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, styleType: 'gradient' }))}
+                        className={`px-3 py-1 rounded text-sm ${formData.styleType === 'gradient' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+                    >
+                        Gradiente
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Cor Principal</label>
+                    <input
+                        type="color"
+                        value={formData.bgColor1}
+                        onChange={(e) => setFormData(prev => ({ ...prev, bgColor1: e.target.value }))}
+                        className="w-full h-10 border border-slate-300 rounded-md"
+                    />
+                </div>
+                {formData.styleType === 'gradient' && (
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Cor Secundária</label>
+                        <input
+                            type="color"
+                            value={formData.bgColor2}
+                            onChange={(e) => setFormData(prev => ({ ...prev, bgColor2: e.target.value }))}
+                            className="w-full h-10 border border-slate-300 rounded-md"
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Texto</label>
+                <input
+                    type="color"
+                    value={formData.textColor}
+                    onChange={(e) => setFormData(prev => ({ ...prev, textColor: e.target.value }))}
+                    className="w-full h-10 border border-slate-300 rounded-md"
+                />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-50"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                    {initial ? 'Atualizar' : 'Adicionar'}
+                </button>
+            </div>
+        </form>
     );
 }
