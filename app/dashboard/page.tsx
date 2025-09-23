@@ -84,7 +84,7 @@ export default function DashboardPage() {
         cardTextColor: '#1e293b',
         cardText: '',
         isTextEnabled: false,
-        logoSize: 40,
+        logoSize: 50,
         logoPosition: 0, // 0 = centro
         logoOpacityFront: 1,
         logoRotationFront: 0,
@@ -385,11 +385,11 @@ export default function DashboardPage() {
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                     <p className="text-center font-semibold mb-4">Frente</p>
                                     <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border">
-                                        {/* Logo com posicionamento único usando transform */}
+                                        {/* Logo com posicionamento calibrado */}
                                         <div 
                                             className="absolute top-1/2 left-1/2"
                                             style={{
-                                                transform: `translate(calc(-50% + ${(config.logoPosition || 0) * 0.8}px), -50%)`
+                                                transform: `translate(calc(-50% + ${(config.logoPosition || 0) * 1.2}px), -50%)`
                                             }}
                                         >
                                             {logoDataUrl ? (
@@ -400,8 +400,10 @@ export default function DashboardPage() {
                                                     height={120} 
                                                     className="object-contain" 
                                                     style={{ 
-                                                        width: `${config.logoSize || 40}%`, 
+                                                        width: `${Math.max(config.logoSize || 50, 30)}%`, 
                                                         height: 'auto',
+                                                        minWidth: '60px',
+                                                        minHeight: '60px',
                                                         opacity: config.logoOpacityFront ?? 1, 
                                                         transform: `rotate(${config.logoRotationFront || 0}deg)`,
                                                         filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
@@ -453,8 +455,8 @@ export default function DashboardPage() {
                                                 <span className="text-xs text-slate-500">Esquerda</span>
                                                 <input 
                                                     type="range" 
-                                                    min={-100} 
-                                                    max={100} 
+                                                    min={-120} 
+                                                    max={120} 
                                                     value={config.logoPosition || 0} 
                                                     onChange={(e) => handleConfigChange('logoPosition', Number(e.target.value))} 
                                                     className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
@@ -463,7 +465,7 @@ export default function DashboardPage() {
                                             </div>
                                             <div className="text-center mt-1">
                                                 <span className="text-xs text-slate-400">
-                                                    {config.logoPosition === 0 ? 'Centro' : `${config.logoPosition > 0 ? '+' : ''}${config.logoPosition}%`}
+                                                    {config.logoPosition === 0 ? 'Centro' : `${config.logoPosition > 0 ? '+' : ''}${config.logoPosition}px`}
                                                 </span>
                                             </div>
                                         </div>
@@ -486,7 +488,7 @@ export default function DashboardPage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo ({config.logoSize}%)</label>
-                                            <input type="range" min={20} max={70} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            <input type="range" min={30} max={80} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                         </div>
                                         <div>
                                             <div className="flex items-center mb-2">

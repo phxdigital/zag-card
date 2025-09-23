@@ -141,7 +141,7 @@ export default function EditPage() {
                     cardTextColor: pageData.config?.cardTextColor || '#1e293b',
                     cardText: pageData.config?.cardText || '',
                     isTextEnabled: pageData.config?.isTextEnabled || false,
-                    logoSize: pageData.config?.logoSize || 40,
+                    logoSize: pageData.config?.logoSize || 50,
                     logoPosition: pageData.config?.logoPosition || 0, // 0 = centro
                     logoOpacityFront: pageData.config?.logoOpacityFront ?? 1,
                     logoRotationFront: pageData.config?.logoRotationFront || 0,
@@ -411,11 +411,11 @@ export default function EditPage() {
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                 <p className="text-center font-semibold mb-4">Frente</p>
                                 <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border">
-                                    {/* Logo com posicionamento único usando transform */}
+                                    {/* Logo com posicionamento calibrado */}
                                     <div 
                                         className="absolute top-1/2 left-1/2"
                                         style={{
-                                            transform: `translate(calc(-50% + ${(config.logoPosition || 0) * 0.8}px), -50%)`
+                                            transform: `translate(calc(-50% + ${(config.logoPosition || 0) * 1.2}px), -50%)`
                                         }}
                                     >
                                         {logoDataUrl ? (
@@ -426,8 +426,10 @@ export default function EditPage() {
                                                 height={120} 
                                                 className="object-contain" 
                                                 style={{ 
-                                                    width: `${config.logoSize || 40}%`, 
+                                                    width: `${Math.max(config.logoSize || 50, 30)}%`, 
                                                     height: 'auto',
+                                                    minWidth: '60px',
+                                                    minHeight: '60px',
                                                     opacity: config.logoOpacityFront ?? 1, 
                                                     transform: `rotate(${config.logoRotationFront || 0}deg)`,
                                                     filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
@@ -480,12 +482,12 @@ export default function EditPage() {
                                     <h4 className="font-medium text-slate-700">Logo da Frente</h4>
                                     
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho ({config.logoSize || 40}%)</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho ({config.logoSize || 50}%)</label>
                                         <input 
                                             type="range" 
-                                            min={20} 
-                                            max={70} 
-                                            value={config.logoSize || 40} 
+                                            min={30} 
+                                            max={80} 
+                                            value={config.logoSize || 50} 
                                             onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} 
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                         />
@@ -500,8 +502,8 @@ export default function EditPage() {
                                                 <span className="text-xs text-slate-500">Esquerda</span>
                                                 <input 
                                                     type="range" 
-                                                    min={-100} 
-                                                    max={100} 
+                                                    min={-120} 
+                                                    max={120} 
                                                     value={config.logoPosition || 0} 
                                                     onChange={(e) => handleConfigChange('logoPosition', Number(e.target.value))} 
                                                     className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
@@ -510,7 +512,7 @@ export default function EditPage() {
                                             </div>
                                             <div className="text-center mt-1">
                                                 <span className="text-xs text-slate-400">
-                                                    {config.logoPosition === 0 ? 'Centro' : `${config.logoPosition > 0 ? '+' : ''}${config.logoPosition}%`}
+                                                    {config.logoPosition === 0 ? 'Centro' : `${config.logoPosition > 0 ? '+' : ''}${config.logoPosition}px`}
                                                 </span>
                                             </div>
                                         </div>
