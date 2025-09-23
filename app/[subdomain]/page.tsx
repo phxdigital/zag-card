@@ -12,15 +12,21 @@ export default async function SubdomainPage({ params }: SubdomainPageProps) {
     const supabase = createServerComponentClient({ cookies });
     const { subdomain } = await params;
 
+    console.log('SubdomainPage - subdomain:', subdomain);
+
     // --- Busca os dados da página no Supabase ---
-    const { data: pageData } = await supabase
+    const { data: pageData, error } = await supabase
         .from('pages') // Sua tabela no Supabase
         .select('config, logo_url') // As colunas que você precisa
         .eq('subdomain', subdomain)
         .single();
 
+    console.log('SubdomainPage - pageData:', pageData);
+    console.log('SubdomainPage - error:', error);
+
     // Se não encontrar, mostra uma página 404
     if (!pageData) {
+        console.log('SubdomainPage - notFound() called for subdomain:', subdomain);
         notFound();
     }
 
