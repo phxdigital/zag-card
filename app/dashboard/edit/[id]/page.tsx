@@ -701,7 +701,7 @@ export default function EditPage() {
                             {/* Custom Links Management */}
                             <div>
                                 <div className="flex justify-between items-center mb-4">
-                                    <label className="block text-sm font-medium text-slate-700">Botões Personalizados</label>
+                                    <label className="block text-sm font-medium text-slate-700">Botões Personalizados ({config.customLinks?.length || 0})</label>
                                     <button 
                                         onClick={() => setShowLinkEditor(true)} 
                                         className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700 flex items-center gap-1"
