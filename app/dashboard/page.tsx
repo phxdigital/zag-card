@@ -43,7 +43,7 @@ type PageConfig = {
     logoOpacityBack?: number;
     logoRotationFront?: number; // degrees
     logoRotationBack?: number; // degrees
-    removeLogoBackground?: boolean;
+    logoPositionBack?: number; // -30 (esquerda) a +30 (direita), 0 = centro
     landingFont?: string;
     landingPageTitleColor?: string;
     landingPageSubtitleColor?: string;
@@ -147,7 +147,6 @@ export default function DashboardPage() {
         logoPosition: 0, // 0 = centro
         logoOpacityFront: 1,
         logoRotationFront: 0,
-        removeLogoBackground: false,
         
         // Configurações do cartão - VERSO
         cardBackBgColor: '#e2e8f0',
@@ -156,6 +155,7 @@ export default function DashboardPage() {
         qrCodePosition: 'justify-start',
         logoOpacityBack: 1,
         logoRotationBack: 0,
+        logoPositionBack: 0,
         
         // Configurações da landing page
         landingPageBgColor: '#F8FAFC',
@@ -216,7 +216,6 @@ export default function DashboardPage() {
             logoPosition: 0, // 0 = centro
             logoOpacityFront: 1,
             logoRotationFront: 0,
-            removeLogoBackground: false,
             
             // Configurações do cartão - VERSO
             cardBackBgColor: '#e2e8f0',
@@ -358,7 +357,6 @@ export default function DashboardPage() {
             logoPosition: 0, // 0 = centro
             logoOpacityFront: 1,
             logoRotationFront: 0,
-            removeLogoBackground: false,
             
             // Configurações do cartão - VERSO
             cardBackBgColor: '#e2e8f0',
@@ -558,21 +556,34 @@ export default function DashboardPage() {
                                                     left: `${50 + (config.logoPosition || 0) * 0.3}%`, 
                                                     transform: `translate(-50%, -50%) rotate(${config.logoRotationFront || 0}deg)`,
                                                     opacity: config.logoOpacityFront ?? 1, 
-                                                    filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
-                                                    mixBlendMode: config.removeLogoBackground ? 'multiply' : 'normal'
+                                                filter: 'none',
+                                                mixBlendMode: 'normal'
                                                 }}
                                             />
                                         ) : (
-                                            <div 
-                                                className="absolute w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center"
+                                            <button
+                                                onClick={() => {
+                                                    const input = document.createElement('input');
+                                                    input.type = 'file';
+                                                    input.accept = 'image/*';
+                                                    input.onchange = (e) => {
+                                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                                        if (file) {
+                                                            handleLogoUpload(e as unknown as React.ChangeEvent<HTMLInputElement>);
+                                                        }
+                                                    };
+                                                    input.click();
+                                                }}
+                                                className="absolute w-20 h-20 bg-slate-200 hover:bg-slate-300 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer border-2 border-dashed border-slate-300 hover:border-slate-400"
                                                 style={{
                                                     top: '50%', 
                                                     left: `${50 + (config.logoPosition || 0) * 0.3}%`, 
                                                     transform: 'translate(-50%, -50%)'
                                                 }}
+                                                title="Clique para fazer upload do logo"
                                             >
                                                 <ImageIcon className="w-8 h-8 text-slate-400" />
-                                            </div>
+                                            </button>
                                         )}
                                         
                                         {/* Texto com posicionamento fixo na parte inferior */}
@@ -639,21 +650,34 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="flex items-center space-x-2">
-                                                <input type="checkbox" checked={config.removeLogoBackground || false} onChange={(e) => handleConfigChange('removeLogoBackground', e.target.checked)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                                                <span className="text-sm font-medium text-slate-700">Remover fundo da logo</span>
-                                            </label>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">Remover Fundo da Logo</label>
+                                            <a 
+                                                href="https://www.remove.bg/" 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                            >
+                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                                Remover Fundo Online
+                                            </a>
+                                            <p className="text-xs text-slate-500 mt-1">Ferramenta gratuita para remover o fundo da sua logo</p>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo ({config.logoSize}%)</label>
                                             <input type="range" min={40} max={100} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                         </div>
                                         <div>
-                                            <div className="flex items-center mb-2">
-                                                <input type="checkbox" checked={!!config.isTextEnabled} onChange={(e) => handleConfigChange('isTextEnabled', e.target.checked)} className="h-4 w-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500" />
-                                                <label className="ml-2 block text-sm font-medium text-slate-700">Adicionar texto?</label>
-                                            </div>
-                                            <input type="text" placeholder="Seu Nome ou Empresa" value={config.cardText || ''} onChange={(e) => handleConfigChange('cardText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm disabled:bg-slate-100" disabled={!config.isTextEnabled} />
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">Texto do Cartão</label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Seu Nome ou Empresa" 
+                                                value={config.cardText || ''} 
+                                                onChange={(e) => handleConfigChange('cardText', e.target.value)} 
+                                                onFocus={() => handleConfigChange('isTextEnabled', true)}
+                                                className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500" 
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -661,7 +685,7 @@ export default function DashboardPage() {
                                     <p className="text-center font-semibold mb-4">Verso</p>
                                     <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg p-4 border relative overflow-hidden">
                                         {logoDataUrl && (
-                                            <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: '50%', transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3 }} />
+                                            <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: `${50 + (config.logoPositionBack ?? 0) * 0.3}%`, transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3 }} />
                                         )}
                                         <div className={`absolute inset-0 p-4 flex items-center ${config.qrCodePosition}`}>
                                             <div ref={qrcodePreviewRef} className="bg-white p-1 rounded-md aspect-square" style={{ width: `${config.qrCodeSize}%` }} />
@@ -754,6 +778,28 @@ export default function DashboardPage() {
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da sua Logo no verso ({config.clientLogoBackSize}%)</label>
                                             <input type="range" min={20} max={70} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                Posicionamento da Logo no Verso ({(config.logoPositionBack ?? 0) === 0 ? 'Centro' : (config.logoPositionBack ?? 0) < 0 ? 'Esquerda' : 'Direita'})
+                                            </label>
+                                            <div className="flex items-center space-x-3">
+                                                <span className="text-xs text-slate-500">Esquerda</span>
+                                                <input 
+                                                    type="range" 
+                                                    min={-30} 
+                                                    max={30} 
+                                                    value={config.logoPositionBack ?? 0} 
+                                                    onChange={(e) => handleConfigChange('logoPositionBack', Number(e.target.value))} 
+                                                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+                                                />
+                                                <span className="text-xs text-slate-500">Direita</span>
+                                            </div>
+                                            <div className="text-center mt-1">
+                                                <span className="text-xs text-slate-400">
+                                                    {(config.logoPositionBack ?? 0) === 0 ? 'Centro' : `${(config.logoPositionBack ?? 0) > 0 ? '+' : ''}${config.logoPositionBack ?? 0}%`}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
