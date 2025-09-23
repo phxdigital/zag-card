@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter } from 'lucide-react';
+import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter, Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh } from 'lucide-react';
 import { canCreatePages } from '@/lib/config';
 
 type CustomLink = {
@@ -54,7 +54,7 @@ interface QRCodeConstructor {
     new (element: HTMLElement, options: QRCodeOptions): unknown;
 }
 
-type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter';
+type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high';
 
 const IconForName = ({ name, className, size = 16 }: { name: IconName; className?: string; size?: number }) => {
     const map: Record<IconName, React.ElementType> = {
@@ -70,6 +70,65 @@ const IconForName = ({ name, className, size = 16 }: { name: IconName; className
         image: ImageIcon,
         youtube: Youtube,
         twitter: Twitter,
+        heart: Heart,
+        star: Star,
+        camera: Camera,
+        music: Music,
+        video: Video,
+        calendar: Calendar,
+        clock: Clock,
+        user: User,
+        users: Users,
+        home: Home,
+        building: Building,
+        car: Car,
+        plane: Plane,
+        coffee: Coffee,
+        gift: Gift,
+        book: Book,
+        gamepad2: Gamepad2,
+        headphones: Headphones,
+        mic: Mic,
+        search: Search,
+        settings: Settings,
+        download: Download,
+        upload: Upload,
+        share: Share,
+        copy: Copy,
+        check: Check,
+        x: X,
+        plus: Plus,
+        minus: Minus,
+        'arrow-right': ArrowRight,
+        'arrow-left': ArrowLeft,
+        'arrow-up': ArrowUp,
+        'arrow-down': ArrowDown,
+        'chevron-right': ChevronRight,
+        'chevron-left': ChevronLeft,
+        'chevron-up': ChevronUp,
+        'chevron-down': ChevronDown,
+        zap: Zap,
+        target: Target,
+        award: Award,
+        trophy: Trophy,
+        shield: Shield,
+        lock: Lock,
+        unlock: Unlock,
+        eye: Eye,
+        'eye-off': EyeOff,
+        bell: Bell,
+        'bell-off': BellOff,
+        volume2: Volume2,
+        'volume-x': VolumeX,
+        wifi: Wifi,
+        'wifi-off': WifiOff,
+        battery: Battery,
+        'battery-low': BatteryLow,
+        signal: Signal,
+        'signal-zero': SignalZero,
+        'signal-low': SignalLow,
+        'signal-medium': SignalMedium,
+        'signal-high': SignalHigh,
     };
     const C = map[name];
     return <C className={className} size={size} />;
@@ -119,7 +178,10 @@ export default function DashboardPage() {
     const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
     const qrcodePreviewRef = useRef<HTMLDivElement>(null);
 
-    const availableIcons: IconName[] = ['message-circle','instagram','facebook','youtube','twitter','globe','map-pin','phone','mail','shopping-cart','link','image'];
+    const availableIcons: IconName[] = [
+        'message-circle', 'instagram', 'facebook', 'youtube', 'twitter', 'globe', 'map-pin', 'phone', 'mail', 'shopping-cart', 'link', 'image',
+        'heart', 'star', 'camera', 'music', 'video', 'calendar', 'clock', 'user', 'users', 'home', 'building', 'car', 'plane', 'coffee', 'gift', 'book', 'gamepad2', 'headphones', 'mic', 'search', 'settings', 'download', 'upload', 'share', 'copy', 'check', 'x', 'plus', 'minus', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down', 'chevron-right', 'chevron-left', 'chevron-up', 'chevron-down', 'zap', 'target', 'award', 'trophy', 'shield', 'lock', 'unlock', 'eye', 'eye-off', 'bell', 'bell-off', 'volume2', 'volume-x', 'wifi', 'wifi-off', 'battery', 'battery-low', 'signal', 'signal-zero', 'signal-low', 'signal-medium', 'signal-high'
+    ];
     const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋', '🙌', '👍', '😎', '🎁', '🛒', '🔗', '🧭', '💬', '📧', '☎️', '📍', '💼', '🏷️', '🆕', '🏆', '🖼️', '🎬', '🌟', '💫', '🎯', '🎊', '🎈', '🎂', '🍰', '☕', '🌺', '🌸', '🌻', '🌷', '🌹', '🌿', '🍀', '🌈', '☀️', '🌙', '⭐', '💎', '🎪', '🎨', '🎭', '🎪', '🎸', '🎵', '🎶', '🎤', '🎧', '📷', '📹', '🎥', '💻', '📱', '⌚', '📺', '🔊', '🎮', '🕹️', '🎲', '🃏', '🎴', '🀄', '🎯', '🏹', '🎣', '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🏒', '🏑', '🏏', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🏊', '🚴', '🚵', '🤸', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🏊', '🚴', '🚵'];
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
@@ -545,7 +607,7 @@ export default function DashboardPage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                Posicionamento da Logo ({config.logoPosition === 0 ? 'Centro' : config.logoPosition < 0 ? 'Esquerda' : 'Direita'})
+                                                Posicionamento da Logo ({(config.logoPosition ?? 0) === 0 ? 'Centro' : (config.logoPosition ?? 0) < 0 ? 'Esquerda' : 'Direita'})
                                             </label>
                                             <div className="flex items-center space-x-3">
                                                 <span className="text-xs text-slate-500">Esquerda</span>
@@ -561,7 +623,7 @@ export default function DashboardPage() {
                                             </div>
                                             <div className="text-center mt-1">
                                                 <span className="text-xs text-slate-400">
-                                                    {config.logoPosition === 0 ? 'Centro' : `${config.logoPosition > 0 ? '+' : ''}${config.logoPosition}%`}
+                                                    {(config.logoPosition ?? 0) === 0 ? 'Centro' : `${(config.logoPosition ?? 0) > 0 ? '+' : ''}${config.logoPosition ?? 0}%`}
                                                 </span>
                                             </div>
                                         </div>
@@ -593,16 +655,6 @@ export default function DashboardPage() {
                                             </div>
                                             <input type="text" placeholder="Seu Nome ou Empresa" value={config.cardText || ''} onChange={(e) => handleConfigChange('cardText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm disabled:bg-slate-100" disabled={!config.isTextEnabled} />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
-                                                <input type="color" value={config.cardBgColor} onChange={(e) => handleConfigChange('cardBgColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Texto</label>
-                                                <input type="color" value={config.cardTextColor} onChange={(e) => handleConfigChange('cardTextColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -614,7 +666,20 @@ export default function DashboardPage() {
                                         <div className={`absolute inset-0 p-4 flex items-center ${config.qrCodePosition}`}>
                                             <div ref={qrcodePreviewRef} className="bg-white p-1 rounded-md aspect-square" style={{ width: `${config.qrCodeSize}%` }} />
                                         </div>
-                                        <Image src="/logo-zag.png" alt="Logo Zag Card" width={80} height={24} className="absolute bottom-3 right-3 h-5 w-auto object-contain" style={{ width: 'auto', height: 'auto' }} />
+                                        {/* Logo Zag fixa no canto inferior direito - sempre visível e sutil */}
+                                        <Image 
+                                            src="/logo-zag.png" 
+                                            alt="Logo Zag Card" 
+                                            width={60} 
+                                            height={18} 
+                                            className="absolute bottom-2 right-2 h-4 w-auto object-contain opacity-60" 
+                                            style={{ 
+                                                width: 'auto', 
+                                                height: 'auto',
+                                                minWidth: '40px',
+                                                maxWidth: '60px'
+                                            }} 
+                                        />
                                     </div>
                                     <div className="mt-6 space-y-4 max-w-sm mx-auto">
                                         <h3 className="font-bold text-lg border-b pb-2">Personalizar Verso</h3>
@@ -824,15 +889,20 @@ export default function DashboardPage() {
                                                 <div className="w-full flex flex-wrap justify-center items-center gap-3 mb-4">
                                                     {config.customLinks?.filter(link => link.isSocial).map((link) => (
                                                         <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
-                                                            {link.icon && <IconForName name={link.icon as IconName} size={20} />}
-                                                            </div>
+                                                            {link.icon ? (
+                                                                <IconForName name={link.icon as IconName} size={20} />
+                                                            ) : (
+                                                                <span className="text-xs font-bold">?</span>
+                                                            )}
+                                                        </div>
                                                     ))}
                                                 </div>
                                                 
                                                 {/* Botões Personalizados (Retangulares) */}
                                                 <div className="w-full flex flex-col items-center gap-2">
                                                     {config.customLinks?.filter(link => !link.isSocial).map((link) => (
-                                                        <div key={link.id} className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
+                                                        <div key={link.id} className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md gap-2" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
+                                                            {link.icon && <IconForName name={link.icon as IconName} size={16} />}
                                                             <span className="text-sm font-medium">{link.text}</span>
                                                         </div>
                                                     ))}
@@ -1023,13 +1093,14 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
-                    <div className="grid grid-cols-6 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-md">
-                    <div onClick={() => setData({ ...data, icon: null })} className={`p-2 border rounded-md flex items-center justify-center cursor-pointer hover:bg-amber-100 ${data.icon === null ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`}>
-                            <span className="text-xs">Nenhum</span>
+                    <div className="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto p-3 bg-slate-50 rounded-md border">
+                        <div onClick={() => setData({ ...data, icon: null })} className={`p-3 border rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-amber-100 transition-colors ${data.icon === null ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`}>
+                            <span className="text-xs font-medium text-slate-500">Nenhum</span>
                         </div>
-                    {icons.map((icon) => (
-                        <div key={icon} onClick={() => setData({ ...data, icon })} className={`p-2 border rounded-md flex items-center justify-center cursor-pointer hover:bg-amber-100 ${data.icon === icon ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`}>
-                            <IconForName name={icon as IconName} className="w-4 h-4 text-slate-600" />
+                        {icons.map((icon) => (
+                            <div key={icon} onClick={() => setData({ ...data, icon })} className={`p-3 border rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-amber-100 transition-colors ${data.icon === icon ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`} title={icon}>
+                                <IconForName name={icon as IconName} className="w-5 h-5 text-slate-600 mb-1" />
+                                <span className="text-xs text-slate-500 text-center leading-tight">{icon.replace('-', ' ')}</span>
                             </div>
                         ))}
                     </div>

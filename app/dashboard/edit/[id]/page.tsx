@@ -23,7 +23,8 @@ import {
   Twitter,
   PlusCircle,
   Edit,
-  Trash2
+  Trash2,
+  Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh
 } from 'lucide-react';
 
 type CustomLink = {
@@ -67,7 +68,7 @@ type PageConfig = {
     landingPageSubtitleColor?: string;
 };
 
-type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter';
+type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high';
 
 const IconForName = ({ name, className, size = 16 }: { name: IconName; className?: string; size?: number }) => {
     const map: Record<IconName, React.ElementType> = {
@@ -83,6 +84,65 @@ const IconForName = ({ name, className, size = 16 }: { name: IconName; className
         image: ImageIcon,
         youtube: Youtube,
         twitter: Twitter,
+        heart: Heart,
+        star: Star,
+        camera: Camera,
+        music: Music,
+        video: Video,
+        calendar: Calendar,
+        clock: Clock,
+        user: User,
+        users: Users,
+        home: Home,
+        building: Building,
+        car: Car,
+        plane: Plane,
+        coffee: Coffee,
+        gift: Gift,
+        book: Book,
+        gamepad2: Gamepad2,
+        headphones: Headphones,
+        mic: Mic,
+        search: Search,
+        settings: Settings,
+        download: Download,
+        upload: Upload,
+        share: Share,
+        copy: Copy,
+        check: Check,
+        x: X,
+        plus: Plus,
+        minus: Minus,
+        'arrow-right': ArrowRight,
+        'arrow-left': ArrowLeft,
+        'arrow-up': ArrowUp,
+        'arrow-down': ArrowDown,
+        'chevron-right': ChevronRight,
+        'chevron-left': ChevronLeft,
+        'chevron-up': ChevronUp,
+        'chevron-down': ChevronDown,
+        zap: Zap,
+        target: Target,
+        award: Award,
+        trophy: Trophy,
+        shield: Shield,
+        lock: Lock,
+        unlock: Unlock,
+        eye: Eye,
+        'eye-off': EyeOff,
+        bell: Bell,
+        'bell-off': BellOff,
+        volume2: Volume2,
+        'volume-x': VolumeX,
+        wifi: Wifi,
+        'wifi-off': WifiOff,
+        battery: Battery,
+        'battery-low': BatteryLow,
+        signal: Signal,
+        'signal-zero': SignalZero,
+        'signal-low': SignalLow,
+        'signal-medium': SignalMedium,
+        'signal-high': SignalHigh,
     };
     const C = map[name];
     return <C className={className} size={size} />;
@@ -127,7 +187,7 @@ export default function EditPage() {
     });
     const [subdomain, setSubdomain] = useState('');
     const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
-    const [activeStep, setActiveStep] = useState(1);
+    const [activeStep, setActiveStep] = useState(2); // Ir direto para landing page
 
     const loadPageData = useCallback(async () => {
         try {
@@ -423,7 +483,7 @@ export default function EditPage() {
                                                 width: `${config.logoSize || 60}%`, 
                                                 height: 'auto',
                                                 top: '50%', 
-                                                left: `${50 + (config.logoPosition || 0) * 0.3}%`, 
+                                                left: `${50 + (config.logoPosition ?? 0) * 0.3}%`, 
                                                 transform: `translate(-50%, -50%) rotate(${config.logoRotationFront || 0}deg)`,
                                                 opacity: config.logoOpacityFront ?? 1, 
                                                 filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
@@ -435,7 +495,7 @@ export default function EditPage() {
                                             className="absolute w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center"
                                             style={{
                                                 top: '50%', 
-                                                left: `${50 + (config.logoPosition || 0) * 0.3}%`, 
+                                                left: `${50 + (config.logoPosition ?? 0) * 0.3}%`, 
                                                 transform: 'translate(-50%, -50%)'
                                             }}
                                         >
@@ -496,7 +556,7 @@ export default function EditPage() {
                                     <div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                Posicionamento da Logo ({config.logoPosition === 0 ? 'Centro' : config.logoPosition < 0 ? 'Esquerda' : 'Direita'})
+                                                Posicionamento da Logo ({config.logoPosition === 0 ? 'Centro' : (config.logoPosition ?? 0) < 0 ? 'Esquerda' : 'Direita'})
                                             </label>
                                             <div className="flex items-center space-x-3">
                                                 <span className="text-xs text-slate-500">Esquerda</span>
@@ -504,7 +564,7 @@ export default function EditPage() {
                                                     type="range" 
                                                     min={-30} 
                                                     max={30} 
-                                                    value={config.logoPosition || 0} 
+                                                    value={config.logoPosition ?? 0} 
                                                     onChange={(e) => handleConfigChange('logoPosition', Number(e.target.value))} 
                                                     className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                                 />
@@ -512,7 +572,7 @@ export default function EditPage() {
                                             </div>
                                             <div className="text-center mt-1">
                                                 <span className="text-xs text-slate-400">
-                                                    {config.logoPosition === 0 ? 'Centro' : `${config.logoPosition > 0 ? '+' : ''}${config.logoPosition}%`}
+                                                    {config.logoPosition === 0 ? 'Centro' : `${(config.logoPosition ?? 0) > 0 ? '+' : ''}${config.logoPosition ?? 0}%`}
                                                 </span>
                                             </div>
                                         </div>
@@ -621,7 +681,11 @@ export default function EditPage() {
                                     <div className="w-full flex flex-wrap justify-center items-center gap-3 mt-4 mb-4">
                                         {config.customLinks?.filter(link => link.isSocial).map((link) => (
                                             <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
-                                                {link.icon && <IconForName name={link.icon as IconName} size={20} />}
+                                                {link.icon ? (
+                                                    <IconForName name={link.icon as IconName} size={20} />
+                                                ) : (
+                                                    <span className="text-xs font-bold">?</span>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -629,7 +693,8 @@ export default function EditPage() {
                                     {/* Botões Personalizados (Retangulares) */}
                                     <div className="w-full flex flex-col items-center gap-2">
                                         {config.customLinks?.filter(link => !link.isSocial).map((link) => (
-                                            <div key={link.id} className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
+                                            <div key={link.id} className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md gap-2" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
+                                                {link.icon && <IconForName name={link.icon as IconName} size={16} />}
                                                 <span className="text-sm font-medium">{link.text}</span>
                                             </div>
                                         ))}
@@ -772,7 +837,10 @@ export default function EditPage() {
                         <h2 className="text-2xl font-bold">{editingLink ? 'Editar Botão' : 'Adicionar Novo Botão'}</h2>
                         <LinkEditorForm 
                             initial={editingLink || null} 
-                            icons={['message-circle', 'instagram', 'facebook', 'youtube', 'twitter', 'globe', 'map-pin', 'phone', 'mail', 'shopping-cart', 'link', 'image']} 
+                            icons={[
+                                'message-circle', 'instagram', 'facebook', 'youtube', 'twitter', 'globe', 'map-pin', 'phone', 'mail', 'shopping-cart', 'link', 'image',
+                                'heart', 'star', 'camera', 'music', 'video', 'calendar', 'clock', 'user', 'users', 'home', 'building', 'car', 'plane', 'coffee', 'gift', 'book', 'gamepad2', 'headphones', 'mic', 'search', 'settings', 'download', 'upload', 'share', 'copy', 'check', 'x', 'plus', 'minus', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down', 'chevron-right', 'chevron-left', 'chevron-up', 'chevron-down', 'zap', 'target', 'award', 'trophy', 'shield', 'lock', 'unlock', 'eye', 'eye-off', 'bell', 'bell-off', 'volume2', 'volume-x', 'wifi', 'wifi-off', 'battery', 'battery-low', 'signal', 'signal-zero', 'signal-low', 'signal-medium', 'signal-high'
+                            ]} 
                             onCancel={() => {
                                 setShowLinkEditor(false);
                                 setEditingLink(null);
@@ -841,23 +909,21 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
-                <select
-                    value={formData.icon}
-                    onChange={(e) => {
-                        const newIcon = e.target.value;
-                        setFormData(prev => ({ 
+                <div className="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto p-3 bg-slate-50 rounded-md border">
+                    <div onClick={() => setFormData(prev => ({ ...prev, icon: '' }))} className={`p-3 border rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-amber-100 transition-colors ${formData.icon === '' ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`}>
+                        <span className="text-xs font-medium text-slate-500">Nenhum</span>
+                    </div>
+                    {icons.map((icon) => (
+                        <div key={icon} onClick={() => setFormData(prev => ({ 
                             ...prev, 
-                            icon: newIcon,
-                            url: newIcon ? getSocialBaseUrl(newIcon) + prev.url : prev.url
-                        }));
-                    }}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                >
-                    <option value="">Selecione um ícone</option>
-                    {icons.map(icon => (
-                        <option key={icon} value={icon}>{icon}</option>
+                            icon: icon,
+                            url: icon ? getSocialBaseUrl(icon) + prev.url : prev.url
+                        }))} className={`p-3 border rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-amber-100 transition-colors ${formData.icon === icon ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`} title={icon}>
+                            <IconForName name={icon as IconName} className="w-5 h-5 text-slate-600 mb-1" />
+                            <span className="text-xs text-slate-500 text-center leading-tight">{icon.replace('-', ' ')}</span>
+                        </div>
                     ))}
-                </select>
+                </div>
             </div>
 
             <div>
