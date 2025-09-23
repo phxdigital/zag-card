@@ -48,7 +48,7 @@ type PageConfig = {
     qrCodeSize?: number;
     clientLogoBackSize?: number;
     qrCodePosition?: 'justify-start' | 'justify-end';
-    logoPosition?: 'left' | 'center' | 'right';
+    logoPosition?: number; // -100 (esquerda) a +100 (direita), 0 = centro
     socialLinks?: { [key: string]: string };
     customLinks?: CustomLink[];
     landingPageBgColor?: string;
@@ -142,7 +142,7 @@ export default function EditPage() {
                     cardText: pageData.config?.cardText || '',
                     isTextEnabled: pageData.config?.isTextEnabled || false,
                     logoSize: pageData.config?.logoSize || 40,
-                    logoPosition: pageData.config?.logoPosition || 'center',
+                    logoPosition: pageData.config?.logoPosition || 0, // 0 = centro
                     logoOpacityFront: pageData.config?.logoOpacityFront ?? 1,
                     logoRotationFront: pageData.config?.logoRotationFront || 0,
                     removeLogoBackground: pageData.config?.removeLogoBackground || false,
@@ -411,8 +411,13 @@ export default function EditPage() {
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                 <p className="text-center font-semibold mb-4">Frente</p>
                                 <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border">
-                                    {/* Logo com posicionamento absoluto */}
-                                    <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${config.logoPosition === 'left' ? 'left-8 -translate-x-0' : config.logoPosition === 'right' ? 'right-8 translate-x-0' : ''}`}>
+                                    {/* Logo com posicionamento único usando transform */}
+                                    <div 
+                                        className="absolute top-1/2 left-1/2"
+                                        style={{
+                                            transform: `translate(calc(-50% + ${(config.logoPosition || 0) * 0.8}px), -50%)`
+                                        }}
+                                    >
                                         {logoDataUrl ? (
                                             <Image 
                                                 src={logoDataUrl} 
@@ -422,12 +427,12 @@ export default function EditPage() {
                                                 className="object-contain" 
                                                 style={{ 
                                                     width: `${config.logoSize || 40}%`, 
-                                                    height: `${config.logoSize || 40}%`, 
+                                                    height: 'auto',
                                                     opacity: config.logoOpacityFront ?? 1, 
                                                     transform: `rotate(${config.logoRotationFront || 0}deg)`,
                                                     filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
                                                     mixBlendMode: config.removeLogoBackground ? 'multiply' : 'normal'
-                                                }} 
+                                                }}
                                             />
                                         ) : (
                                             <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center">
@@ -487,38 +492,27 @@ export default function EditPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">Posicionamento da Logo</label>
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={() => handleConfigChange('logoPosition', 'left')}
-                                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                                                    config.logoPosition === 'left' 
-                                                        ? 'bg-blue-600 text-white' 
-                                                        : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                                }`}
-                                            >
-                                                Esquerda
-                                            </button>
-                                            <button
-                                                onClick={() => handleConfigChange('logoPosition', 'center')}
-                                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                                                    config.logoPosition === 'center' 
-                                                        ? 'bg-blue-600 text-white' 
-                                                        : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                                }`}
-                                            >
-                                                Centro
-                                            </button>
-                                            <button
-                                                onClick={() => handleConfigChange('logoPosition', 'right')}
-                                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                                                    config.logoPosition === 'right' 
-                                                        ? 'bg-blue-600 text-white' 
-                                                        : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                                }`}
-                                            >
-                                                Direita
-                                            </button>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                Posicionamento da Logo ({config.logoPosition === 0 ? 'Centro' : config.logoPosition < 0 ? 'Esquerda' : 'Direita'})
+                                            </label>
+                                            <div className="flex items-center space-x-3">
+                                                <span className="text-xs text-slate-500">Esquerda</span>
+                                                <input 
+                                                    type="range" 
+                                                    min={-100} 
+                                                    max={100} 
+                                                    value={config.logoPosition || 0} 
+                                                    onChange={(e) => handleConfigChange('logoPosition', Number(e.target.value))} 
+                                                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+                                                />
+                                                <span className="text-xs text-slate-500">Direita</span>
+                                            </div>
+                                            <div className="text-center mt-1">
+                                                <span className="text-xs text-slate-400">
+                                                    {config.logoPosition === 0 ? 'Centro' : `${config.logoPosition > 0 ? '+' : ''}${config.logoPosition}%`}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
 
