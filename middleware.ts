@@ -35,10 +35,6 @@ export async function middleware(req: NextRequest) {
   const host = req.headers.get('host');
   const subdomain = host?.split('.')[0];
   
-  console.log('Middleware - host:', host);
-  console.log('Middleware - subdomain:', subdomain);
-  console.log('Middleware - pathname:', pathname);
-  
   // Verificar se é um subdomínio válido (não www, não domínio principal)
   const mainDomains = ['localhost', 'meuzag.com', 'zag-card.vercel.app'];
   const isMainDomain = mainDomains.some(domain => 
@@ -47,11 +43,8 @@ export async function middleware(req: NextRequest) {
     host?.endsWith('.vercel.app') // Inclui todos os deploys do Vercel
   ) || host === 'zagnfc.com.br' || host === 'www.zagnfc.com.br';
   
-  console.log('Middleware - isMainDomain:', isMainDomain);
-  
   // Se for subdomínio e estiver na raiz, reescrever para a rota do subdomínio
   if (subdomain && subdomain !== 'www' && !isMainDomain && pathname === '/') {
-    console.log('Middleware - Rewriting to:', `/${subdomain}`);
     const url = req.nextUrl.clone();
     url.pathname = `/${subdomain}`;
     return NextResponse.rewrite(url);
