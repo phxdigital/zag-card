@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CreditCard, Smartphone, Crop, Wand2, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter } from 'lucide-react';
+import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter } from 'lucide-react';
 import { canCreatePages } from '@/lib/config';
 
 type CustomLink = {
@@ -77,7 +77,7 @@ const IconForName = ({ name, className, size = 16 }: { name: IconName; className
 
 export default function DashboardPage() {
     const router = useRouter();
-    const [hasActiveSubscription, setHasActiveSubscription] = useState(canCreatePages());
+    const [hasActiveSubscription] = useState(canCreatePages());
     const [config, setConfig] = useState<PageConfig>({
         cardText: '',
         isTextEnabled: false,

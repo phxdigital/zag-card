@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -133,9 +133,9 @@ export default function EditPage() {
 
     useEffect(() => {
         loadPageData();
-    }, [pageId]);
+    }, [pageId, loadPageData]);
 
-    const loadPageData = async () => {
+    const loadPageData = useCallback(async () => {
         try {
             const response = await fetch(`/api/pages/${pageId}`);
             if (response.ok) {
@@ -181,9 +181,9 @@ export default function EditPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [pageId, router]);
 
-    const handleConfigChange = (key: keyof PageConfig, value: any) => {
+    const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
         setConfig(prev => ({ ...prev, [key]: value }));
     };
 
@@ -200,32 +200,6 @@ export default function EditPage() {
         setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
     };
 
-    const saveCustomLink = (linkData: Omit<CustomLink, 'id'>) => {
-        if (editingLink) {
-            setConfig((prev) => ({
-                ...prev,
-                customLinks: prev.customLinks?.map((l) => (l.id === editingLink.id ? { ...l, ...linkData } : l)),
-            }));
-        } else {
-            if ((config.customLinks?.filter(b => !b.isSocial).length || 0) >= 4) {
-                alert('Você pode adicionar no máximo 4 botões personalizados.');
-                return;
-            }
-            setConfig((prev) => ({
-                ...prev,
-                customLinks: [...(prev.customLinks || []), { ...linkData, id: Date.now() }],
-            }));
-        }
-        setShowLinkEditor(false);
-        setEditingLink(null);
-    };
-
-    const deleteCustomLink = (id: number) => {
-        setConfig((prev) => ({
-            ...prev,
-            customLinks: prev.customLinks?.filter((l) => l.id !== id),
-        }));
-    };
 
     const savePage = async () => {
         setSaving(true);

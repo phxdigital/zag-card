@@ -8,7 +8,6 @@ import {
   CreditCard, 
   FileText, 
   User, 
-  Settings, 
   Menu, 
   X,
   LogOut,
