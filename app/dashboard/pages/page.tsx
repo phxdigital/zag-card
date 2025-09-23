@@ -439,7 +439,6 @@ export default function MyPagesPage() {
                 Sim, Excluir Permanentemente
               </button>
             </div>
-            </div>
           </div>
         </div>
       )}
