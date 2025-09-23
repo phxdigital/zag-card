@@ -124,10 +124,6 @@ export default function EditPage() {
     const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
     const [activeStep, setActiveStep] = useState(1);
 
-    useEffect(() => {
-        loadPageData();
-    }, [pageId, loadPageData]);
-
     const loadPageData = useCallback(async () => {
         try {
             const response = await fetch(`/api/pages/${pageId}`);
@@ -175,6 +171,10 @@ export default function EditPage() {
             setLoading(false);
         }
     }, [pageId, router]);
+
+    useEffect(() => {
+        loadPageData();
+    }, [pageId, loadPageData]);
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
         setConfig(prev => ({ ...prev, [key]: value }));
