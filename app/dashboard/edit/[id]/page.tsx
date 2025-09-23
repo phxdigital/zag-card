@@ -9,11 +9,6 @@ import {
   Save, 
   CreditCard, 
   Smartphone, 
-  PlusCircle, 
-  Edit, 
-  Trash2, 
-  Circle, 
-  Square, 
   Image as ImageIcon, 
   MessageCircle, 
   Instagram, 
@@ -98,8 +93,6 @@ export default function EditPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [savingMessage, setSavingMessage] = useState('');
-    const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
-    const [showLinkEditor, setShowLinkEditor] = useState(false);
     const [config, setConfig] = useState<PageConfig>({
         cardText: '',
         isTextEnabled: false,

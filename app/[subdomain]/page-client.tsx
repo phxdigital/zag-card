@@ -18,6 +18,7 @@ export type CustomLink = {
     bgColor1: string;
     bgColor2: string;
     textColor: string;
+    isSocial?: boolean;
 };
 
 export type PageConfig = {

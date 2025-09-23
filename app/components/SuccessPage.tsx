@@ -11,7 +11,7 @@ interface SuccessPageProps {
     isEdit?: boolean;
 }
 
-export default function SuccessPage({ subdomain, pageId, isEdit = false }: SuccessPageProps) {
+export default function SuccessPage({ subdomain, isEdit = false }: SuccessPageProps) {
     const pageUrl = `https://${subdomain}.zagnfc.com.br`;
     
     const copyToClipboard = async () => {
@@ -134,7 +134,7 @@ export default function SuccessPage({ subdomain, pageId, isEdit = false }: Succe
                                 Informação Importante
                             </h3>
                             <p className="text-amber-800">
-                                <strong>O subdomínio "{subdomain}" não pode ser alterado após a criação.</strong> 
+                                <strong>O subdomínio &quot;{subdomain}&quot; não pode ser alterado após a criação.</strong> 
                                 Se precisar de um subdomínio diferente, você terá que criar uma nova página. 
                                 Você pode editar todos os outros aspectos da sua página (design, conteúdo, links) 
                                 a qualquer momento no seu dashboard.
