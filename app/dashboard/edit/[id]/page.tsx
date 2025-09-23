@@ -131,32 +131,39 @@ export default function EditPage() {
                 const pageData = await response.json();
                 // Carregar configuração existente ou usar padrões
                 setConfig({
-                    cardText: pageData.config?.cardText || '',
-                    isTextEnabled: pageData.config?.isTextEnabled || false,
+                    // Configurações do cartão - FRENTE
                     cardBgColor: pageData.config?.cardBgColor || '#FFFFFF',
                     cardTextColor: pageData.config?.cardTextColor || '#1e293b',
-                    cardBackBgColor: pageData.config?.cardBackBgColor || '#e2e8f0',
+                    cardText: pageData.config?.cardText || '',
+                    isTextEnabled: pageData.config?.isTextEnabled || false,
                     logoSize: pageData.config?.logoSize || 40,
+                    logoPosition: pageData.config?.logoPosition || 'center',
+                    logoOpacityFront: pageData.config?.logoOpacityFront ?? 1,
+                    logoRotationFront: pageData.config?.logoRotationFront || 0,
+                    removeLogoBackground: pageData.config?.removeLogoBackground || false,
+                    
+                    // Configurações do cartão - VERSO
+                    cardBackBgColor: pageData.config?.cardBackBgColor || '#e2e8f0',
                     qrCodeSize: pageData.config?.qrCodeSize || 35,
                     clientLogoBackSize: pageData.config?.clientLogoBackSize || 35,
                     qrCodePosition: pageData.config?.qrCodePosition || 'justify-start',
-                    logoPosition: pageData.config?.logoPosition || 'center',
-                    socialLinks: pageData.config?.socialLinks || {},
-                    customLinks: pageData.config?.customLinks || [],
+                    logoOpacityBack: pageData.config?.logoOpacityBack ?? 1,
+                    logoRotationBack: pageData.config?.logoRotationBack || 0,
+                    
+                    // Configurações da landing page
                     landingPageBgColor: pageData.config?.landingPageBgColor || '#F8FAFC',
                     landingPageBgImage: pageData.config?.landingPageBgImage || null,
                     landingPageTitleText: pageData.config?.landingPageTitleText || '',
                     landingPageSubtitleText: pageData.config?.landingPageSubtitleText || '',
-                    landingPageLogoShape: pageData.config?.landingPageLogoShape || 'circle',
-                    landingPageLogoSize: pageData.config?.landingPageLogoSize || 96,
-                    logoOpacityFront: pageData.config?.logoOpacityFront ?? 1,
-                    logoOpacityBack: pageData.config?.logoOpacityBack ?? 1,
-                    logoRotationFront: pageData.config?.logoRotationFront || 0,
-                    logoRotationBack: pageData.config?.logoRotationBack || 0,
-                    removeLogoBackground: pageData.config?.removeLogoBackground || false,
-                    landingFont: pageData.config?.landingFont || 'Inter',
                     landingPageTitleColor: pageData.config?.landingPageTitleColor || '#1e293b',
                     landingPageSubtitleColor: pageData.config?.landingPageSubtitleColor || '#64748b',
+                    landingPageLogoShape: pageData.config?.landingPageLogoShape || 'circle',
+                    landingPageLogoSize: pageData.config?.landingPageLogoSize || 96,
+                    landingFont: pageData.config?.landingFont || 'Inter',
+                    
+                    // Links
+                    socialLinks: pageData.config?.socialLinks || {},
+                    customLinks: pageData.config?.customLinks || [],
                 });
                 setSubdomain(pageData.subdomain || '');
                 setLogoDataUrl(pageData.logo_url || null);
@@ -371,8 +378,9 @@ export default function EditPage() {
                             {/* Card Front */}
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                 <p className="text-center font-semibold mb-4">Frente</p>
-                                <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex flex-col justify-center p-4 transition-colors duration-300 border">
-                                    <div className={`flex ${config.logoPosition === 'left' ? 'justify-start' : config.logoPosition === 'right' ? 'justify-end' : 'justify-center'} items-center mb-2`}>
+                                <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border">
+                                    {/* Logo com posicionamento absoluto */}
+                                    <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${config.logoPosition === 'left' ? 'left-8 -translate-x-0' : config.logoPosition === 'right' ? 'right-8 translate-x-0' : ''}`}>
                                         {logoDataUrl ? (
                                             <Image 
                                                 src={logoDataUrl} 
@@ -395,10 +403,14 @@ export default function EditPage() {
                                             </div>
                                         )}
                                     </div>
+                                    
+                                    {/* Texto com posicionamento fixo na parte inferior */}
                                     {config.isTextEnabled && config.cardText && (
-                                        <p style={{ color: config.cardTextColor }} className="text-center font-semibold text-sm break-words px-2">
-                                            {config.cardText}
-                                        </p>
+                                        <div className="absolute bottom-4 left-4 right-4">
+                                            <p style={{ color: config.cardTextColor }} className="text-center font-semibold text-sm break-words">
+                                                {config.cardText}
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
                             </div>

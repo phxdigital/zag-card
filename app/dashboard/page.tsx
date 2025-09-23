@@ -79,32 +79,39 @@ export default function DashboardPage() {
     const router = useRouter();
     const [hasActiveSubscription] = useState(canCreatePages());
     const [config, setConfig] = useState<PageConfig>({
-        cardText: '',
-        isTextEnabled: false,
+        // Configurações do cartão - FRENTE
         cardBgColor: '#FFFFFF',
         cardTextColor: '#1e293b',
-        cardBackBgColor: '#e2e8f0',
+        cardText: '',
+        isTextEnabled: false,
         logoSize: 40,
+        logoPosition: 'center',
+        logoOpacityFront: 1,
+        logoRotationFront: 0,
+        removeLogoBackground: false,
+        
+        // Configurações do cartão - VERSO
+        cardBackBgColor: '#e2e8f0',
         qrCodeSize: 35,
         clientLogoBackSize: 35,
         qrCodePosition: 'justify-start',
-        logoPosition: 'center',
-        socialLinks: {},
-        customLinks: [],
+        logoOpacityBack: 1,
+        logoRotationBack: 0,
+        
+        // Configurações da landing page
         landingPageBgColor: '#F8FAFC',
         landingPageBgImage: null,
         landingPageTitleText: '',
         landingPageSubtitleText: '',
-        landingPageLogoShape: 'circle',
-        landingPageLogoSize: 96,
-        logoOpacityFront: 1,
-        logoOpacityBack: 1,
-        logoRotationFront: 0,
-        logoRotationBack: 0,
-        removeLogoBackground: false,
-        landingFont: 'Inter',
         landingPageTitleColor: '#1e293b',
         landingPageSubtitleColor: '#64748b',
+        landingPageLogoShape: 'circle',
+        landingPageLogoSize: 96,
+        landingFont: 'Inter',
+        
+        // Links
+        socialLinks: {},
+        customLinks: [],
     });
 
     const [activeStep, setActiveStep] = useState(1);
@@ -377,38 +384,57 @@ export default function DashboardPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                     <p className="text-center font-semibold mb-4">Frente</p>
-                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex flex-col justify-center p-4 transition-colors duration-300 border">
-                                        <div className={`flex ${config.logoPosition === 'left' ? 'justify-start' : config.logoPosition === 'right' ? 'justify-end' : 'justify-center'} items-center mb-2`}>
-                                        {logoDataUrl ? (
-                                            <Image 
-                                                src={logoDataUrl} 
-                                                alt="Logo Preview" 
-                                                width={120} 
-                                                height={120} 
+                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border">
+                                        {/* Logo com posicionamento absoluto */}
+                                        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${config.logoPosition === 'left' ? 'left-8 -translate-x-0' : config.logoPosition === 'right' ? 'right-8 translate-x-0' : ''}`}>
+                                            {logoDataUrl ? (
+                                                <Image 
+                                                    src={logoDataUrl} 
+                                                    alt="Logo Preview" 
+                                                    width={120} 
+                                                    height={120} 
                                                     className="object-contain" 
-                                                style={{ 
-                                                    width: `${config.logoSize || 40}%`, 
-                                                    height: `${config.logoSize || 40}%`, 
-                                                    opacity: config.logoOpacityFront ?? 1, 
-                                                    transform: `rotate(${config.logoRotationFront || 0}deg)`,
-                                                    filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
-                                                    mixBlendMode: config.removeLogoBackground ? 'multiply' : 'normal'
-                                                }}
-                                            />
-                                        ) : (
+                                                    style={{ 
+                                                        width: `${config.logoSize || 40}%`, 
+                                                        height: `${config.logoSize || 40}%`, 
+                                                        opacity: config.logoOpacityFront ?? 1, 
+                                                        transform: `rotate(${config.logoRotationFront || 0}deg)`,
+                                                        filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
+                                                        mixBlendMode: config.removeLogoBackground ? 'multiply' : 'normal'
+                                                    }}
+                                                />
+                                            ) : (
                                                 <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center">
-                                                <ImageIcon className="w-8 h-8 text-slate-400" />
-                                            </div>
-                                        )}
+                                                    <ImageIcon className="w-8 h-8 text-slate-400" />
+                                                </div>
+                                            )}
                                         </div>
+                                        
+                                        {/* Texto com posicionamento fixo na parte inferior */}
                                         {config.isTextEnabled && (
-                                            <p style={{ color: config.cardTextColor }} className="font-semibold text-lg text-center">
-                                                {config.cardText || 'Seu Nome'}
-                                            </p>
+                                            <div className="absolute bottom-4 left-4 right-4">
+                                                <p style={{ color: config.cardTextColor }} className="text-center font-semibold text-sm break-words">
+                                                    {config.cardText || 'Seu Nome'}
+                                                </p>
+                                            </div>
                                         )}
                                     </div>
                                     <div className="mt-6 space-y-4 max-w-sm mx-auto">
                                         <h3 className="font-bold text-lg border-b pb-2">Personalizar Frente</h3>
+                                        
+                                        {/* Cores - Primeiro */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
+                                                <input type="color" value={config.cardBgColor} onChange={(e) => handleConfigChange('cardBgColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Texto</label>
+                                                <input type="color" value={config.cardTextColor} onChange={(e) => handleConfigChange('cardTextColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Logo da Empresa */}
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Logo da Empresa</label>
                                             <input type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" />
