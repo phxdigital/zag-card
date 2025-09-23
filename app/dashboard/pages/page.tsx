@@ -33,9 +33,6 @@ export default function MyPagesPage() {
     loadPages();
   }, []);
 
-  useEffect(() => {
-    console.log('Estado deleteConfirm mudou para:', deleteConfirm);
-  }, [deleteConfirm]);
 
   const loadPages = async () => {
     try {
@@ -304,10 +301,7 @@ export default function MyPagesPage() {
                     </button>
                     <button
                       onClick={() => {
-                        console.log('Botão de deletar clicado para página ID:', page.id);
-                        console.log('Estado deleteConfirm antes:', deleteConfirm);
                         setDeleteConfirm(page.id);
-                        console.log('setDeleteConfirm chamado com:', page.id);
                       }}
                       className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
                     >
@@ -323,56 +317,128 @@ export default function MyPagesPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        console.log('Modal sendo renderizado com deleteConfirm:', deleteConfirm),
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <Trash2 className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Excluir Página Permanentemente
-                    </h3>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500 mb-3">
-                        Tem certeza que deseja excluir esta página? 
-                      </p>
-                      <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                        <p className="text-sm text-red-800 font-medium">
-                          ⚠️ ATENÇÃO: Esta é uma exclusão permanente!
-                        </p>
-                        <p className="text-sm text-red-700 mt-1">
-                          • A página será removida completamente do sistema<br/>
-                          • Todos os dados serão perdidos para sempre<br/>
-                          • O subdomínio ficará disponível para uso futuro<br/>
-                          • Esta ação NÃO pode ser desfeita
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+        >
+          <div 
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '24px',
+              maxWidth: '500px',
+              width: '100%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+              <div style={{ 
+                backgroundColor: '#fef2f2', 
+                borderRadius: '50%', 
+                width: '48px', 
+                height: '48px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <Trash2 style={{ width: '24px', height: '24px', color: '#dc2626' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ 
+                  fontSize: '18px', 
+                  fontWeight: '600', 
+                  color: '#111827', 
+                  marginBottom: '12px' 
+                }}>
+                  Excluir Página Permanentemente
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#6b7280', 
+                  marginBottom: '12px' 
+                }}>
+                  Tem certeza que deseja excluir esta página? 
+                </p>
+                <div style={{ 
+                  backgroundColor: '#fef2f2', 
+                  border: '1px solid #fecaca', 
+                  borderRadius: '6px', 
+                  padding: '12px' 
+                }}>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#991b1b', 
+                    fontWeight: '500',
+                    marginBottom: '8px' 
+                  }}>
+                    ⚠️ ATENÇÃO: Esta é uma exclusão permanente!
+                  </p>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#b91c1c',
+                    lineHeight: '1.5'
+                  }}>
+                    • A página será removida completamente do sistema<br/>
+                    • Todos os dados serão perdidos para sempre<br/>
+                    • O subdomínio ficará disponível para uso futuro<br/>
+                    • Esta ação NÃO pode ser desfeita
+                  </p>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  onClick={() => {
-                    console.log('Botão de confirmação clicado, deleteConfirm:', deleteConfirm);
-                    handleDelete(deleteConfirm);
-                  }}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
-                >
-                  Sim, Excluir Permanentemente
-                </button>
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
-                >
-                  Cancelar
-                </button>
-              </div>
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              gap: '12px', 
+              justifyContent: 'flex-end', 
+              marginTop: '24px' 
+            }}>
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  backgroundColor: 'white',
+                  color: '#374151',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  console.log('Botão de confirmação clicado, deleteConfirm:', deleteConfirm);
+                  handleDelete(deleteConfirm);
+                }}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Sim, Excluir Permanentemente
+              </button>
+            </div>
             </div>
           </div>
         </div>
