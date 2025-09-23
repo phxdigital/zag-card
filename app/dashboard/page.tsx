@@ -118,15 +118,11 @@ export default function DashboardPage() {
     const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
     const [showLinkEditor, setShowLinkEditor] = useState(false);
     const [QRCode, setQRCode] = useState<QRCodeConstructor | null>(null);
-    const [showLogoEditor, setShowLogoEditor] = useState(false);
     const [saving, setSaving] = useState(false);
     const [savingMessage, setSavingMessage] = useState('');
     const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null);
     const [checkingSubdomain, setCheckingSubdomain] = useState(false);
     const subdomainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const [editorZoom, setEditorZoom] = useState(1);
-    const [editorOffset, setEditorOffset] = useState({ x: 0, y: 0 });
-    const dragRef = useRef<{ dragging: boolean; startX: number; startY: number; origX: number; origY: number; touchDist?: number; startZoom?: number }>({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
@@ -293,38 +289,6 @@ export default function DashboardPage() {
         setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
     };
 
-    const suggestColorsFromLogo = async () => {
-        if (!logoDataUrl) return;
-        const img = document.createElement('img');
-        img.crossOrigin = 'anonymous';
-        img.src = logoDataUrl;
-        await new Promise(resolve => {
-            img.onload = resolve;
-            img.onerror = resolve;
-        });
-        const canvas = document.createElement('canvas');
-        const w = 64, h = 64;
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0, w, h);
-        const data = ctx.getImageData(0, 0, w, h).data;
-        let r = 0, g = 0, b = 0, n = 0;
-        for (let i = 0; i < data.length; i += 4) {
-            const a = data[i + 3];
-            if (a < 10) continue;
-            r += data[i]; g += data[i + 1]; b += data[i + 2];
-            n++;
-        }
-        if (!n) return;
-        r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
-        const bg = `rgb(${r}, ${g}, ${b})`;
-        // Use exact background and derive readable text
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        const text = luminance > 0.6 ? '#111827' : '#ffffff';
-        setConfig(prev => ({ ...prev, cardBackBgColor: bg, cardBgColor: bg, cardTextColor: text, landingPageBgColor: '#ffffff' }));
-        alert('Cores sugeridas com base na sua logo foram aplicadas.');
-    };
 
     // Componente de verificação de pagamento
     const PaymentRequired = () => (

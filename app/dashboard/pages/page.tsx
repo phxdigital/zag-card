@@ -9,9 +9,9 @@ import {
   Eye, 
   ExternalLink, 
   Calendar,
-  Globe,
-  QrCode
+  Globe
 } from 'lucide-react';
+import Image from 'next/image';
 
 interface Page {
   id: string;
@@ -193,9 +193,11 @@ export default function MyPagesPage() {
                 <div className="aspect-w-16 aspect-h-9 bg-white rounded-lg shadow-sm border">
                   <div className="flex flex-col items-center justify-center p-4 h-32">
                     {page.logo_url ? (
-                      <img
+                      <Image
                         src={page.logo_url}
                         alt="Logo"
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-full object-cover mb-2"
                       />
                     ) : (
