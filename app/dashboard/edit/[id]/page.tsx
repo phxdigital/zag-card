@@ -252,6 +252,36 @@ export default function EditPage() {
         setConfig(prev => ({ ...prev, [key]: value }));
     };
 
+    // Função para redimensionar imagem mantendo proporção e limitando às margens
+    const resizeImageToFit = (file: File, maxWidth: number, maxHeight: number): Promise<string> => {
+        return new Promise((resolve) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new window.Image();
+            
+            img.onload = () => {
+                // Calcular novas dimensões mantendo proporção
+                let { width, height } = img;
+                
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Desenhar imagem redimensionada
+                ctx?.drawImage(img, 0, 0, width, height);
+                
+                resolve(canvas.toDataURL('image/png', 0.9));
+            };
+            
+            img.src = URL.createObjectURL(file);
+        });
+    };
+
     const addSocialPreset = (kind: 'whatsapp' | 'instagram' | 'facebook' | 'youtube' | 'twitter') => {
         const presets: { [k in typeof kind]: { text: string; url: string; icon: IconName; color: string } } = {
             whatsapp: { text: 'WhatsApp', url: 'https://wa.me/+55', icon: 'message-circle', color: '#16a34a' },
@@ -470,7 +500,7 @@ export default function EditPage() {
                             {/* Card Front */}
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                 <p className="text-center font-semibold mb-4">Frente</p>
-                                <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border">
+                                <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border-2">
                                     {/* Logo com posicionamento simplificado e centralizado */}
                                     {logoDataUrl ? (
                                         <Image 
@@ -491,16 +521,42 @@ export default function EditPage() {
                                             }}
                                         />
                                     ) : (
-                                        <div 
-                                            className="absolute w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center"
+                                        <button
+                                            onClick={() => {
+                                                const input = document.createElement('input');
+                                                input.type = 'file';
+                                                input.accept = 'image/*';
+                                                input.onchange = async (e) => {
+                                                    const file = (e.target as HTMLInputElement).files?.[0];
+                                                    if (file) {
+                                                        // Limitar tamanho do arquivo (5MB)
+                                                        if (file.size > 5 * 1024 * 1024) {
+                                                            alert('Arquivo muito grande. Tamanho máximo: 5MB');
+                                                            return;
+                                                        }
+                                                        
+                                                        try {
+                                                            // Redimensionar imagem para caber no cartão (máximo 200x120px)
+                                                            const resizedImage = await resizeImageToFit(file, 200, 120);
+                                                            setLogoDataUrl(resizedImage);
+                                                        } catch (error) {
+                                                            console.error('Erro ao processar imagem:', error);
+                                                            alert('Erro ao processar a imagem. Tente novamente.');
+                                                        }
+                                                    }
+                                                };
+                                                input.click();
+                                            }}
+                                            className="absolute w-20 h-20 bg-slate-200 hover:bg-slate-300 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer border-2 border-dashed border-slate-300 hover:border-slate-400"
                                             style={{
                                                 top: '50%', 
                                                 left: `${50 + (config.logoPosition ?? 0) * 0.3}%`, 
                                                 transform: 'translate(-50%, -50%)'
                                             }}
+                                            title="Clique para fazer upload do logo"
                                         >
                                             <ImageIcon className="w-8 h-8 text-slate-400" />
-                                        </div>
+                                        </button>
                                     )}
                                     
                                     {/* Texto com posicionamento fixo na parte inferior */}
@@ -517,7 +573,7 @@ export default function EditPage() {
                             {/* Card Back */}
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                 <p className="text-center font-semibold mb-4">Verso</p>
-                                <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex items-center justify-between p-4 transition-colors duration-300 border">
+                                <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex items-center justify-between p-4 transition-colors duration-300 border-2">
                                     <div className="flex flex-col items-center">
                                         {logoDataUrl && (
                                             <Image src={logoDataUrl} alt="Logo Preview" width={60} height={60} className="object-contain mb-2" style={{ width: `${config.clientLogoBackSize || 35}px`, height: `${config.clientLogoBackSize || 35}px`, opacity: config.logoOpacityBack ?? 1, transform: `rotate(${config.logoRotationBack || 0}deg)` }} />

@@ -4,7 +4,8 @@ import React from 'react';
 import {
     MessageCircle, Instagram, Facebook, Link as LinkIcon,
     ShoppingCart, Globe, Wifi, DollarSign, BookOpen, MapPin,
-    Phone, Mail, Info, Star, Image as ImageIcon, Video
+    Phone, Mail, Info, Star, Image as ImageIcon, Video,
+    Heart, Camera, Music, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Youtube, Twitter
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -41,10 +42,7 @@ interface PageClientProps {
     logoUrl: string;
 }
 
-type IconName = 
-    | 'message-circle' | 'instagram' | 'facebook' | 'shopping-cart' 
-    | 'link' | 'dollar-sign' | 'wifi' | 'globe' | 'book-open' 
-    | 'map-pin' | 'phone' | 'mail' | 'info' | 'star' | 'image' | 'video';
+type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high';
 
 // Configuração das redes sociais
 const socialMediaConfig: { [key: string]: { icon: IconName; baseUrl: string } } = {
@@ -63,21 +61,76 @@ const LucideIcon = ({ name, size = 24, className, ...props }: {
 }) => {
     const icons: { [key in IconName]: React.ElementType } = {
         'message-circle': MessageCircle,
-        'instagram': Instagram,
-        'facebook': Facebook,
-        'shopping-cart': ShoppingCart,
-        'link': LinkIcon,
-        'dollar-sign': DollarSign,
-        'wifi': Wifi,
-        'globe': Globe,
-        'book-open': BookOpen,
+        instagram: Instagram,
+        facebook: Facebook,
+        globe: Globe,
         'map-pin': MapPin,
-        'phone': Phone,
-        'mail': Mail,
-        'info': Info,
-        'star': Star,
-        'image': ImageIcon,
-        'video': Video
+        phone: Phone,
+        mail: Mail,
+        'shopping-cart': ShoppingCart,
+        link: LinkIcon,
+        image: ImageIcon,
+        youtube: Youtube,
+        twitter: Twitter,
+        heart: Heart,
+        star: Star,
+        camera: Camera,
+        music: Music,
+        video: Video,
+        calendar: Calendar,
+        clock: Clock,
+        user: User,
+        users: Users,
+        home: Home,
+        building: Building,
+        car: Car,
+        plane: Plane,
+        coffee: Coffee,
+        gift: Gift,
+        book: Book,
+        gamepad2: Gamepad2,
+        headphones: Headphones,
+        mic: Mic,
+        search: Search,
+        settings: Settings,
+        download: Download,
+        upload: Upload,
+        share: Share,
+        copy: Copy,
+        check: Check,
+        x: X,
+        plus: Plus,
+        minus: Minus,
+        'arrow-right': ArrowRight,
+        'arrow-left': ArrowLeft,
+        'arrow-up': ArrowUp,
+        'arrow-down': ArrowDown,
+        'chevron-right': ChevronRight,
+        'chevron-left': ChevronLeft,
+        'chevron-up': ChevronUp,
+        'chevron-down': ChevronDown,
+        zap: Zap,
+        target: Target,
+        award: Award,
+        trophy: Trophy,
+        shield: Shield,
+        lock: Lock,
+        unlock: Unlock,
+        eye: Eye,
+        'eye-off': EyeOff,
+        bell: Bell,
+        'bell-off': BellOff,
+        volume2: Volume2,
+        'volume-x': VolumeX,
+        wifi: Wifi,
+        'wifi-off': WifiOff,
+        battery: Battery,
+        'battery-low': BatteryLow,
+        signal: Signal,
+        'signal-zero': SignalZero,
+        'signal-low': SignalLow,
+        'signal-medium': SignalMedium,
+        'signal-high': SignalHigh,
     };
     
     const IconComponent = icons[name];
