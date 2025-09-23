@@ -56,12 +56,15 @@ export default function MyPagesPage() {
       if (response.ok) {
         setPages(pages.filter(page => page.id !== pageId));
         setDeleteConfirm(null);
+        // Mostrar mensagem de sucesso
+        alert('Página excluída com sucesso!');
       } else {
-        alert('Erro ao deletar página');
+        const errorData = await response.json();
+        alert(`Erro ao deletar página: ${errorData.error || 'Erro desconhecido'}`);
       }
     } catch (error) {
       console.error('Erro ao deletar página:', error);
-      alert('Erro ao deletar página');
+      alert('Erro ao deletar página: Verifique sua conexão e tente novamente');
     }
   };
 
@@ -238,39 +241,42 @@ export default function MyPagesPage() {
               </div>
 
               {/* Actions */}
-              <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+              <div className="px-4 py-4 bg-gray-50 border-t border-gray-200">
                 <div className="flex items-center justify-between">
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-3">
                     <a
                       href={getPageUrl(page.subdomain)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center px-2 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                     >
-                      <Eye className="h-3 w-3 mr-1" />
-                      Ver
+                      <Eye className="h-4 w-4 mr-2" />
+                      Visualizar
                     </a>
                     <Link
                       href={`/dashboard/edit/${page.id}`}
-                      className="inline-flex items-center px-2 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                     >
-                      <Edit className="h-3 w-3 mr-1" />
+                      <Edit className="h-4 w-4 mr-2" />
                       Editar
                     </Link>
                   </div>
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => navigator.clipboard.writeText(getPageUrl(page.subdomain))}
-                      className="inline-flex items-center px-2 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
+                      onClick={() => {
+                        navigator.clipboard.writeText(getPageUrl(page.subdomain));
+                        alert('URL copiada para a área de transferência!');
+                      }}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                       title="Copiar URL"
                     >
-                      <ExternalLink className="h-3 w-3" />
+                      <ExternalLink className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(page.id)}
-                      className="inline-flex items-center px-2 py-1 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50"
+                      className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
@@ -293,12 +299,23 @@ export default function MyPagesPage() {
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Deletar Página
+                      Excluir Página Permanentemente
                     </h3>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        Tem certeza que deseja deletar esta página? Esta ação não pode ser desfeita.
+                      <p className="text-sm text-gray-500 mb-3">
+                        Tem certeza que deseja excluir esta página? 
                       </p>
+                      <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                        <p className="text-sm text-red-800 font-medium">
+                          ⚠️ ATENÇÃO: Esta é uma exclusão permanente!
+                        </p>
+                        <p className="text-sm text-red-700 mt-1">
+                          • A página será removida completamente do sistema<br/>
+                          • Todos os dados serão perdidos para sempre<br/>
+                          • O subdomínio ficará disponível para uso futuro<br/>
+                          • Esta ação NÃO pode ser desfeita
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -306,13 +323,13 @@ export default function MyPagesPage() {
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   onClick={() => handleDelete(deleteConfirm)}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
                 >
-                  Deletar
+                  Sim, Excluir Permanentemente
                 </button>
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
                 >
                   Cancelar
                 </button>
