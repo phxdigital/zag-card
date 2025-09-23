@@ -84,7 +84,7 @@ export default function DashboardPage() {
         cardTextColor: '#1e293b',
         cardText: '',
         isTextEnabled: false,
-        logoSize: 50,
+        logoSize: 60,
         logoPosition: 0, // 0 = centro
         logoOpacityFront: 1,
         logoRotationFront: 0,
@@ -385,37 +385,37 @@ export default function DashboardPage() {
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                     <p className="text-center font-semibold mb-4">Frente</p>
                                     <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border">
-                                        {/* Logo com posicionamento calibrado */}
-                                        <div 
-                                            className="absolute top-1/2 left-1/2"
-                                            style={{
-                                                transform: `translate(calc(-50% + ${(config.logoPosition || 0) * 1.2}px), -50%)`
-                                            }}
-                                        >
-                                            {logoDataUrl ? (
-                                                <Image 
-                                                    src={logoDataUrl} 
-                                                    alt="Logo Preview" 
-                                                    width={120} 
-                                                    height={120} 
-                                                    className="object-contain" 
-                                                    style={{ 
-                                                        width: `${Math.max(config.logoSize || 50, 30)}%`, 
-                                                        height: 'auto',
-                                                        minWidth: '60px',
-                                                        minHeight: '60px',
-                                                        opacity: config.logoOpacityFront ?? 1, 
-                                                        transform: `rotate(${config.logoRotationFront || 0}deg)`,
-                                                        filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
-                                                        mixBlendMode: config.removeLogoBackground ? 'multiply' : 'normal'
-                                                    }}
-                                                />
-                                            ) : (
-                                                <div className="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center">
-                                                    <ImageIcon className="w-8 h-8 text-slate-400" />
-                                                </div>
-                                            )}
-                                        </div>
+                                        {/* Logo com posicionamento centralizado como no verso */}
+                                        {logoDataUrl ? (
+                                            <Image 
+                                                src={logoDataUrl} 
+                                                alt="Logo Preview" 
+                                                width={120} 
+                                                height={120} 
+                                                className="object-contain absolute transition-all duration-300" 
+                                                style={{ 
+                                                    width: `${Math.max(config.logoSize || 50, 30)}%`, 
+                                                    height: 'auto',
+                                                    minWidth: '60px',
+                                                    minHeight: '60px',
+                                                    top: '50%', 
+                                                    left: '50%', 
+                                                    transform: `translate(calc(-50% + ${(config.logoPosition || 0) * 1.2}px), -50%) rotate(${config.logoRotationFront || 0}deg)`,
+                                                    opacity: config.logoOpacityFront ?? 1, 
+                                                    filter: config.removeLogoBackground ? 'contrast(1.2) brightness(1.1)' : 'none',
+                                                    mixBlendMode: config.removeLogoBackground ? 'multiply' : 'normal'
+                                                }}
+                                            />
+                                        ) : (
+                                            <div 
+                                                className="absolute top-1/2 left-1/2 w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center"
+                                                style={{
+                                                    transform: `translate(calc(-50% + ${(config.logoPosition || 0) * 1.2}px), -50%)`
+                                                }}
+                                            >
+                                                <ImageIcon className="w-8 h-8 text-slate-400" />
+                                            </div>
+                                        )}
                                         
                                         {/* Texto com posicionamento fixo na parte inferior */}
                                         {config.isTextEnabled && (
@@ -488,7 +488,7 @@ export default function DashboardPage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo ({config.logoSize}%)</label>
-                                            <input type="range" min={30} max={80} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            <input type="range" min={40} max={100} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                                         </div>
                                         <div>
                                             <div className="flex items-center mb-2">
