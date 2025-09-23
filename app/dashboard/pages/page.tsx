@@ -20,7 +20,7 @@ interface Page {
   subtitle: string;
   logo_url?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string; // Tornar opcional
   status: 'active' | 'draft';
 }
 
@@ -186,7 +186,7 @@ export default function MyPagesPage() {
                     Última Atualização
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {pages.length > 0 ? new Date(pages[0].updated_at).toLocaleDateString('pt-BR') : '-'}
+                    {pages.length > 0 && pages[0].updated_at ? new Date(pages[0].updated_at).toLocaleDateString('pt-BR') : '-'}
                   </dd>
                 </dl>
               </div>
@@ -262,7 +262,7 @@ export default function MyPagesPage() {
                   Criada em {new Date(page.created_at).toLocaleDateString('pt-BR')}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Atualizada em {new Date(page.updated_at).toLocaleDateString('pt-BR')}
+                  {page.updated_at ? `Atualizada em ${new Date(page.updated_at).toLocaleDateString('pt-BR')}` : 'Nunca atualizada'}
                 </p>
               </div>
 
