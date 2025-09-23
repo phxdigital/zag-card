@@ -843,16 +843,6 @@ export default function DashboardPage() {
 }
 
 function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomLink | null; onSave: (d: Omit<CustomLink, 'id'>) => void; onCancel: () => void; icons: string[] }) {
-    const [data, setData] = useState({
-        text: initial?.text || '',
-        url: initial?.url || (initial?.isSocial ? getSocialBaseUrl(initial?.icon) : ''),
-        icon: initial?.icon || null as string | null,
-        styleType: (initial?.styleType || 'solid') as 'solid' | 'gradient',
-        bgColor1: initial?.bgColor1 || '#1e293b',
-        bgColor2: initial?.bgColor2 || '#475569',
-        textColor: initial?.textColor || '#ffffff',
-    });
-
     const getSocialBaseUrl = (icon: string | null) => {
         if (!icon) return '';
         const baseUrls: { [key: string]: string } = {
@@ -876,6 +866,16 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
         };
         return placeholders[icon] || '';
     };
+
+    const [data, setData] = useState({
+        text: initial?.text || '',
+        url: initial?.url || (initial?.isSocial ? getSocialBaseUrl(initial?.icon) : ''),
+        icon: initial?.icon || null as string | null,
+        styleType: (initial?.styleType || 'solid') as 'solid' | 'gradient',
+        bgColor1: initial?.bgColor1 || '#1e293b',
+        bgColor2: initial?.bgColor2 || '#475569',
+        textColor: initial?.textColor || '#ffffff',
+    });
 
     const handleSubmit = () => {
         if (!data.text || !data.url) {
