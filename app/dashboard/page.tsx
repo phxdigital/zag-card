@@ -48,6 +48,7 @@ type PageConfig = {
     landingPageTitleColor?: string;
     landingPageSubtitleColor?: string;
     socialButtonColors?: { [key: string]: string };
+    socialButtonColor?: string;
 };
 
 type QRCodeOptions = { text: string; width: number; height: number };
@@ -183,6 +184,7 @@ export default function DashboardPage() {
             'pix': '#32BCAD',
             'linkedin': '#0077B5',
         },
+        socialButtonColor: '#3B82F6', // Cor padrão para todos os botões sociais
     });
 
     const [activeStep, setActiveStep] = useState(1);
@@ -194,8 +196,14 @@ export default function DashboardPage() {
         'message-circle', 'instagram', 'facebook', 'youtube', 'twitter', 'pix', 'linkedin', 'globe', 'map-pin', 'phone', 'mail', 'shopping-cart', 'link', 'image',
         'heart', 'star', 'camera', 'music', 'video', 'calendar', 'clock', 'user', 'users', 'home', 'building', 'car', 'plane', 'coffee', 'gift', 'book', 'gamepad2', 'headphones', 'mic', 'search', 'settings', 'download', 'upload', 'share', 'copy', 'check', 'x', 'plus', 'minus', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down', 'chevron-right', 'chevron-left', 'chevron-up', 'chevron-down', 'zap', 'target', 'award', 'trophy', 'shield', 'lock', 'unlock', 'eye', 'eye-off', 'bell', 'bell-off', 'volume2', 'volume-x', 'wifi', 'wifi-off', 'battery', 'battery-low', 'signal', 'signal-zero', 'signal-low', 'signal-medium', 'signal-high'
     ];
-    const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋', '🙌', '👍', '😎', '🎁', '🛒', '🔗', '🧭', '💬', '📧', '☎️', '📍', '💼', '🏷️', '🆕', '🏆', '🖼️', '🎬', '🌟', '💫', '🎯', '🎊', '🎈', '🎂', '🍰', '☕', '🌺', '🌸', '🌻', '🌷', '🌹', '🌿', '🍀', '🌈', '☀️', '🌙', '⭐', '💎', '🎪', '🎨', '🎭', '🎪', '🎸', '🎵', '🎶', '🎤', '🎧', '📷', '📹', '🎥', '💻', '📱', '⌚', '📺', '🔊', '🎮', '🕹️', '🎲', '🃏', '🎴', '🀄', '🎯', '🏹', '🎣', '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🏒', '🏑', '🏏', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🏊', '🚴', '🚵', '🤸', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🏊', '🚴', '🚵'];
+    const emojiCategories = {
+        'Geral': ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋', '🙌', '👍', '😎', '🎁', '🛒', '🔗', '🧭', '💬', '📧', '☎️', '📍', '💼', '🏷️', '🆕', '🏆', '🖼️', '🎬', '🌟', '💫', '🎯', '🎊', '🎈', '🎂', '🍰', '☕', '🌺', '🌸', '🌻', '🌷', '🌹', '🌿', '🍀', '🌈', '☀️', '🌙', '💎', '🎪', '🎨', '🎭', '🎸', '🎵', '🎶', '🎤', '🎧', '📷', '📹', '🎥', '💻', '⌚', '📺', '🔊', '🎮', '🕹️', '🎲', '🃏', '🎴', '🀄', '🏹', '🎣', '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🏒', '🏑', '🏏', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🚴', '🚵'],
+        'Negócios': ['💼', '📊', '📈', '💰', '💳', '🏢', '🏪', '🛍️', '📦', '🚚', '📞', '📧', '💻', '📱', '⌚', '🔔', '📋', '📝', '✍️', '📄', '📑', '📌', '📍', '🗂️', '📁', '💼', '🎯', '🏆', '⭐', '✅', '❌', '⚠️', 'ℹ️', '🔍', '🔎', '💡', '💭', '🎪', '🎨', '🎭'],
+        'Comida': ['🍎', '🍊', '🍌', '🍇', '🍓', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🥕', '🌽', '🌶️', '🥒', '🥬', '🥦', '🍄', '🥜', '🌰', '🍞', '🥐', '🥖', '🥨', '🥯', '🧀', '🥚', '🍳', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🌭', '🍔', '🍟', '🍕', '🥪', '🥙', '🌮', '🌯', '🥗', '🥘', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '☕', '🍵', '🥤', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧃', '🧉', '🧊'],
+        'Viagem': ['✈️', '🚁', '🚀', '🛸', '🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🚚', '🚛', '🚜', '🏎️', '🏍️', '🛵', '🚲', '🛴', '🛹', '🛼', '🚁', '🛸', '🚀', '✈️', '🛩️', '🛫', '🛬', '🪂', '💺', '🚢', '⛵', '🚤', '🛥️', '🛳️', '⛴️', '🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🚚', '🚛', '🚜', '🏎️', '🏍️', '🛵', '🚲', '🛴', '🛹', '🛼', '🚁', '🛸', '🚀', '✈️', '🛩️', '🛫', '🛬', '🪂', '💺', '🚢', '⛵', '🚤', '🛥️', '🛳️', '⛴️']
+    };
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [selectedEmojiCategory, setSelectedEmojiCategory] = useState('Geral');
     const [editingLink, setEditingLink] = useState<CustomLink | null>(null);
     const [showLinkEditor, setShowLinkEditor] = useState(false);
     const [QRCode, setQRCode] = useState<QRCodeConstructor | null>(null);
@@ -508,7 +516,8 @@ export default function DashboardPage() {
         }
         
         const p = presets[kind];
-        const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: p.color, bgColor2: p.color, textColor: '#ffffff', isSocial: true };
+        const globalColor = config.socialButtonColor || '#3B82F6';
+        const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: globalColor, bgColor2: globalColor, textColor: '#ffffff', isSocial: true };
         // Botões sociais são ilimitados
         setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
     };
@@ -721,7 +730,7 @@ export default function DashboardPage() {
                                                     top: '50%', 
                                                     left: `${50 + (config.logoPosition || 0) * 0.3}%`, 
                                                     transform: `translate(-50%, -50%) rotate(${config.logoRotationFront || 0}deg)`,
-                                                    opacity: config.logoOpacityFront ?? 1,
+                                                    opacity: config.logoOpacityFront ?? 1, 
                                                     overflow: 'hidden',
                                                     borderRadius: '8px'
                                                 }}
@@ -733,11 +742,11 @@ export default function DashboardPage() {
                                                     height={120} 
                                                     className="object-contain w-full h-full image-transparent" 
                                                     style={{ 
-                                                        filter: 'none',
+                                                filter: 'none',
                                                         mixBlendMode: 'normal',
                                                         background: 'transparent'
-                                                    }}
-                                                />
+                                                }}
+                                            />
                                             </div>
                                         ) : (
                                             <button
@@ -819,12 +828,12 @@ export default function DashboardPage() {
                                         </div>
                                         {/* Removed logo editor and color suggestion per request */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Frente) ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
+                                        <div className="slider-container">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Opacidade da Logo (Frente) ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
                                                 <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
-                                        <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Frente) ({config.logoRotationFront || 0}°)</label>
+                                        <div className="slider-container">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação da Logo (Frente) ({config.logoRotationFront || 0}°)</label>
                                                 <input type="range" min={-180} max={180} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
                                         </div>
@@ -843,11 +852,11 @@ export default function DashboardPage() {
                                             </a>
                                             <p className="text-xs text-slate-500 mt-1">Ferramenta gratuita para remover o fundo da sua logo</p>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo ({config.logoSize}%)</label>
+                                            <div className="slider-container">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da Logo ({config.logoSize}%)</label>
                                                 <input type="range" min={20} max={150} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
-                                            <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
-                                        </div>
+                                                <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
+                                            </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">Texto do Cartão</label>
                                             <input 
@@ -934,17 +943,17 @@ export default function DashboardPage() {
                                         </div>
                                         <hr />
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Verso) ({Math.round((config.logoOpacityBack ?? 0.3) * 100)}%)</label>
+                                        <div className="slider-container">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Opacidade da Logo (Verso) ({Math.round((config.logoOpacityBack ?? 0.3) * 100)}%)</label>
                                                 <input type="range" min={10} max={100} value={Math.round((config.logoOpacityBack ?? 0.3) * 100)} onChange={(e) => handleConfigChange('logoOpacityBack', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Verso) ({config.logoRotationBack || 0}°)</label>
+                                            <div className="slider-container">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação da Logo (Verso) ({config.logoRotationBack || 0}°)</label>
                                                 <input type="range" min={-180} max={180} value={config.logoRotationBack || 0} onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho do QR Code ({config.qrCodeSize}%)</label>
+                                        <div className="slider-container">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho do QR Code ({config.qrCodeSize}%)</label>
                                             <input type="range" min={25} max={50} value={config.qrCodeSize} onChange={(e) => handleConfigChange('qrCodeSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             <p className="text-xs text-slate-500 mt-1">💡 O tamanho padrão (35%) é o recomendado para melhor leitura</p>
                                         </div>
@@ -956,8 +965,8 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                         <hr />
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da sua Logo no verso ({config.clientLogoBackSize}%)</label>
+                                        <div className="slider-container">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da sua Logo no verso ({config.clientLogoBackSize}%)</label>
                                             <input type="range" min={10} max={120} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
                                         </div>
@@ -1014,12 +1023,54 @@ export default function DashboardPage() {
                                                         <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600">😊</button>
                                                     </div>
                                                     {showEmojiPicker && (
-                                                        <div className="grid grid-cols-8 gap-1 p-2 bg-white border rounded-lg shadow-lg mt-2 absolute z-10">
-                                                            {commonEmojis.map((emoji) => (
-                                                                <button key={emoji} onClick={() => { handleConfigChange('landingPageSubtitleText', (config.landingPageSubtitleText || '') + emoji); setShowEmojiPicker(false); }} className="text-xl p-1 transition-transform duration-150 hover:scale-125 hover:bg-slate-100 rounded">
-                                                                    {emoji}
-                                                                </button>
-                                                            ))}
+                                                        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowEmojiPicker(false)}>
+                                                            <div className="bg-white rounded-lg shadow-xl max-w-sm w-full max-h-96 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                                                                {/* Cabeçalho com categorias */}
+                                                                <div className="p-3 border-b">
+                                                                    <div className="flex flex-wrap gap-1 mb-2">
+                                                                        {Object.keys(emojiCategories).map((category) => (
+                                                                            <button
+                                                                                key={category}
+                                                                                onClick={() => setSelectedEmojiCategory(category)}
+                                                                                className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                                                                                    selectedEmojiCategory === category 
+                                                                                        ? 'bg-blue-500 text-white' 
+                                                                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                                                                }`}
+                                                                            >
+                                                                                {category}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-sm font-medium text-slate-700">Selecione um emoji</span>
+                                                                        <button 
+                                                                            onClick={() => setShowEmojiPicker(false)}
+                                                                            className="text-slate-500 hover:text-slate-700"
+                                                                        >
+                                                                            ✕
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {/* Grid de emojis */}
+                                                                <div className="p-3 max-h-64 overflow-y-auto">
+                                                                    <div className="grid grid-cols-6 gap-1">
+                                                                        {emojiCategories[selectedEmojiCategory as keyof typeof emojiCategories].map((emoji, index) => (
+                                                                            <button 
+                                                                                key={`${selectedEmojiCategory}-${emoji}-${index}`} 
+                                                                                onClick={() => { 
+                                                                                    handleConfigChange('landingPageSubtitleText', (config.landingPageSubtitleText || '') + emoji); 
+                                                                                    setShowEmojiPicker(false); 
+                                                                                }} 
+                                                                                className="text-xl p-2 transition-transform duration-150 hover:scale-125 hover:bg-slate-100 rounded"
+                                                                            >
+                                                                                {emoji}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1107,30 +1158,35 @@ export default function DashboardPage() {
                                                     </div>
                                                     
                                                     {/* Cores dos Botões Sociais */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">Cores dos Botões Sociais</label>
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            {Object.entries(config.socialButtonColors || {}).map(([icon, color]) => (
-                                                                <div key={icon} className="flex items-center gap-2">
-                                                                    <IconForName name={icon as IconName} size={16} />
-                                                                    <input 
-                                                                        type="color" 
-                                                                        value={color} 
-                                                                        onChange={(e) => {
-                                                                            const newColors = { ...config.socialButtonColors };
-                                                                            newColors[icon] = e.target.value;
-                                                                            handleConfigChange('socialButtonColors', newColors);
-                                                                        }} 
-                                                                        className="w-8 h-8 border border-slate-300 rounded-md" 
-                                                                    />
-                                                                    <span className="text-xs text-slate-600 capitalize">{icon.replace('-', ' ')}</span>
-                                                                </div>
-                                                            ))}
+                                                    {config.customLinks?.some(link => link.isSocial) && (
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-slate-700 mb-2">Cor dos Botões Sociais</label>
+                                                            <div className="flex items-center gap-3">
+                                                                <input 
+                                                                    type="color" 
+                                                                    value={config.socialButtonColor || '#3B82F6'} 
+                                                                    onChange={(e) => {
+                                                                        const newColor = e.target.value;
+                                                                        handleConfigChange('socialButtonColor', newColor);
+                                                                        
+                                                                        // Atualizar todos os botões sociais com a nova cor
+                                                                        const updatedLinks = config.customLinks?.map(link => {
+                                                                            if (link.isSocial) {
+                                                                                return { ...link, bgColor1: newColor, bgColor2: newColor };
+                                                                            }
+                                                                            return link;
+                                                                        });
+                                                                        handleConfigChange('customLinks', updatedLinks);
+                                                                    }} 
+                                                                    className="w-12 h-10 border border-slate-300 rounded-md" 
+                                                                />
+                                                                <span className="text-sm text-slate-600">Cor aplicada a todos os botões sociais</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo na Página ({config.landingPageLogoSize}px)</label>
+                                                <div className="slider-container">
+                                                    <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da Logo na Página ({config.landingPageLogoSize}px)</label>
                                                     <input type="range" min={32} max={200} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                                     <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
                                                 </div>
@@ -1201,15 +1257,15 @@ export default function DashboardPage() {
                                                 {/* Botões Sociais (Redondos) */}
                                                 <div className="w-full flex flex-wrap justify-center items-center gap-3 mb-4">
                                                     {config.customLinks?.filter(link => link.isSocial).map((link) => {
-                                                        const socialColor = config.socialButtonColors?.[link.icon || ''] || link.bgColor1;
+                                                        const globalColor = config.socialButtonColor || '#3B82F6';
                                                         return (
-                                                            <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : socialColor }}>
-                                                                {link.icon ? (
-                                                                    <IconForName name={link.icon as IconName} size={20} />
-                                                                ) : (
-                                                                    <span className="text-xs font-bold">?</span>
-                                                                )}
-                                                            </div>
+                                                            <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : globalColor }}>
+                                                            {link.icon ? (
+                                                                <IconForName name={link.icon as IconName} size={20} />
+                                                            ) : (
+                                                                <span className="text-xs font-bold">?</span>
+                                                            )}
+                                                        </div>
                                                         );
                                                     })}
                                                 </div>
@@ -1278,7 +1334,7 @@ export default function DashboardPage() {
                                             // Detectar se é mobile
                                             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                                             console.log('Is mobile:', isMobile);
-                                            
+
                                             // Salvar no banco de dados
                                             const response = await fetch('/api/pages', {
                                                 method: 'POST',

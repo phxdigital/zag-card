@@ -41,6 +41,36 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    height: 4px !important;
+    width: 80% !important;
+    margin: 0 auto !important;
+    display: block !important;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+  
+  /* Improve slider thumb on mobile */
+  input[type="range"]::-webkit-slider-thumb {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    background: #3B82F6 !important;
+    border: 2px solid white !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    background: #3B82F6 !important;
+    border: 2px solid white !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    cursor: pointer;
+    border: none;
   }
   
   /* Prevent text selection on mobile */
@@ -77,6 +107,18 @@ body {
     width: 100%;
     max-width: 320px;
     margin: 0 auto;
+  }
+  
+  /* Add padding around slider containers */
+  .slider-container {
+    padding: 8px 0;
+    margin: 4px 0;
+  }
+  
+  /* Make slider labels smaller on mobile */
+  .slider-label {
+    font-size: 0.875rem !important;
+    margin-bottom: 4px !important;
   }
 }
 
