@@ -4,6 +4,13 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
+  
+  // Verificar se as variáveis de ambiente estão configuradas
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn('Supabase environment variables not configured, skipping auth middleware');
+    return res;
+  }
+  
   const supabase = createMiddlewareClient({ req, res });
 
   const { pathname } = req.nextUrl;
@@ -20,14 +27,20 @@ export async function middleware(req: NextRequest) {
 
   // Autenticação apenas para rotas protegidas
   if (pathname.startsWith('/dashboard')) {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (!session) {
-      const redirectUrl = req.nextUrl.clone();
-      redirectUrl.pathname = '/login';
-      return NextResponse.redirect(redirectUrl);
+      if (!session) {
+        const redirectUrl = req.nextUrl.clone();
+        redirectUrl.pathname = '/login';
+        return NextResponse.redirect(redirectUrl);
+      }
+    } catch (error) {
+      console.error('Auth middleware error:', error);
+      // Em caso de erro, permitir acesso para evitar bloqueios
+      return res;
     }
   }
 

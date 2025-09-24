@@ -8,27 +8,53 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 export default function LoginPage() {
-    const supabase = createClientComponentClient();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [supabase, setSupabase] = useState<any>(null);
 
     useEffect(() => {
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                router.push('/dashboard');
-            }
-            setLoading(false);
-        });
+        // Verificar se estamos no cliente e se as variáveis de ambiente estão configuradas
+        if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL) {
+            const client = createClientComponentClient();
+            setSupabase(client);
+            
+            const {
+                data: { subscription },
+            } = client.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    router.push('/dashboard');
+                }
+                setLoading(false);
+            });
 
-        return () => subscription.unsubscribe();
-    }, [supabase, router]);
+            return () => subscription.unsubscribe();
+        } else {
+            setLoading(false);
+        }
+    }, [router]);
 
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-slate-50">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+            </div>
+        );
+    }
+
+    if (!supabase) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                        Configuração Necessária
+                    </h2>
+                    <p className="text-slate-600">
+                        As variáveis de ambiente do Supabase não estão configuradas.
+                    </p>
+                    <p className="text-sm text-slate-500 mt-2">
+                        Verifique o arquivo ENV-VARIABLES.md para mais informações.
+                    </p>
+                </div>
             </div>
         );
     }
