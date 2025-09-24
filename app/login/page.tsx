@@ -10,7 +10,7 @@ import Image from 'next/image';
 export default function LoginPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [supabase, setSupabase] = useState<any>(null);
+    const [supabase, setSupabase] = useState<ReturnType<typeof createClientComponentClient> | null>(null);
 
     useEffect(() => {
         // Verificar se estamos no cliente e se as variáveis de ambiente estão configuradas
