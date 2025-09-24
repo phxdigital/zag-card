@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
     }
     
-    const { subdomain, config, logo_url } = body;
+    const { subdomain, config, logo_url, thumbnail_url } = body;
 
     // Validar entrada
     if (!subdomain || !config) {
@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
         subdomain,
         config,
         logo_url,
+        thumbnail_url,
         user_id: session.user.id
       })
       .select()

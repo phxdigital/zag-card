@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS pages (
     subdomain TEXT UNIQUE NOT NULL,
     config JSONB NOT NULL DEFAULT '{}',
     logo_url TEXT,
+    thumbnail_url TEXT,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -22,6 +23,19 @@ BEGIN
         AND table_schema = 'public'
     ) THEN
         ALTER TABLE pages ADD COLUMN logo_url TEXT;
+    END IF;
+END $$;
+
+-- 1.2. Adicionar coluna thumbnail_url se não existir (para tabelas já criadas)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'pages' 
+        AND column_name = 'thumbnail_url'
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE pages ADD COLUMN thumbnail_url TEXT;
     END IF;
 END $$;
 

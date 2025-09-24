@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter, Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh } from 'lucide-react';
+import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter, Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, CreditCard as PixIcon, Linkedin } from 'lucide-react';
 import { canCreatePages } from '@/lib/config';
 
 type CustomLink = {
@@ -47,6 +47,7 @@ type PageConfig = {
     landingFont?: string;
     landingPageTitleColor?: string;
     landingPageSubtitleColor?: string;
+    socialButtonColors?: { [key: string]: string };
 };
 
 type QRCodeOptions = { text: string; width: number; height: number };
@@ -54,7 +55,7 @@ interface QRCodeConstructor {
     new (element: HTMLElement, options: QRCodeOptions): unknown;
 }
 
-type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high';
+type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high' | 'pix' | 'linkedin';
 
 const IconForName = ({ name, className, size = 16 }: { name: IconName; className?: string; size?: number }) => {
     const map: Record<IconName, React.ElementType> = {
@@ -129,6 +130,8 @@ const IconForName = ({ name, className, size = 16 }: { name: IconName; className
         'signal-low': SignalLow,
         'signal-medium': SignalMedium,
         'signal-high': SignalHigh,
+        pix: PixIcon,
+        linkedin: Linkedin,
     };
     const C = map[name];
     return <C className={className} size={size} />;
@@ -171,6 +174,15 @@ export default function DashboardPage() {
         // Links
         socialLinks: {},
         customLinks: [],
+        
+        // Cores dos botões sociais
+        socialButtonColors: {
+            'message-circle': '#25D366',
+            'instagram': '#E4405F',
+            'youtube': '#FF0000',
+            'pix': '#32BCAD',
+            'linkedin': '#0077B5',
+        },
     });
 
     const [activeStep, setActiveStep] = useState(1);
@@ -179,7 +191,7 @@ export default function DashboardPage() {
     const qrcodePreviewRef = useRef<HTMLDivElement>(null);
 
     const availableIcons: IconName[] = [
-        'message-circle', 'instagram', 'facebook', 'youtube', 'twitter', 'globe', 'map-pin', 'phone', 'mail', 'shopping-cart', 'link', 'image',
+        'message-circle', 'instagram', 'facebook', 'youtube', 'twitter', 'pix', 'linkedin', 'globe', 'map-pin', 'phone', 'mail', 'shopping-cart', 'link', 'image',
         'heart', 'star', 'camera', 'music', 'video', 'calendar', 'clock', 'user', 'users', 'home', 'building', 'car', 'plane', 'coffee', 'gift', 'book', 'gamepad2', 'headphones', 'mic', 'search', 'settings', 'download', 'upload', 'share', 'copy', 'check', 'x', 'plus', 'minus', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down', 'chevron-right', 'chevron-left', 'chevron-up', 'chevron-down', 'zap', 'target', 'award', 'trophy', 'shield', 'lock', 'unlock', 'eye', 'eye-off', 'bell', 'bell-off', 'volume2', 'volume-x', 'wifi', 'wifi-off', 'battery', 'battery-low', 'signal', 'signal-zero', 'signal-low', 'signal-medium', 'signal-high'
     ];
     const commonEmojis = ['✨', '🚀', '⭐', '❤️', '✅', '👇', '📱', '📞', '💡', '🔥', '🎉', '👋', '🙌', '👍', '😎', '🎁', '🛒', '🔗', '🧭', '💬', '📧', '☎️', '📍', '💼', '🏷️', '🆕', '🏆', '🖼️', '🎬', '🌟', '💫', '🎯', '🎊', '🎈', '🎂', '🍰', '☕', '🌺', '🌸', '🌻', '🌷', '🌹', '🌿', '🍀', '🌈', '☀️', '🌙', '⭐', '💎', '🎪', '🎨', '🎭', '🎪', '🎸', '🎵', '🎶', '🎤', '🎧', '📷', '📹', '🎥', '💻', '📱', '⌚', '📺', '🔊', '🎮', '🕹️', '🎲', '🃏', '🎴', '🀄', '🎯', '🏹', '🎣', '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🏒', '🏑', '🏏', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🏊', '🚴', '🚵', '🤸', '🤾', '🤽', '🤹', '🧘', '🏃', '🚶', '🧗', '🏇', '🏊', '🏄', '🚣', '🏊', '🚴', '🚵'];
@@ -479,18 +491,121 @@ export default function DashboardPage() {
         };
     }, []);
 
-    const addSocialPreset = (kind: 'whatsapp' | 'instagram' | 'facebook' | 'youtube' | 'twitter') => {
+    const addSocialPreset = (kind: 'whatsapp' | 'instagram' | 'youtube' | 'pix' | 'linkedin') => {
         const presets: { [k in typeof kind]: { text: string; url: string; icon: IconName; color: string } } = {
             whatsapp: { text: 'WhatsApp', url: 'https://wa.me/+55', icon: 'message-circle', color: '#16a34a' },
             instagram: { text: 'Instagram', url: 'https://instagram.com/', icon: 'instagram', color: '#DB2777' },
-            facebook: { text: 'Facebook', url: 'https://facebook.com/', icon: 'facebook', color: '#2563EB' },
             youtube: { text: 'YouTube', url: 'https://youtube.com/', icon: 'youtube', color: '#DC2626' },
-            twitter: { text: 'Twitter/X', url: 'https://twitter.com/', icon: 'twitter', color: '#0ea5e9' },
+            pix: { text: 'PIX', url: 'https://pix.example.com/', icon: 'pix', color: '#32BCAD' },
+            linkedin: { text: 'LinkedIn', url: 'https://linkedin.com/in/', icon: 'linkedin', color: '#0077B5' },
         } as const;
+        
+        // Verificar se já existe um botão deste tipo
+        const existingButton = config.customLinks?.find(link => link.isSocial && link.icon === presets[kind].icon);
+        if (existingButton) {
+            alert(`Já existe um botão ${presets[kind].text} adicionado. Você pode editar ou remover o existente.`);
+            return;
+        }
+        
         const p = presets[kind];
         const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: p.color, bgColor2: p.color, textColor: '#ffffff', isSocial: true };
         // Botões sociais são ilimitados
         setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
+    };
+
+    const isSocialButtonActive = (kind: 'whatsapp' | 'instagram' | 'youtube' | 'pix' | 'linkedin') => {
+        const iconMap = {
+            whatsapp: 'message-circle',
+            instagram: 'instagram',
+            youtube: 'youtube',
+            pix: 'pix',
+            linkedin: 'linkedin',
+        };
+        return config.customLinks?.some(link => link.isSocial && link.icon === iconMap[kind]) || false;
+    };
+
+    const moveButtonUp = (index: number) => {
+        if (index === 0) return;
+        const newLinks = [...(config.customLinks || [])];
+        [newLinks[index - 1], newLinks[index]] = [newLinks[index], newLinks[index - 1]];
+        setConfig(prev => ({ ...prev, customLinks: newLinks }));
+    };
+
+    const moveButtonDown = (index: number) => {
+        const links = config.customLinks || [];
+        if (index === links.length - 1) return;
+        const newLinks = [...links];
+        [newLinks[index], newLinks[index + 1]] = [newLinks[index + 1], newLinks[index]];
+        setConfig(prev => ({ ...prev, customLinks: newLinks }));
+    };
+
+    const generateThumbnail = () => {
+        // Criar um canvas para gerar o thumbnail
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+
+        // Definir dimensões do thumbnail
+        canvas.width = 300;
+        canvas.height = 200;
+
+        // Desenhar fundo
+        ctx.fillStyle = config.landingPageBgColor || '#F8FAFC';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Desenhar logo se existir
+        if (logoDataUrl) {
+            const img = new window.Image();
+            img.onload = () => {
+                const logoSize = Math.min(60, canvas.width * 0.2);
+                const x = (canvas.width - logoSize) / 2;
+                const y = 20;
+                
+                if (config.landingPageLogoShape === 'circle') {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(img, x, y, logoSize, logoSize);
+                    ctx.restore();
+                } else {
+                    ctx.drawImage(img, x, y, logoSize, logoSize);
+                }
+            };
+            img.src = logoDataUrl;
+        }
+
+        // Desenhar título
+        ctx.fillStyle = config.landingPageTitleColor || '#1e293b';
+        ctx.font = 'bold 16px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(config.landingPageTitleText || 'Bem-vindo(a)!', canvas.width / 2, 100);
+
+        // Desenhar subtítulo se existir
+        if (config.landingPageSubtitleText) {
+            ctx.fillStyle = config.landingPageSubtitleColor || '#64748b';
+            ctx.font = '12px Inter, sans-serif';
+            ctx.fillText(config.landingPageSubtitleText, canvas.width / 2, 120);
+        }
+
+        // Desenhar botões sociais
+        const socialButtons = config.customLinks?.filter(link => link.isSocial) || [];
+        const buttonSize = 20;
+        const buttonSpacing = 30;
+        const startX = (canvas.width - (socialButtons.length * buttonSpacing)) / 2;
+        
+        socialButtons.forEach((link, index) => {
+            const x = startX + (index * buttonSpacing);
+            const y = 140;
+            
+            const socialColor = config.socialButtonColors?.[link.icon || ''] || link.bgColor1;
+            ctx.fillStyle = socialColor;
+            ctx.beginPath();
+            ctx.arc(x, y, buttonSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        return canvas.toDataURL('image/png');
     };
 
 
@@ -938,12 +1053,80 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-2">Botões rápidos (sociais)</label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        <button onClick={() => addSocialPreset('whatsapp')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><MessageCircle size={14}/> WhatsApp</button>
-                                                        <button onClick={() => addSocialPreset('instagram')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Instagram size={14}/> Instagram</button>
-                                                        <button onClick={() => addSocialPreset('facebook')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Facebook size={14}/> Facebook</button>
-                                                        <button onClick={() => addSocialPreset('youtube')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Youtube size={14}/> YouTube</button>
-                                                        <button onClick={() => addSocialPreset('twitter')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Twitter size={14}/> Twitter</button>
+                                                    <div className="flex flex-wrap gap-2 mb-4">
+                                                        <button 
+                                                            onClick={() => addSocialPreset('whatsapp')} 
+                                                            className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-colors ${
+                                                                isSocialButtonActive('whatsapp') 
+                                                                    ? 'bg-blue-500 text-white' 
+                                                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                            }`}
+                                                        >
+                                                            <MessageCircle size={14}/> WhatsApp
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => addSocialPreset('instagram')} 
+                                                            className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-colors ${
+                                                                isSocialButtonActive('instagram') 
+                                                                    ? 'bg-blue-500 text-white' 
+                                                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                            }`}
+                                                        >
+                                                            <Instagram size={14}/> Instagram
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => addSocialPreset('youtube')} 
+                                                            className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-colors ${
+                                                                isSocialButtonActive('youtube') 
+                                                                    ? 'bg-blue-500 text-white' 
+                                                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                            }`}
+                                                        >
+                                                            <Youtube size={14}/> YouTube
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => addSocialPreset('pix')} 
+                                                            className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-colors ${
+                                                                isSocialButtonActive('pix') 
+                                                                    ? 'bg-blue-500 text-white' 
+                                                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                            }`}
+                                                        >
+                                                            <PixIcon size={14}/> PIX
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => addSocialPreset('linkedin')} 
+                                                            className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-colors ${
+                                                                isSocialButtonActive('linkedin') 
+                                                                    ? 'bg-blue-500 text-white' 
+                                                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                            }`}
+                                                        >
+                                                            <Linkedin size={14}/> LinkedIn
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    {/* Cores dos Botões Sociais */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-2">Cores dos Botões Sociais</label>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            {Object.entries(config.socialButtonColors || {}).map(([icon, color]) => (
+                                                                <div key={icon} className="flex items-center gap-2">
+                                                                    <IconForName name={icon as IconName} size={16} />
+                                                                    <input 
+                                                                        type="color" 
+                                                                        value={color} 
+                                                                        onChange={(e) => {
+                                                                            const newColors = { ...config.socialButtonColors };
+                                                                            newColors[icon] = e.target.value;
+                                                                            handleConfigChange('socialButtonColors', newColors);
+                                                                        }} 
+                                                                        className="w-8 h-8 border border-slate-300 rounded-md" 
+                                                                    />
+                                                                    <span className="text-xs text-slate-600 capitalize">{icon.replace('-', ' ')}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div>
@@ -965,13 +1148,29 @@ export default function DashboardPage() {
                                                     <PlusCircle /> Adicionar Novo Botão
                                                 </button>
                                                 <div className="space-y-2">
-                                                    {config.customLinks?.map((link) => (
+                                                    {config.customLinks?.map((link, index) => (
                                                         <div key={link.id} className="flex items-center justify-between bg-slate-50 p-2 rounded-md">
                                                             <div className="flex items-center gap-2">
                                                                 {link.icon && <IconForName name={link.icon as IconName} className="w-5 h-5 text-slate-600" />}
                                                                 <span className="text-sm font-medium">{link.text} {link.isSocial && <em className="text-xs text-slate-500 italic">({link.url}coloque-seu-dado)</em>}</span>
                                                             </div>
-                                                            <div>
+                                                            <div className="flex items-center gap-1">
+                                                                <button 
+                                                                    onClick={() => moveButtonUp(index)} 
+                                                                    disabled={index === 0}
+                                                                    className="p-1 text-slate-500 hover:text-slate-800 disabled:text-slate-300 disabled:cursor-not-allowed"
+                                                                    title="Mover para cima"
+                                                                >
+                                                                    <ArrowUp size={14} />
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => moveButtonDown(index)} 
+                                                                    disabled={index === (config.customLinks?.length || 0) - 1}
+                                                                    className="p-1 text-slate-500 hover:text-slate-800 disabled:text-slate-300 disabled:cursor-not-allowed"
+                                                                    title="Mover para baixo"
+                                                                >
+                                                                    <ArrowDown size={14} />
+                                                                </button>
                                                                 <button onClick={() => openLinkEditor(link)} className="p-1 text-slate-500 hover:text-slate-800"><Edit size={16} /></button>
                                                                 <button onClick={() => deleteCustomLink(link.id)} className="p-1 text-red-500 hover:text-red-700"><Trash2 size={16} /></button>
                                                             </div>
@@ -1001,15 +1200,18 @@ export default function DashboardPage() {
                                                 {config.landingPageSubtitleText && <p className="text-sm px-2 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageSubtitleColor || '#64748b' }}>{config.landingPageSubtitleText}</p>}
                                                 {/* Botões Sociais (Redondos) */}
                                                 <div className="w-full flex flex-wrap justify-center items-center gap-3 mb-4">
-                                                    {config.customLinks?.filter(link => link.isSocial).map((link) => (
-                                                        <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
-                                                            {link.icon ? (
-                                                                <IconForName name={link.icon as IconName} size={20} />
-                                                            ) : (
-                                                                <span className="text-xs font-bold">?</span>
-                                                            )}
-                                                        </div>
-                                                    ))}
+                                                    {config.customLinks?.filter(link => link.isSocial).map((link) => {
+                                                        const socialColor = config.socialButtonColors?.[link.icon || ''] || link.bgColor1;
+                                                        return (
+                                                            <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : socialColor }}>
+                                                                {link.icon ? (
+                                                                    <IconForName name={link.icon as IconName} size={20} />
+                                                                ) : (
+                                                                    <span className="text-xs font-bold">?</span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                                 
                                                 {/* Botões Personalizados (Retangulares) */}
@@ -1054,11 +1256,15 @@ export default function DashboardPage() {
                                             await new Promise(resolve => setTimeout(resolve, 500));
                                             setSavingMessage('Publicando página...');
 
+                                            // Gerar thumbnail da landing page
+                                            const thumbnail = generateThumbnail();
+                                            
                                             // Verificar tamanho dos dados antes de enviar
                                             const payload = {
                                                 subdomain,
                                                 config,
-                                                logo_url: logoDataUrl
+                                                logo_url: logoDataUrl,
+                                                thumbnail_url: thumbnail
                                             };
                                             
                                             const payloadSize = JSON.stringify(payload).length;
@@ -1168,9 +1374,9 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
         const baseUrls: { [key: string]: string } = {
             'message-circle': 'https://wa.me/+55',
             'instagram': 'https://instagram.com/',
-            'facebook': 'https://facebook.com/',
             'youtube': 'https://youtube.com/',
-            'twitter': 'https://twitter.com/',
+            'pix': 'https://pix.example.com/',
+            'linkedin': 'https://linkedin.com/in/',
         };
         return baseUrls[icon] || '';
     };
@@ -1180,9 +1386,9 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
         const placeholders: { [key: string]: string } = {
             'message-circle': 'Ex: 11999999999 (código de área + número)',
             'instagram': 'Ex: @seuusuario',
-            'facebook': 'Ex: seuusuario',
             'youtube': 'Ex: @seucanal',
-            'twitter': 'Ex: @seuusuario',
+            'pix': 'Ex: chave-pix',
+            'linkedin': 'Ex: seuusuario',
         };
         return placeholders[icon] || '';
     };

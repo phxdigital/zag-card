@@ -62,7 +62,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
     }
     
-    const { config, logo_url } = body;
+    const { config, logo_url, thumbnail_url } = body;
 
     // Validar entrada
     if (!config) {
@@ -74,7 +74,8 @@ export async function PUT(
       .from('pages')
       .update({
         config,
-        logo_url
+        logo_url,
+        thumbnail_url
       })
       .eq('id', id)
       .eq('user_id', session.user.id) // Dupla verificação de segurança

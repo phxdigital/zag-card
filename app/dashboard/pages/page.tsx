@@ -19,6 +19,7 @@ interface Page {
   title: string;
   subtitle: string;
   logo_url?: string;
+  thumbnail_url?: string;
   created_at: string;
   updated_at?: string; // Tornar opcional
   status: 'active' | 'draft';
@@ -221,27 +222,37 @@ export default function MyPagesPage() {
               {/* Page Preview */}
               <div className="p-4 bg-gray-50">
                 <div className="aspect-w-16 aspect-h-9 bg-white rounded-lg shadow-sm border">
-                  <div className="flex flex-col items-center justify-center p-4 h-32">
-                    {page.logo_url ? (
-                      <Image
-                        src={page.logo_url}
-                        alt="Logo"
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 rounded-full object-cover mb-2"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
-                    )}
-                    <h3 className="text-sm font-medium text-gray-900 text-center truncate w-full">
-                      {page.title || 'Sem título'}
-                    </h3>
-                    {page.subtitle && (
-                      <p className="text-xs text-gray-500 text-center truncate w-full mt-1">
-                        {page.subtitle}
-                      </p>
-                    )}
-                  </div>
+                  {page.thumbnail_url ? (
+                    <Image
+                      src={page.thumbnail_url}
+                      alt="Preview da Landing Page"
+                      width={300}
+                      height={200}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-4 h-32">
+                      {page.logo_url ? (
+                        <Image
+                          src={page.logo_url}
+                          alt="Logo"
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover mb-2"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
+                      )}
+                      <h3 className="text-sm font-medium text-gray-900 text-center truncate w-full">
+                        {page.title || 'Sem título'}
+                      </h3>
+                      {page.subtitle && (
+                        <p className="text-xs text-gray-500 text-center truncate w-full mt-1">
+                          {page.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
