@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function LoginPage() {
     return (
@@ -32,12 +33,12 @@ export default function LoginPage() {
                         <p className="text-slate-600 mb-6">
                             A autenticação será implementada em breve. Por enquanto, você pode acessar o dashboard diretamente.
                         </p>
-                        <a 
+                        <Link 
                             href="/dashboard" 
                             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200"
                         >
                             Acessar Dashboard
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
