@@ -25,8 +25,15 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
-  // Autenticação apenas para rotas protegidas
+  // Autenticação apenas para rotas protegidas (desabilitada durante desenvolvimento)
   if (pathname.startsWith('/dashboard')) {
+    // Durante desenvolvimento, permitir acesso direto ao dashboard
+    // TODO: Reativar autenticação quando configurar Google/Meta OAuth
+    console.log('Dashboard access allowed (auth disabled for development)');
+    return res;
+    
+    // Código de autenticação comentado para desenvolvimento:
+    /*
     try {
       const {
         data: { session },
@@ -39,9 +46,9 @@ export async function middleware(req: NextRequest) {
       }
     } catch (error) {
       console.error('Auth middleware error:', error);
-      // Em caso de erro, permitir acesso para evitar bloqueios
       return res;
     }
+    */
   }
 
   // Lógica de subdomínio apenas para requests específicos
