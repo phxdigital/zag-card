@@ -143,7 +143,7 @@ export default function DashboardPage() {
         cardTextColor: '#1e293b',
         cardText: '',
         isTextEnabled: false,
-        logoSize: 60,
+        logoSize: 80,
         logoPosition: 0, // 0 = centro
         logoOpacityFront: 1,
         logoRotationFront: 0,
@@ -151,7 +151,7 @@ export default function DashboardPage() {
         // Configurações do cartão - VERSO
         cardBackBgColor: '#e2e8f0',
         qrCodeSize: 35,
-        clientLogoBackSize: 35,
+        clientLogoBackSize: 50,
         qrCodePosition: 'justify-start',
         logoOpacityBack: 1,
         logoRotationBack: 0,
@@ -221,7 +221,7 @@ export default function DashboardPage() {
             cardTextColor: '#1e293b',
             cardText: '',
             isTextEnabled: false,
-            logoSize: 60,
+            logoSize: 80,
             logoPosition: 0, // 0 = centro
             logoOpacityFront: 1,
             logoRotationFront: 0,
@@ -229,7 +229,7 @@ export default function DashboardPage() {
             // Configurações do cartão - VERSO
             cardBackBgColor: '#e2e8f0',
             qrCodeSize: 35,
-            clientLogoBackSize: 35,
+            clientLogoBackSize: 50,
             qrCodePosition: 'justify-start',
             logoOpacityBack: 1,
             logoRotationBack: 0,
@@ -408,7 +408,7 @@ export default function DashboardPage() {
             cardTextColor: '#1e293b',
             cardText: '',
             isTextEnabled: false,
-            logoSize: 60,
+            logoSize: 80,
             logoPosition: 0, // 0 = centro
             logoOpacityFront: 1,
             logoRotationFront: 0,
@@ -416,7 +416,7 @@ export default function DashboardPage() {
             // Configurações do cartão - VERSO
             cardBackBgColor: '#e2e8f0',
             qrCodeSize: 35,
-            clientLogoBackSize: 35,
+            clientLogoBackSize: 50,
             qrCodePosition: 'justify-start',
             logoOpacityBack: 1,
             logoRotationBack: 0,
@@ -730,7 +730,8 @@ export default function DashboardPage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo ({config.logoSize}%)</label>
-                                                <input type="range" min={40} max={100} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                                <input type="range" min={20} max={150} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">Texto do Cartão</label>
@@ -842,7 +843,8 @@ export default function DashboardPage() {
                                         <hr />
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da sua Logo no verso ({config.clientLogoBackSize}%)</label>
-                                            <input type="range" min={20} max={70} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            <input type="range" min={10} max={120} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -946,7 +948,8 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo na Página ({config.landingPageLogoSize}px)</label>
-                                                    <input type="range" min={48} max={128} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                                    <input type="range" min={32} max={200} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                                    <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo da Página</label>
