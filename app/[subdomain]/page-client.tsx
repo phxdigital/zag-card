@@ -3,8 +3,8 @@
 import React from 'react';
 import {
     MessageCircle, Instagram, Facebook, Link as LinkIcon,
-    ShoppingCart, Globe, Wifi, DollarSign, BookOpen, MapPin,
-    Phone, Mail, Info, Star, Image as ImageIcon, Video,
+    ShoppingCart, Globe, Wifi, MapPin,
+    Phone, Mail, Star, Image as ImageIcon, Video,
     Heart, Camera, Music, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Youtube, Twitter
 } from 'lucide-react';
 import Image from 'next/image';

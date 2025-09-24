@@ -13,7 +13,7 @@ export default async function SubdomainPage({ params }: SubdomainPageProps) {
     const { subdomain } = await params;
 
     // --- Busca os dados da página no Supabase ---
-    const { data: pageData, error } = await supabase
+    const { data: pageData } = await supabase
         .from('pages') // Sua tabela no Supabase
         .select('config, logo_url') // As colunas que você precisa
         .eq('subdomain', subdomain)

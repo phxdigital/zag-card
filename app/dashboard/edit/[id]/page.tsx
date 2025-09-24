@@ -352,7 +352,7 @@ export default function EditPage() {
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.error || errorMessage;
-                } catch (parseError) {
+                } catch {
                     // Se não conseguir fazer parse do JSON, usar o status e texto da resposta
                     const responseText = await response.text();
                     console.error('Response text:', responseText);
