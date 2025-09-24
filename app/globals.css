@@ -24,3 +24,44 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  body {
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    /* Center content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  
+  /* Prevent touch dragging on sliders */
+  input[type="range"] {
+    touch-action: pan-y;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Prevent text selection on mobile */
+  .no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Ensure main content is centered and doesn't overflow */
+  main {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+}

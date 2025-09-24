@@ -194,7 +194,16 @@ export default function DashboardPage() {
     const subdomainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
-        setConfig((prev) => ({ ...prev, [key]: value }));
+        setConfig((prev) => {
+            const newConfig = { ...prev, [key]: value };
+            
+            // Sincronizar cor de fundo da frente com o verso
+            if (key === 'cardBgColor') {
+                newConfig.cardBackBgColor = value as string;
+            }
+            
+            return newConfig;
+        });
     };
 
     const resetToNewPage = () => {
@@ -586,7 +595,7 @@ export default function DashboardPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                     <p className="text-center font-semibold mb-4">Frente</p>
-                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border">
+                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border overflow-hidden">
                                         {/* Logo com posicionamento simplificado e centralizado */}
                                         {logoDataUrl ? (
                                             <Image 
@@ -674,7 +683,7 @@ export default function DashboardPage() {
                                                     max={30} 
                                                     value={config.logoPosition || 0} 
                                                     onChange={(e) => handleConfigChange('logoPosition', Number(e.target.value))} 
-                                                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+                                                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" 
                                                 />
                                                 <span className="text-xs text-slate-500">Direita</span>
                                             </div>
@@ -688,11 +697,11 @@ export default function DashboardPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Frente) ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
-                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
                                         <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Frente) ({config.logoRotationFront || 0}°)</label>
-                                                <input type="range" min={-180} max={180} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                <input type="range" min={-180} max={180} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
                                         </div>
                                         <div>
@@ -712,7 +721,7 @@ export default function DashboardPage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo ({config.logoSize}%)</label>
-                                            <input type="range" min={40} max={100} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                <input type="range" min={40} max={100} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">Texto do Cartão</label>
@@ -802,16 +811,17 @@ export default function DashboardPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade da Logo (Verso) ({Math.round((config.logoOpacityBack ?? 0.3) * 100)}%)</label>
-                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityBack ?? 0.3) * 100)} onChange={(e) => handleConfigChange('logoOpacityBack', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityBack ?? 0.3) * 100)} onChange={(e) => handleConfigChange('logoOpacityBack', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Rotação da Logo (Verso) ({config.logoRotationBack || 0}°)</label>
-                                                <input type="range" min={-180} max={180} value={config.logoRotationBack || 0} onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                <input type="range" min={-180} max={180} value={config.logoRotationBack || 0} onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho do QR Code ({config.qrCodeSize}%)</label>
-                                            <input type="range" min={25} max={50} value={config.qrCodeSize} onChange={(e) => handleConfigChange('qrCodeSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            <input type="range" min={25} max={50} value={config.qrCodeSize} onChange={(e) => handleConfigChange('qrCodeSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            <p className="text-xs text-slate-500 mt-1">💡 O tamanho padrão (35%) é o recomendado para melhor leitura</p>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">Posição do QR Code</label>
@@ -823,7 +833,7 @@ export default function DashboardPage() {
                                         <hr />
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da sua Logo no verso ({config.clientLogoBackSize}%)</label>
-                                            <input type="range" min={20} max={70} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            <input type="range" min={20} max={70} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -837,7 +847,7 @@ export default function DashboardPage() {
                                                     max={30} 
                                                     value={config.logoPositionBack ?? 0} 
                                                     onChange={(e) => handleConfigChange('logoPositionBack', Number(e.target.value))} 
-                                                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+                                                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" 
                                                 />
                                                 <span className="text-xs text-slate-500">Direita</span>
                                             </div>
@@ -927,7 +937,7 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo na Página ({config.landingPageLogoSize}px)</label>
-                                                    <input type="range" min={48} max={128} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                                    <input type="range" min={48} max={128} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo da Página</label>
@@ -1197,14 +1207,21 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                     </span>
                     <input 
                         type="text" 
-                        value={data.url.replace(getSocialBaseUrl(data.icon), '')} 
-                        onChange={(e) => setData({ ...data, url: getSocialBaseUrl(data.icon) + e.target.value })} 
+                        value={getSocialBaseUrl(data.icon) ? data.url.replace(getSocialBaseUrl(data.icon), '') : data.url} 
+                        onChange={(e) => {
+                            const baseUrl = getSocialBaseUrl(data.icon);
+                            const newUrl = baseUrl ? baseUrl + e.target.value : e.target.value;
+                            setData({ ...data, url: newUrl });
+                        }} 
                         placeholder={getSocialBaseUrl(data.icon) ? "seuusuario" : "exemplo.com"} 
                         className="flex-1 px-3 py-2 border border-slate-300 rounded-r-md" 
                     />
                 </div>
                 {getSocialPlaceholder(data.icon) && (
                     <p className="text-xs text-slate-500 mt-1 italic">{getSocialPlaceholder(data.icon)}</p>
+                )}
+                {!getSocialBaseUrl(data.icon) && (
+                    <p className="text-xs text-slate-500 mt-1 italic">Digite a URL completa (ex: https://meusite.com)</p>
                 )}
                 </div>
                 <div>

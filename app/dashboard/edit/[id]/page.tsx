@@ -876,14 +876,7 @@ export default function EditPage() {
                 )}
 
                 {/* Navigation */}
-                <div className="flex justify-between mt-8">
-                    <button 
-                        onClick={() => setActiveStep(1)} 
-                        className="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300"
-                        disabled={activeStep === 1}
-                    >
-                        Anterior
-                    </button>
+                <div className="flex justify-end mt-8">
                     {activeStep === 1 && (
                         <button 
                             onClick={() => setActiveStep(2)} 
