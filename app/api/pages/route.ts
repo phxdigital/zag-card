@@ -40,7 +40,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    // Verificar se o request tem body
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) { // 10MB
+      return NextResponse.json({ error: 'Request too large' }, { status: 413 });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      console.error('JSON parse error:', error);
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    }
+    
     const { subdomain, config, logo_url } = body;
 
     // Validar entrada

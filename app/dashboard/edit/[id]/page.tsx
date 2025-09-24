@@ -348,8 +348,17 @@ export default function EditPage() {
                 await new Promise(resolve => setTimeout(resolve, 300));
                 router.push(`/success?subdomain=${subdomain}&pageId=${pageId}&edit=true`);
             } else {
-                const error = await response.json();
-                throw new Error(error.error || 'Erro ao salvar');
+                let errorMessage = 'Erro ao salvar';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch (parseError) {
+                    // Se não conseguir fazer parse do JSON, usar o status e texto da resposta
+                    const responseText = await response.text();
+                    console.error('Response text:', responseText);
+                    errorMessage = `Erro ${response.status}: ${responseText.substring(0, 100)}`;
+                }
+                throw new Error(errorMessage);
             }
         } catch (error) {
             console.error('Erro ao salvar:', error);

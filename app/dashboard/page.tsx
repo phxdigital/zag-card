@@ -279,6 +279,47 @@ export default function DashboardPage() {
         }
     };
 
+    const optimizeImage = (dataUrl: string, maxSize: number = 800): Promise<string> => {
+        return new Promise((resolve) => {
+            const img = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                if (!ctx) {
+                    resolve(dataUrl);
+                    return;
+                }
+                
+                // Calcular novas dimensões mantendo proporção
+                let { width, height } = img;
+                if (width > height) {
+                    if (width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Desenhar imagem redimensionada
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Converter para base64 com qualidade reduzida
+                const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                resolve(optimizedDataUrl);
+            };
+            img.onerror = () => resolve(dataUrl);
+            img.src = dataUrl;
+        });
+    };
+
     const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -287,7 +328,12 @@ export default function DashboardPage() {
                 return;
             }
             const reader = new FileReader();
-            reader.onload = (event) => setLogoDataUrl(event.target?.result as string);
+            reader.onload = async (event) => {
+                const originalDataUrl = event.target?.result as string;
+                // Otimizar a imagem antes de definir
+                const optimizedDataUrl = await optimizeImage(originalDataUrl);
+                setLogoDataUrl(optimizedDataUrl);
+            };
             reader.readAsDataURL(file);
         }
     };
@@ -986,22 +1032,46 @@ export default function DashboardPage() {
                                             await new Promise(resolve => setTimeout(resolve, 500));
                                             setSavingMessage('Publicando página...');
 
+                                            // Verificar tamanho dos dados antes de enviar
+                                            const payload = {
+                                                subdomain,
+                                                config,
+                                                logo_url: logoDataUrl
+                                            };
+                                            
+                                            const payloadSize = JSON.stringify(payload).length;
+                                            console.log('Payload size:', payloadSize, 'bytes');
+                                            
+                                            // Se o payload for muito grande, mostrar aviso
+                                            if (payloadSize > 1024 * 1024) { // 1MB
+                                                console.warn('Payload muito grande:', payloadSize, 'bytes');
+                                            }
+
+                                            // Detectar se é mobile
+                                            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                                            console.log('Is mobile:', isMobile);
+                                            
                                             // Salvar no banco de dados
                                             const response = await fetch('/api/pages', {
                                                 method: 'POST',
                                                 headers: {
                                                     'Content-Type': 'application/json',
                                                 },
-                                                body: JSON.stringify({
-                                                    subdomain,
-                                                    config,
-                                                    logo_url: logoDataUrl
-                                                }),
+                                                body: JSON.stringify(payload),
                                             });
 
                                             if (!response.ok) {
-                                                const error = await response.json();
-                                                throw new Error(error.error || 'Erro ao salvar');
+                                                let errorMessage = 'Erro ao salvar';
+                                                try {
+                                                    const errorData = await response.json();
+                                                    errorMessage = errorData.error || errorMessage;
+                                                } catch (parseError) {
+                                                    // Se não conseguir fazer parse do JSON, usar o status e texto da resposta
+                                                    const responseText = await response.text();
+                                                    console.error('Response text:', responseText);
+                                                    errorMessage = `Erro ${response.status}: ${responseText.substring(0, 100)}`;
+                                                }
+                                                throw new Error(errorMessage);
                                             }
 
                                             setSavingMessage('Redirecionando...');
