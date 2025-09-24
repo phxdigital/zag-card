@@ -564,7 +564,7 @@ export default function DashboardPage() {
                 </button>
             </div>
             
-            <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 card-container">
                 <header className="mb-8 flex items-center space-x-4">
                     <Image src="/logo-zag.png" alt="Zag Card Logo" width={128} height={128} className="h-24 w-auto" style={{ width: 'auto', height: 'auto' }} />
                     <div>
@@ -592,29 +592,38 @@ export default function DashboardPage() {
                 <main>
                     {activeStep === 1 && (
                         <div>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 card-container">
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                     <p className="text-center font-semibold mb-4">Frente</p>
-                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border overflow-hidden">
+                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border overflow-hidden card-preview">
                                         {/* Logo com posicionamento simplificado e centralizado */}
                                         {logoDataUrl ? (
-                                            <Image 
-                                                src={logoDataUrl} 
-                                                alt="Logo Preview" 
-                                                width={120} 
-                                                height={120} 
-                                                className="object-contain absolute transition-all duration-300" 
+                                            <div 
+                                                className="absolute transition-all duration-300"
                                                 style={{ 
                                                     width: `${config.logoSize || 60}%`, 
-                                                    height: 'auto',
+                                                    height: `${config.logoSize || 60}%`,
                                                     top: '50%', 
                                                     left: `${50 + (config.logoPosition || 0) * 0.3}%`, 
                                                     transform: `translate(-50%, -50%) rotate(${config.logoRotationFront || 0}deg)`,
-                                                    opacity: config.logoOpacityFront ?? 1, 
-                                                filter: 'none',
-                                                mixBlendMode: 'normal'
+                                                    opacity: config.logoOpacityFront ?? 1,
+                                                    overflow: 'hidden',
+                                                    borderRadius: '8px'
                                                 }}
-                                            />
+                                            >
+                                                <Image 
+                                                    src={logoDataUrl} 
+                                                    alt="Logo Preview" 
+                                                    width={120} 
+                                                    height={120} 
+                                                    className="object-contain w-full h-full image-transparent" 
+                                                    style={{ 
+                                                        filter: 'none',
+                                                        mixBlendMode: 'normal',
+                                                        background: 'transparent'
+                                                    }}
+                                                />
+                                            </div>
                                         ) : (
                                             <button
                                                 onClick={() => {
@@ -738,9 +747,9 @@ export default function DashboardPage() {
                                 </div>
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                     <p className="text-center font-semibold mb-4">Verso</p>
-                                    <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg p-4 border relative overflow-hidden">
+                                    <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg p-4 border relative overflow-hidden card-preview">
                                         {logoDataUrl && (
-                                            <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: `${50 + (config.logoPositionBack ?? 0) * 0.3}%`, transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3 }} />
+                                            <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300 image-transparent" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: `${50 + (config.logoPositionBack ?? 0) * 0.3}%`, transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3, background: 'transparent' }} />
                                         )}
                                         <div className={`absolute inset-0 p-4 flex items-center ${config.qrCodePosition}`}>
                                             <div ref={qrcodePreviewRef} className="bg-white p-1 rounded-md aspect-square" style={{ width: `${config.qrCodeSize}%` }} />
@@ -979,7 +988,7 @@ export default function DashboardPage() {
                                         <div style={{ backgroundColor: config.landingPageBgColor, backgroundImage: config.landingPageBgImage ? `url('${config.landingPageBgImage}')` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }} className="flex-grow overflow-y-auto p-4 rounded-2xl">
                                             <div className="flex flex-col items-center text-center space-y-4">
                                                 {logoDataUrl ? (
-                                                    <Image src={logoDataUrl} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} />
+                                                    <Image src={logoDataUrl} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
                                                 ) : (
                                                     <div className={`w-24 h-24 bg-slate-200 flex items-center justify-center shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`}>
                                                         <ImageIcon className="w-8 h-8 text-slate-400" />
@@ -1190,7 +1199,17 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
             alert('Texto e URL são obrigatórios.'); 
             return;
         }
-        onSave(data);
+        
+        // Garantir que URLs personalizadas tenham protocolo
+        let finalUrl = data.url;
+        if (!getSocialBaseUrl(data.icon)) {
+            // Se não é um botão social, garantir que tenha protocolo
+            if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+                finalUrl = 'http://' + finalUrl;
+            }
+        }
+        
+        onSave({ ...data, url: finalUrl });
     };
 
     return (

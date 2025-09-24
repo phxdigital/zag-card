@@ -30,11 +30,6 @@ body {
   body {
     /* Prevent horizontal scrolling */
     overflow-x: hidden;
-    /* Center content */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
   }
   
   /* Prevent touch dragging on sliders */
@@ -58,10 +53,40 @@ body {
     user-select: none;
   }
   
-  /* Ensure main content is centered and doesn't overflow */
+  /* Ensure main content doesn't overflow */
   main {
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
   }
+  
+  /* Fix card layout on mobile */
+  .card-container {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Ensure grid layouts are responsive */
+  .grid {
+    gap: 1rem;
+  }
+  
+  /* Make card previews responsive */
+  .card-preview {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+}
+
+/* Fix PNG transparency issues */
+img {
+  background: transparent !important;
+}
+
+/* Ensure images maintain transparency */
+.image-transparent {
+  background: transparent !important;
+  background-color: transparent !important;
 }
