@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
@@ -10,8 +11,7 @@ import {
   User, 
   Menu, 
   X,
-  LogOut,
-  Plus
+  LogOut
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -61,7 +61,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
           <div className="flex h-16 items-center justify-between px-4">
-            <h1 className="text-xl font-bold text-gray-900">Zag NFC</h1>
+            <div className="flex items-center gap-2">
+              <Image 
+                src="/logo-zag.png" 
+                alt="Zag NFC" 
+                width={32} 
+                height={32} 
+                className="h-8 w-auto"
+              />
+              <span className="text-sm font-medium text-gray-700">Menu</span>
+            </div>
             <button
               onClick={() => setSidebarOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -105,7 +114,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
           <div className="flex h-16 items-center px-4">
-            <h1 className="text-xl font-bold text-gray-900">Zag NFC</h1>
+            <div className="flex items-center gap-2">
+              <Image 
+                src="/logo-zag.png" 
+                alt="Zag NFC" 
+                width={32} 
+                height={32} 
+                className="h-8 w-auto"
+              />
+              <span className="text-sm font-medium text-gray-700">Menu</span>
+            </div>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {menuItems.map((item) => {
@@ -152,16 +170,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1" />
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              {/* Quick actions */}
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-x-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
-              >
-                <Plus className="h-4 w-4" />
-                Nova Página
-              </Link>
-            </div>
           </div>
         </div>
 

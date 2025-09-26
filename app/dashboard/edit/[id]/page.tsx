@@ -291,7 +291,8 @@ export default function EditPage() {
             twitter: { text: 'Twitter/X', url: 'https://twitter.com/', icon: 'twitter', color: '#0ea5e9' },
         } as const;
         const p = presets[kind];
-        const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: p.color, bgColor2: p.color, textColor: '#ffffff', isSocial: true };
+        const globalColor = config.socialButtonColor || '#3B82F6';
+        const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: globalColor, bgColor2: globalColor, textColor: '#ffffff', isSocial: true };
         setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
     };
 
@@ -606,7 +607,12 @@ export default function EditPage() {
                                 <div className="space-y-4">
                                     <h4 className="font-medium text-slate-700">Logo da Frente</h4>
                                     
-                                    <div>
+                                    <div onTouchStart={(e) => {
+                                        e.currentTarget.classList.add('disabled');
+                                        setTimeout(() => {
+                                            e.currentTarget.classList.remove('disabled');
+                                        }, 300);
+                                    }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho ({config.logoSize || 60}%)</label>
                                         <input 
                                             type="range" 
@@ -618,7 +624,12 @@ export default function EditPage() {
                                         />
                                     </div>
 
-                                    <div>
+                                    <div onTouchStart={(e) => {
+                                        e.currentTarget.classList.add('disabled');
+                                        setTimeout(() => {
+                                            e.currentTarget.classList.remove('disabled');
+                                        }, 300);
+                                    }}>
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">
                                                 Posicionamento da Logo ({config.logoPosition === 0 ? 'Centro' : (config.logoPosition ?? 0) < 0 ? 'Esquerda' : 'Direita'})
@@ -643,7 +654,12 @@ export default function EditPage() {
                                         </div>
                                     </div>
 
-                                    <div>
+                                    <div onTouchStart={(e) => {
+                                        e.currentTarget.classList.add('disabled');
+                                        setTimeout(() => {
+                                            e.currentTarget.classList.remove('disabled');
+                                        }, 300);
+                                    }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
                                         <input 
                                             type="range" 
@@ -655,7 +671,12 @@ export default function EditPage() {
                                         />
                                     </div>
 
-                                    <div>
+                                    <div onTouchStart={(e) => {
+                                        e.currentTarget.classList.add('disabled');
+                                        setTimeout(() => {
+                                            e.currentTarget.classList.remove('disabled');
+                                        }, 300);
+                                    }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Rotação ({config.logoRotationFront || 0}°)</label>
                                         <input 
                                             type="range" 
@@ -684,7 +705,12 @@ export default function EditPage() {
                                 <div className="space-y-4">
                                     <h4 className="font-medium text-slate-700">Logo do Verso</h4>
                                     
-                                    <div>
+                                    <div onTouchStart={(e) => {
+                                        e.currentTarget.classList.add('disabled');
+                                        setTimeout(() => {
+                                            e.currentTarget.classList.remove('disabled');
+                                        }, 300);
+                                    }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho ({config.clientLogoBackSize || 35}%)</label>
                                         <input 
                                             type="range" 
@@ -696,7 +722,12 @@ export default function EditPage() {
                                         />
                                     </div>
 
-                                    <div>
+                                    <div onTouchStart={(e) => {
+                                        e.currentTarget.classList.add('disabled');
+                                        setTimeout(() => {
+                                            e.currentTarget.classList.remove('disabled');
+                                        }, 300);
+                                    }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade ({Math.round((config.logoOpacityBack ?? 1) * 100)}%)</label>
                                         <input 
                                             type="range" 
@@ -708,7 +739,12 @@ export default function EditPage() {
                                         />
                                     </div>
 
-                                    <div>
+                                    <div onTouchStart={(e) => {
+                                        e.currentTarget.classList.add('disabled');
+                                        setTimeout(() => {
+                                            e.currentTarget.classList.remove('disabled');
+                                        }, 300);
+                                    }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Rotação ({config.logoRotationBack || 0}°)</label>
                                         <input 
                                             type="range" 
@@ -718,6 +754,34 @@ export default function EditPage() {
                                             onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} 
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                         />
+                                    </div>
+
+                                    <div onTouchStart={(e) => {
+                                        e.currentTarget.classList.add('disabled');
+                                        setTimeout(() => {
+                                            e.currentTarget.classList.remove('disabled');
+                                        }, 300);
+                                    }}>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Posicionamento da Logo no Verso ({(config.logoPositionBack ?? 0) === 0 ? 'Centro' : (config.logoPositionBack ?? 0) < 0 ? 'Esquerda' : 'Direita'})
+                                        </label>
+                                        <div className="flex items-center space-x-3">
+                                            <span className="text-xs text-slate-500">Esquerda</span>
+                                            <input 
+                                                type="range" 
+                                                min={-30} 
+                                                max={30} 
+                                                value={config.logoPositionBack ?? 0} 
+                                                onChange={(e) => handleConfigChange('logoPositionBack', Number(e.target.value))} 
+                                                className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+                                            />
+                                            <span className="text-xs text-slate-500">Direita</span>
+                                        </div>
+                                        <div className="text-center mt-1">
+                                            <span className="text-xs text-slate-400">
+                                                {(config.logoPositionBack ?? 0) === 0 ? 'Centro' : `${(config.logoPositionBack ?? 0) > 0 ? '+' : ''}${config.logoPositionBack ?? 0}%`}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -734,7 +798,7 @@ export default function EditPage() {
                             <div className="w-80 h-96 mx-auto rounded-xl shadow-lg overflow-hidden" style={{ backgroundColor: config.landingPageBgColor || '#F8FAFC' }}>
                                 <div className="p-4 h-full flex flex-col items-center justify-center text-center">
                                     {logoDataUrl ? (
-                                        <Image src={logoDataUrl} alt="Logo Preview" width={96} height={96} className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} />
+                                        <Image src={logoDataUrl} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} />
                                     ) : (
                                         <div className={`w-24 h-24 bg-slate-200 flex items-center justify-center shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`}>
                                             <ImageIcon className="w-8 h-8 text-slate-400" />
@@ -744,15 +808,18 @@ export default function EditPage() {
                                     {config.landingPageSubtitleText && <p className="text-sm px-2 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageSubtitleColor || '#64748b' }}>{config.landingPageSubtitleText}</p>}
                                     {/* Botões Sociais (Redondos) */}
                                     <div className="w-full flex flex-wrap justify-center items-center gap-3 mt-4 mb-4">
-                                        {config.customLinks?.filter(link => link.isSocial).map((link) => (
-                                            <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
-                                                {link.icon ? (
-                                                    <IconForName name={link.icon as IconName} size={20} />
-                                                ) : (
-                                                    <span className="text-xs font-bold">?</span>
-                                                )}
-                                            </div>
-                                        ))}
+                                        {config.customLinks?.filter(link => link.isSocial).map((link) => {
+                                            const globalColor = config.socialButtonColor || '#3B82F6';
+                                            return (
+                                                <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : globalColor }}>
+                                                    {link.icon ? (
+                                                        <IconForName name={link.icon as IconName} size={20} />
+                                                    ) : (
+                                                        <span className="text-xs font-bold">?</span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                     
                                     {/* Botões Personalizados (Retangulares) */}
@@ -800,6 +867,44 @@ export default function EditPage() {
                                 </select>
                             </div>
 
+                            {/* Logo Size */}
+                            <div onTouchStart={(e) => {
+                                e.currentTarget.classList.add('disabled');
+                                setTimeout(() => {
+                                    e.currentTarget.classList.remove('disabled');
+                                }, 300);
+                            }}>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo na Página ({config.landingPageLogoSize || 96}px)</label>
+                                <input 
+                                    type="range" 
+                                    min={32} 
+                                    max={200} 
+                                    value={config.landingPageLogoSize || 96} 
+                                    onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} 
+                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+                                />
+                                <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
+                            </div>
+
+                            {/* Logo Shape */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Forma da Logo</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button 
+                                        onClick={() => handleConfigChange('landingPageLogoShape', 'circle')} 
+                                        className={`border rounded p-2 text-xs flex items-center justify-center gap-2 ${config.landingPageLogoShape === 'circle' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}
+                                    >
+                                        <Circle size={14} /> Redonda
+                                    </button>
+                                    <button 
+                                        onClick={() => handleConfigChange('landingPageLogoShape', 'square')} 
+                                        className={`border rounded p-2 text-xs flex items-center justify-center gap-2 ${config.landingPageLogoShape === 'square' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}
+                                    >
+                                        <Square size={14} /> Quadrada
+                                    </button>
+                                </div>
+                            </div>
+
                             {/* Colors */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -821,6 +926,32 @@ export default function EditPage() {
                                     <button onClick={() => addSocialPreset('facebook')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Facebook size={14}/> Facebook</button>
                                     <button onClick={() => addSocialPreset('youtube')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Youtube size={14}/> YouTube</button>
                                     <button onClick={() => addSocialPreset('twitter')} className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-sm hover:bg-slate-300 flex items-center gap-1"><Twitter size={14}/> Twitter</button>
+                                </div>
+                            </div>
+
+                            {/* Social Button Colors */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Cor dos Botões Sociais</label>
+                                <div className="flex items-center space-x-3">
+                                    <input 
+                                        type="color" 
+                                        value={config.socialButtonColor || '#3B82F6'} 
+                                        onChange={(e) => {
+                                            const newColor = e.target.value;
+                                            handleConfigChange('socialButtonColor', newColor);
+                                            
+                                            // Atualizar todos os botões sociais com a nova cor
+                                            const updatedLinks = config.customLinks?.map(link => {
+                                                if (link.isSocial) {
+                                                    return { ...link, bgColor1: newColor, bgColor2: newColor };
+                                                }
+                                                return link;
+                                            });
+                                            setConfig(prev => ({ ...prev, customLinks: updatedLinks }));
+                                        }} 
+                                        className="w-12 h-10 border border-slate-300 rounded-md" 
+                                    />
+                                    <span className="text-sm text-slate-600">Cor global para todos os botões sociais</span>
                                 </div>
                             </div>
 
@@ -977,8 +1108,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                             icon: icon,
                             url: icon ? getSocialBaseUrl(icon) + prev.url : prev.url
                         }))} className={`p-3 border rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-amber-100 transition-colors ${formData.icon === icon ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`} title={icon}>
-                            <IconForName name={icon as IconName} className="w-5 h-5 text-slate-600 mb-1" />
-                            <span className="text-xs text-slate-500 text-center leading-tight">{icon.replace('-', ' ')}</span>
+                            <IconForName name={icon as IconName} className="w-5 h-5 text-slate-600" />
                         </div>
                     ))}
                 </div>

@@ -28,13 +28,16 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
             try {
                 await navigator.share({
                     title: 'Minha Página Zag NFC',
-                    text: 'Confira minha página personalizada!',
+                    text: 'Confira minha página personalizada! Acesse e conecte-se comigo através do meu Zag Card.',
                     url: pageUrl,
                 });
             } catch (err) {
                 console.error('Erro ao compartilhar:', err);
+                // Fallback para copiar URL
+                copyToClipboard();
             }
         } else {
+            // Fallback para navegadores que não suportam Web Share API
             copyToClipboard();
         }
     };

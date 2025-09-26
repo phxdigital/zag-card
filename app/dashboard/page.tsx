@@ -554,9 +554,9 @@ export default function DashboardPage() {
         const ctx = canvas.getContext('2d');
         if (!ctx) return null;
 
-        // Definir dimensões do thumbnail
-        canvas.width = 300;
-        canvas.height = 200;
+        // Definir dimensões do thumbnail (mobile preview)
+        canvas.width = 200;
+        canvas.height = 400;
 
         // Desenhar fundo
         ctx.fillStyle = config.landingPageBgColor || '#F8FAFC';
@@ -566,9 +566,9 @@ export default function DashboardPage() {
         if (logoDataUrl) {
             const img = new window.Image();
             img.onload = () => {
-                const logoSize = Math.min(60, canvas.width * 0.2);
+                const logoSize = Math.min(80, canvas.width * 0.4);
                 const x = (canvas.width - logoSize) / 2;
-                const y = 20;
+                const y = 40;
                 
                 if (config.landingPageLogoShape === 'circle') {
                     ctx.save();
@@ -586,33 +586,44 @@ export default function DashboardPage() {
 
         // Desenhar título
         ctx.fillStyle = config.landingPageTitleColor || '#1e293b';
-        ctx.font = 'bold 16px Inter, sans-serif';
+        ctx.font = 'bold 18px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(config.landingPageTitleText || 'Bem-vindo(a)!', canvas.width / 2, 100);
+        const titleText = config.landingPageTitleText || 'Bem-vindo(a)!';
+        ctx.fillText(titleText, canvas.width / 2, 150);
 
         // Desenhar subtítulo se existir
         if (config.landingPageSubtitleText) {
             ctx.fillStyle = config.landingPageSubtitleColor || '#64748b';
-            ctx.font = '12px Inter, sans-serif';
-            ctx.fillText(config.landingPageSubtitleText, canvas.width / 2, 120);
+            ctx.font = '14px Inter, sans-serif';
+            ctx.fillText(config.landingPageSubtitleText, canvas.width / 2, 175);
         }
 
-        // Desenhar botões sociais
-        const socialButtons = config.customLinks?.filter(link => link.isSocial) || [];
-        const buttonSize = 20;
-        const buttonSpacing = 30;
-        const startX = (canvas.width - (socialButtons.length * buttonSpacing)) / 2;
+        // Desenhar botões (layout mobile)
+        const allButtons = config.customLinks || [];
+        const buttonY = 220;
+        const buttonWidth = canvas.width - 40;
+        const buttonHeight = 35;
+        const buttonSpacing = 15;
+        const maxButtons = Math.min(4, allButtons.length);
         
-        socialButtons.forEach((link, index) => {
-            const x = startX + (index * buttonSpacing);
-            const y = 140;
+        for (let i = 0; i < maxButtons; i++) {
+            const button = allButtons[i];
+            const y = buttonY + i * (buttonHeight + buttonSpacing);
             
-            const socialColor = config.socialButtonColors?.[link.icon || ''] || link.bgColor1;
-            ctx.fillStyle = socialColor;
-            ctx.beginPath();
-            ctx.arc(x, y, buttonSize / 2, 0, Math.PI * 2);
-            ctx.fill();
-        });
+            // Cor do botão
+            const buttonColor = button.isSocial 
+                ? (config.socialButtonColors?.[button.icon || ''] || config.socialButtonColor || '#3B82F6')
+                : (button.bgColor1 || '#3B82F6');
+            
+            ctx.fillStyle = buttonColor;
+            ctx.fillRect(20, y, buttonWidth, buttonHeight);
+            
+            // Texto do botão
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 14px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(button.text || `Botão ${i + 1}`, canvas.width / 2, y + 22);
+        }
 
         return canvas.toDataURL('image/png');
     };
@@ -675,11 +686,11 @@ export default function DashboardPage() {
             )}
 
             {/* Botão Nova Página */}
-            <div className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-slate-800">Criar Nova Página</h1>
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-800 text-center sm:text-left">Criar Nova Página</h1>
                 <button
                     onClick={resetToNewPage}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 w-full sm:w-auto"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -689,27 +700,31 @@ export default function DashboardPage() {
             </div>
             
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 card-container">
-                <header className="mb-8 flex items-center space-x-4">
-                    <Image src="/logo-zag.png" alt="Zag Card Logo" width={128} height={128} className="h-24 w-auto" style={{ width: 'auto', height: 'auto' }} />
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-900">Configure seu Zag Card</h1>
-                        <p className="text-slate-500 mt-1">Siga as etapas para personalizar seu produto.</p>
+                <header className="mb-6 sm:mb-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <div className="flex items-center justify-center sm:justify-start">
+                            <Image src="/logo-zag.png" alt="Zag Card Logo" width={80} height={80} className="h-16 sm:h-20 w-auto" style={{ width: 'auto', height: 'auto' }} />
+                        </div>
+                        <div className="text-center sm:text-left">
+                            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 leading-tight">Configure seu Zag Card</h1>
+                            <p className="text-sm sm:text-base text-slate-500 mt-1 px-4 sm:px-0">Siga as etapas para personalizar seu produto.</p>
+                        </div>
                     </div>
                 </header>
 
-                <div className="flex items-center justify-center space-x-4 md:space-x-8 mb-8">
-                    <div className={`flex items-center space-x-2 border-b-4 pb-2 transition-all duration-300 ${activeStep === 1 ? 'border-blue-500 text-blue-600' : 'border-green-500 text-green-600'}`}>
-                        <div className="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold">
-                            <CreditCard size={16} />
+                <div className="flex items-center justify-center space-x-2 sm:space-x-4 md:space-x-8 mb-6 sm:mb-8">
+                    <div className={`flex items-center space-x-1 sm:space-x-2 border-b-4 pb-2 transition-all duration-300 ${activeStep === 1 ? 'border-blue-500 text-blue-600' : 'border-green-500 text-green-600'}`}>
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center font-bold">
+                            <CreditCard size={12} className="sm:w-4 sm:h-4" />
                         </div>
-                        <span className="font-semibold hidden md:block">Design do Cartão</span>
+                        <span className="font-semibold text-xs sm:text-sm hidden sm:block">Design do Cartão</span>
                     </div>
                     <div className="flex-1 border-t-2 border-dashed border-slate-300"></div>
-                    <div className={`flex items-center space-x-2 border-b-4 pb-2 transition-all duration-300 ${activeStep === 2 ? 'border-blue-500 text-blue-600' : 'border-slate-300 text-slate-500'}`}>
-                        <div className="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold">
-                            <Smartphone size={16} />
+                    <div className={`flex items-center space-x-1 sm:space-x-2 border-b-4 pb-2 transition-all duration-300 ${activeStep === 2 ? 'border-blue-500 text-blue-600' : 'border-slate-300 text-slate-500'}`}>
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center font-bold">
+                            <Smartphone size={12} className="sm:w-4 sm:h-4" />
                         </div>
-                        <span className="font-semibold hidden md:block">Landing Page</span>
+                        <span className="font-semibold text-xs sm:text-sm hidden sm:block">Landing Page</span>
                     </div>
                 </div>
                 
@@ -718,7 +733,24 @@ export default function DashboardPage() {
                         <div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 card-container">
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                                    <p className="text-center font-semibold mb-4">Frente</p>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <p className="text-center font-semibold">Frente</p>
+                                        {logoDataUrl && (
+                                            <button
+                                                onClick={() => {
+                                                    setLogoDataUrl(null);
+                                                    handleConfigChange('logoSize', 80);
+                                                    handleConfigChange('logoPosition', 0);
+                                                    handleConfigChange('logoRotationFront', 0);
+                                                    handleConfigChange('logoOpacityFront', 1);
+                                                }}
+                                                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                                                title="Limpar logo do cartão"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                    </div>
                                     <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border overflow-hidden card-preview">
                                         {/* Logo com posicionamento simplificado e centralizado */}
                                         {logoDataUrl ? (
@@ -762,23 +794,24 @@ export default function DashboardPage() {
                                                     };
                                                     input.click();
                                                 }}
-                                                className="absolute w-20 h-20 bg-slate-200 hover:bg-slate-300 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer border-2 border-dashed border-slate-300 hover:border-slate-400"
+                                                className="absolute w-20 h-20 bg-slate-200 hover:bg-slate-300 rounded-lg flex flex-col items-center justify-center transition-colors duration-200 cursor-pointer border-2 border-dashed border-slate-300 hover:border-slate-400"
                                                 style={{
                                                     top: '50%', 
                                                     left: `${50 + (config.logoPosition || 0) * 0.3}%`, 
                                                     transform: 'translate(-50%, -50%)'
                                                 }}
-                                                title="Clique para fazer upload do logo"
+                                                title="Clique para carregar sua logomarca"
                                             >
-                                                <ImageIcon className="w-8 h-8 text-slate-400" />
+                                                <ImageIcon className="w-6 h-6 text-slate-400 mb-1" />
+                                                <span className="text-xs text-slate-500 text-center leading-tight">Logo</span>
                                             </button>
                                         )}
                                         
                                         {/* Texto com posicionamento fixo na parte inferior */}
-                                        {config.isTextEnabled && (
+                                        {config.isTextEnabled && config.cardText && (
                                             <div className="absolute bottom-4 left-4 right-4">
                                                 <p style={{ color: config.cardTextColor }} className="text-center font-semibold text-sm break-words">
-                                                    {config.cardText || 'Seu Nome'}
+                                                    {config.cardText}
                                                 </p>
                                             </div>
                                         )}
@@ -787,23 +820,68 @@ export default function DashboardPage() {
                                         <h3 className="font-bold text-lg border-b pb-2">Personalizar Frente</h3>
                                         
                                         {/* Cores - Primeiro */}
-                                        <div className="grid grid-cols-2 gap-4">
+                                        {/* 1. Tamanho da Logo */}
+                                        <div className="slider-container" onTouchStart={(e) => {
+                                            e.currentTarget.classList.add('disabled');
+                                            setTimeout(() => {
+                                                e.currentTarget.classList.remove('disabled');
+                                            }, 300);
+                                        }}>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da Logo ({config.logoSize}%)</label>
+                                            <input type="range" min={20} max={150} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
+                                        </div>
+
+                                        {/* 2. Cores do Cartão e Remover Fundo */}
+                                        <div className="grid grid-cols-3 gap-3">
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
-                                                <input type="color" value={config.cardBgColor} onChange={(e) => handleConfigChange('cardBgColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                                <input type="color" value={config.cardBgColor} onChange={(e) => handleConfigChange('cardBgColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Texto</label>
-                                                <input type="color" value={config.cardTextColor} onChange={(e) => handleConfigChange('cardTextColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                                <input type="color" value={config.cardTextColor} onChange={(e) => handleConfigChange('cardTextColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Remover Fundo</label>
+                                                <a 
+                                                    href="https://www.remove.bg/" 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center justify-center w-full h-8 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                                >
+                                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                    Online
+                                                </a>
+                                        </div>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-1">💡 Ferramenta gratuita para remover o fundo da sua logo</p>
+
+                                        {/* 4. Rotação e Opacidade lado a lado */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="slider-container" onTouchStart={(e) => {
+                                                e.currentTarget.classList.add('disabled');
+                                                setTimeout(() => {
+                                                    e.currentTarget.classList.remove('disabled');
+                                                }, 300);
+                                            }}>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação ({config.logoRotationFront || 0}°)</label>
+                                                <input type="range" min={-180} max={180} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                        </div>
+                                            <div className="slider-container" onTouchStart={(e) => {
+                                                e.currentTarget.classList.add('disabled');
+                                                setTimeout(() => {
+                                                    e.currentTarget.classList.remove('disabled');
+                                                }, 300);
+                                            }}>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Opacidade ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
+                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                             </div>
                                         </div>
-                                        
-                                        {/* Logo da Empresa */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Logo da Empresa</label>
-                                            <input type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" />
-                                            <p className="text-xs text-slate-400 mt-1">Tamanho máximo: 5MB.</p>
-                                        </div>
+
+                                        {/* Posicionamento da Logo */}
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">
                                                 Posicionamento da Logo ({(config.logoPosition ?? 0) === 0 ? 'Centro' : (config.logoPosition ?? 0) < 0 ? 'Esquerda' : 'Direita'})
@@ -826,47 +904,33 @@ export default function DashboardPage() {
                                                 </span>
                                             </div>
                                         </div>
-                                        {/* Removed logo editor and color suggestion per request */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="slider-container">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Opacidade da Logo (Frente) ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
-                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
-                                            </div>
-                                        <div className="slider-container">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação da Logo (Frente) ({config.logoRotationFront || 0}°)</label>
-                                                <input type="range" min={-180} max={180} value={config.logoRotationFront || 0} onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Remover Fundo da Logo</label>
-                                            <a 
-                                                href="https://www.remove.bg/" 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                                            >
-                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                </svg>
-                                                Remover Fundo Online
-                                            </a>
-                                            <p className="text-xs text-slate-500 mt-1">Ferramenta gratuita para remover o fundo da sua logo</p>
-                                        </div>
-                                            <div className="slider-container">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da Logo ({config.logoSize}%)</label>
-                                                <input type="range" min={20} max={150} value={config.logoSize} onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
-                                                <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
-                                            </div>
+
+                                        {/* Texto do Cartão */}
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-2">Texto do Cartão</label>
+                                            <div className="flex items-center gap-2">
                                             <input 
                                                 type="text" 
                                                 placeholder="Seu Nome ou Empresa" 
                                                 value={config.cardText || ''} 
                                                 onChange={(e) => handleConfigChange('cardText', e.target.value)} 
                                                 onFocus={() => handleConfigChange('isTextEnabled', true)}
-                                                className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500" 
-                                            />
+                                                    className="flex-1 px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500" 
+                                                />
+                                                {config.cardText && (
+                                                    <button
+                                                        onClick={() => {
+                                                            handleConfigChange('cardText', '');
+                                                            handleConfigChange('isTextEnabled', false);
+                                                        }}
+                                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                                                        title="Limpar texto"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-slate-500 mt-1">💡 Esta é uma configuração opcional.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -896,8 +960,108 @@ export default function DashboardPage() {
                                     </div>
                                     <div className="mt-6 space-y-4 max-w-sm mx-auto">
                                         <h3 className="font-bold text-lg border-b pb-2">Personalizar Verso</h3>
+                                        
+                                        {/* 1. Tamanho da Logo no Verso */}
+                                        <div className="slider-container" onTouchStart={(e) => {
+                                            e.currentTarget.classList.add('disabled');
+                                            setTimeout(() => {
+                                                e.currentTarget.classList.remove('disabled');
+                                            }, 300);
+                                        }}>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da Logo ({config.clientLogoBackSize}%)</label>
+                                            <input type="range" min={10} max={120} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
+                                        </div>
+
+                                        {/* 2. Cor de Fundo e Posicionamento de QR Code */}
+                                        <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Seu Subdomínio</label>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
+                                                <input type="color" value={config.cardBackBgColor} onChange={(e) => handleConfigChange('cardBackBgColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho QR Code</label>
+                                                <div className="grid grid-cols-3 gap-1">
+                                                    <button 
+                                                        onClick={() => handleConfigChange('qrCodeSize', 25)} 
+                                                        className={`border rounded p-1 text-xs ${config.qrCodeSize === 25 ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}
+                                                    >
+                                                        Pequeno
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleConfigChange('qrCodeSize', 35)} 
+                                                        className={`border rounded p-1 text-xs ${config.qrCodeSize === 35 ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}
+                                                    >
+                                                        Médio
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleConfigChange('qrCodeSize', 45)} 
+                                                        className={`border rounded p-1 text-xs ${config.qrCodeSize === 45 ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}
+                                                    >
+                                                        Grande
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* 3. Opacidade e Rotação da Logo */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="slider-container" onTouchStart={(e) => {
+                                                e.currentTarget.classList.add('disabled');
+                                                setTimeout(() => {
+                                                    e.currentTarget.classList.remove('disabled');
+                                                }, 300);
+                                            }}>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Opacidade ({Math.round((config.logoOpacityBack ?? 0.3) * 100)}%)</label>
+                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityBack ?? 0.3) * 100)} onChange={(e) => handleConfigChange('logoOpacityBack', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            </div>
+                                            <div className="slider-container" onTouchStart={(e) => {
+                                                e.currentTarget.classList.add('disabled');
+                                                setTimeout(() => {
+                                                    e.currentTarget.classList.remove('disabled');
+                                                }, 300);
+                                            }}>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação ({config.logoRotationBack || 0}°)</label>
+                                                <input type="range" min={-180} max={180} value={config.logoRotationBack || 0} onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            </div>
+                                        </div>
+
+                                        {/* 4. Posicionamento da Logo */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                Posicionamento da Logo ({(config.logoPositionBack ?? 0) === 0 ? 'Centro' : (config.logoPositionBack ?? 0) < 0 ? 'Esquerda' : 'Direita'})
+                                            </label>
+                                            <div className="flex items-center space-x-3">
+                                                <span className="text-xs text-slate-500">Esquerda</span>
+                                                <input 
+                                                    type="range" 
+                                                    min={-30} 
+                                                    max={30} 
+                                                    value={config.logoPositionBack ?? 0} 
+                                                    onChange={(e) => handleConfigChange('logoPositionBack', Number(e.target.value))} 
+                                                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" 
+                                                />
+                                                <span className="text-xs text-slate-500">Direita</span>
+                                            </div>
+                                            <div className="text-center mt-1">
+                                                <span className="text-xs text-slate-400">
+                                                    {(config.logoPositionBack ?? 0) === 0 ? 'Centro' : `${(config.logoPositionBack ?? 0) > 0 ? '+' : ''}${config.logoPositionBack ?? 0}%`}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* 5. Posição do QR Code */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">Posição do QR Code</label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button onClick={() => handleConfigChange('qrCodePosition', 'justify-start')} className={`border rounded p-2 text-xs ${config.qrCodePosition === 'justify-start' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}>Esquerda</button>
+                                                <button onClick={() => handleConfigChange('qrCodePosition', 'justify-end')} className={`border rounded p-2 text-xs ${config.qrCodePosition === 'justify-end' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}>Direita</button>
+                                            </div>
+                                        </div>
+
+                                        {/* 6. Seu Domínio */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Seu Domínio</label>
                                             <div className="flex">
                                                 <input 
                                                     type="text" 
@@ -937,62 +1101,7 @@ export default function DashboardPage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
-                                            <input type="color" value={config.cardBackBgColor} onChange={(e) => handleConfigChange('cardBackBgColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
                                         </div>
-                                        <hr />
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="slider-container">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Opacidade da Logo (Verso) ({Math.round((config.logoOpacityBack ?? 0.3) * 100)}%)</label>
-                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityBack ?? 0.3) * 100)} onChange={(e) => handleConfigChange('logoOpacityBack', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
-                                            </div>
-                                            <div className="slider-container">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação da Logo (Verso) ({config.logoRotationBack || 0}°)</label>
-                                                <input type="range" min={-180} max={180} value={config.logoRotationBack || 0} onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
-                                            </div>
-                                        </div>
-                                        <div className="slider-container">
-                                            <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho do QR Code ({config.qrCodeSize}%)</label>
-                                            <input type="range" min={25} max={50} value={config.qrCodeSize} onChange={(e) => handleConfigChange('qrCodeSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
-                                            <p className="text-xs text-slate-500 mt-1">💡 O tamanho padrão (35%) é o recomendado para melhor leitura</p>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Posição do QR Code</label>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <button onClick={() => handleConfigChange('qrCodePosition', 'justify-start')} className={`border rounded p-2 text-xs ${config.qrCodePosition === 'justify-start' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}>Esquerda</button>
-                                                <button onClick={() => handleConfigChange('qrCodePosition', 'justify-end')} className={`border rounded p-2 text-xs ${config.qrCodePosition === 'justify-end' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-300 hover:bg-slate-50'}`}>Direita</button>
-                                            </div>
-                                        </div>
-                                        <hr />
-                                        <div className="slider-container">
-                                            <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da sua Logo no verso ({config.clientLogoBackSize}%)</label>
-                                            <input type="range" min={10} max={120} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
-                                            <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                Posicionamento da Logo no Verso ({(config.logoPositionBack ?? 0) === 0 ? 'Centro' : (config.logoPositionBack ?? 0) < 0 ? 'Esquerda' : 'Direita'})
-                                            </label>
-                                            <div className="flex items-center space-x-3">
-                                                <span className="text-xs text-slate-500">Esquerda</span>
-                                                <input 
-                                                    type="range" 
-                                                    min={-30} 
-                                                    max={30} 
-                                                    value={config.logoPositionBack ?? 0} 
-                                                    onChange={(e) => handleConfigChange('logoPositionBack', Number(e.target.value))} 
-                                                    className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" 
-                                                />
-                                                <span className="text-xs text-slate-500">Direita</span>
-                                            </div>
-                                            <div className="text-center mt-1">
-                                                <span className="text-xs text-slate-400">
-                                                    {(config.logoPositionBack ?? 0) === 0 ? 'Centro' : `${(config.logoPositionBack ?? 0) > 0 ? '+' : ''}${config.logoPositionBack ?? 0}%`}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                             <div className="mt-8 flex justify-center">
@@ -1092,18 +1201,23 @@ export default function DashboardPage() {
                                                     </select>
                                                     <p className="text-xs text-slate-500 mt-1">Aplicada ao título e subtítulo.</p>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-3 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">Cor do Título</label>
-                                                        <input type="color" value={config.landingPageTitleColor || '#1e293b'} onChange={(e) => handleConfigChange('landingPageTitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Título</label>
+                                                        <input type="color" value={config.landingPageTitleColor || '#1e293b'} onChange={(e) => handleConfigChange('landingPageTitleColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
                                             </div>
                                                 <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">Cor do Subtítulo</label>
-                                                        <input type="color" value={config.landingPageSubtitleColor || '#64748b'} onChange={(e) => handleConfigChange('landingPageSubtitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Subtítulo</label>
+                                                        <input type="color" value={config.landingPageSubtitleColor || '#64748b'} onChange={(e) => handleConfigChange('landingPageSubtitleColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
+                                                        <input type="color" value={config.landingPageBgColor || '#ffffff'} onChange={(e) => handleConfigChange('landingPageBgColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
                                                     </div>
                                                 </div>
+                                                
                                                 <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-2">Botões rápidos (sociais)</label>
+                                                    <label className="block text-sm font-bold text-slate-700 mb-2">Adicione aqui os botões desejados</label>
                                                     <div className="flex flex-wrap gap-2 mb-4">
                                                         <button 
                                                             onClick={() => addSocialPreset('whatsapp')} 
@@ -1189,10 +1303,6 @@ export default function DashboardPage() {
                                                     <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da Logo na Página ({config.landingPageLogoSize}px)</label>
                                                     <input type="range" min={32} max={200} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
                                                     <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo da Página</label>
-                                                    <input type="color" value={config.landingPageBgColor || '#ffffff'} onChange={(e) => handleConfigChange('landingPageBgColor', e.target.value)} className="w-24 h-10 border border-slate-300 rounded-md" />
                                                 </div>
                                             </div>
                                         </fieldset>
@@ -1516,8 +1626,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                         </div>
                         {icons.map((icon) => (
                             <div key={icon} onClick={() => setData({ ...data, icon })} className={`p-3 border rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-amber-100 transition-colors ${data.icon === icon ? 'bg-amber-200 border-amber-400' : 'border-slate-300'}`} title={icon}>
-                                <IconForName name={icon as IconName} className="w-5 h-5 text-slate-600 mb-1" />
-                                <span className="text-xs text-slate-500 text-center leading-tight">{icon.replace('-', ' ')}</span>
+                                <IconForName name={icon as IconName} className="w-5 h-5 text-slate-600" />
                             </div>
                         ))}
                     </div>
