@@ -42,14 +42,16 @@ export async function GET(
                 >
                     {/* Logo */}
                     {pageData.logo_url && (
-                        <img
-                            src={pageData.logo_url}
-                            alt="Logo"
+                        <div
                             style={{
                                 width: 200,
                                 height: 200,
                                 borderRadius: config.landingPageLogoShape === 'circle' ? '50%' : '20px',
                                 marginBottom: 40,
+                                backgroundImage: `url(${pageData.logo_url})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat',
                             }}
                         />
                     )}
