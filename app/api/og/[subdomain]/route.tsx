@@ -10,7 +10,7 @@ export async function GET(
     { params }: { params: Promise<{ subdomain: string }> }
 ) {
     try {
-        const supabase = createRouteHandlerClient({ cookies: () => await cookies() });
+        const supabase = createRouteHandlerClient({ cookies: () => cookies() });
         const { subdomain } = await params;
 
         // Buscar dados da página
