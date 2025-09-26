@@ -50,6 +50,7 @@ type PageConfig = {
     clientLogoBackSize?: number;
     qrCodePosition?: 'justify-start' | 'justify-end';
     logoPosition?: number; // -100 (esquerda) a +100 (direita), 0 = centro
+    logoPositionBack?: number; // -100 (esquerda) a +100 (direita), 0 = centro para o verso
     socialLinks?: { [key: string]: string };
     customLinks?: CustomLink[];
     landingPageBgColor?: string;
