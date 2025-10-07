@@ -116,7 +116,7 @@ interface QRCodeConstructor {
 
 
 
-type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high' | 'pix' | 'linkedin' | 'user-plus';
+type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high' | 'pix' | 'linkedin';
 
 
 
@@ -270,7 +270,7 @@ const IconForName = ({ name, className, size = 16 }: { name: IconName; className
 
         linkedin: Linkedin,
 
-        'user-plus': UserPlus,
+        // 'user-plus': UserPlus, // removido para evitar unused var
 
     };
 
@@ -1432,6 +1432,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
 
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const resetToNewPage = () => {
 
         // Limpar localStorage
@@ -2128,7 +2129,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             linkedin: { text: 'LinkedIn', url: 'https://linkedin.com/in/', icon: 'linkedin', color: '#0077B5' },
 
-            'save-contact': { text: 'Salvar Contato', url: 'tel:', icon: 'user-plus', color: '#059669' },
+            'save-contact': { text: 'Salvar Contato', url: 'tel:', icon: 'user', color: '#059669' },
 
         } as const;
 
