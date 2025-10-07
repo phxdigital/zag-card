@@ -10,7 +10,7 @@ export async function PATCH(request: Request) {
         const pathParts = url.pathname.split('/').filter(Boolean);
         const id = pathParts[pathParts.length - 1];
 
-        const cookieStore = await cookies();
+        const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
         
         // Verificar autenticação
