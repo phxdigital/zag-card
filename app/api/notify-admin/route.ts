@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Salvar notificação diretamente no Supabase (sem autenticação)
-        const cookieStore = await cookies();
+        const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
         // Usar service role key para bypass de autenticação
