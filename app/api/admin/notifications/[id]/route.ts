@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
 export async function PATCH(
-    request: NextRequest,
-    { params }: { params: { id: string } }
+    request: Request,
+    context: { params: { id: string } }
 ) {
     try {
         const body = await request.json();
-        const { status } = body;
-        const { id } = params;
+        const { status } = body as { status: string };
+        const { id } = context.params;
 
         const cookieStore = await cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
