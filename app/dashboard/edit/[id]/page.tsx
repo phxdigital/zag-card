@@ -286,7 +286,7 @@ export default function EditPage() {
             ctx.fillRect(0, 0, cardWidth, cardHeight);
 
             // Função auxiliar para desenhar logo
-            const drawLogo = (img: HTMLImageElement, logoConfig: any) => {
+            const drawLogo = (img: HTMLImageElement, logoConfig: { size?: number; position?: number; opacity?: number; rotation?: number }) => {
                 // Manter proporção relativa: se no dashboard é 60% de 320px, no PDF será 60% de 1011px
                 const logoSize = (logoConfig.size || 60) * (cardWidth / 100);
                 const x = cardWidth / 2 + (logoConfig.position || 0) * (cardWidth / 100);
