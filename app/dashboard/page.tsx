@@ -2810,11 +2810,12 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                             }} onTouchEnd={(e) => {
                                                 // Detectar duplo toque no mobile
                                                 const now = Date.now();
-                                                const lastTap = (e.currentTarget as any).lastTap || 0;
+                                                const target = e.currentTarget as (HTMLElement & { lastTap?: number });
+                                                const lastTap = target.lastTap || 0;
                                                 if (now - lastTap < 300) {
                                                     handleDoubleTap('logoRotationFront');
                                                 }
-                                                (e.currentTarget as any).lastTap = now;
+                                                target.lastTap = now;
                                             }}>
 
                                                 <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação ({config.logoRotationFront || 0}°)</label>
@@ -3180,11 +3181,12 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                             }} onTouchEnd={(e) => {
                                                 // Detectar duplo toque no mobile
                                                 const now = Date.now();
-                                                const lastTap = (e.currentTarget as any).lastTap || 0;
+                                                const target = e.currentTarget as (HTMLElement & { lastTap?: number });
+                                                const lastTap = target.lastTap || 0;
                                                 if (now - lastTap < 300) {
                                                     handleDoubleTap('logoRotationBack');
                                                 }
-                                                (e.currentTarget as any).lastTap = now;
+                                                target.lastTap = now;
                                             }}>
 
                                                 <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação ({config.logoRotationBack || 0}°)</label>
