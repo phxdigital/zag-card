@@ -25,13 +25,30 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Animação da logo no top bar */
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.8s ease-out;
+}
+
+
 /* Mobile optimizations */
 @media (max-width: 768px) {
   body {
     /* Prevent horizontal scrolling */
     overflow-x: hidden;
   }
-  
+
   /* Prevent touch dragging on sliders */
   input[type="range"] {
     touch-action: pan-y;
@@ -49,17 +66,17 @@ body {
     touch-action: manipulation;
     transition: all 0.2s ease;
   }
-  
+
   /* Add delay for slider interaction on mobile */
   input[type="range"]:active {
     transition: none;
   }
-  
+
   /* Prevent accidental touches on sliders */
   .slider-container {
     position: relative;
   }
-  
+
   .slider-container::before {
     content: '';
     position: absolute;
@@ -70,12 +87,12 @@ body {
     z-index: 1;
     pointer-events: none;
   }
-  
+
   /* Require longer press for slider activation */
   input[type="range"] {
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   /* Improve slider thumb on mobile */
   input[type="range"]::-webkit-slider-thumb {
     width: 20px !important;
@@ -88,7 +105,7 @@ body {
     -webkit-appearance: none;
     appearance: none;
   }
-  
+
   input[type="range"]::-moz-range-thumb {
     width: 20px !important;
     height: 20px !important;
@@ -99,7 +116,7 @@ body {
     cursor: pointer;
     border: none;
   }
-  
+
   /* Prevent text selection on mobile */
   .no-select {
     -webkit-touch-callout: none;
@@ -109,49 +126,49 @@ body {
     -ms-user-select: none;
     user-select: none;
   }
-  
+
   /* Ensure main content doesn't overflow */
   main {
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
   }
-  
+
   /* Fix card layout on mobile */
   .card-container {
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
   }
-  
+
   /* Ensure grid layouts are responsive */
   .grid {
     gap: 1rem;
   }
-  
+
   /* Make card previews responsive */
   .card-preview {
     width: 100%;
     max-width: 320px;
     margin: 0 auto;
   }
-  
+
   /* Add padding around slider containers */
   .slider-container {
     padding: 8px 0;
     margin: 4px 0;
     position: relative;
   }
-  
+
   /* Disable slider interaction temporarily on touch */
   .slider-container.disabled {
     pointer-events: none;
   }
-  
+
   .slider-container.disabled input[type="range"] {
     opacity: 0.6;
   }
-  
+
   /* Make slider labels smaller on mobile */
   .slider-label {
     font-size: 0.875rem !important;
@@ -168,4 +185,231 @@ img {
 .image-transparent {
   background: transparent !important;
   background-color: transparent !important;
+}
+
+/* Animation keyframes */
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideOutLeft52 {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-13rem);
+  }
+}
+
+@keyframes slideOutRight52 {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(13rem);
+  }
+}
+
+@keyframes slideOutTop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes slideOutBottom {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight52 {
+  from {
+    transform: translateX(13rem);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft52 {
+  from {
+    transform: translateX(-13rem);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInTopFull {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInBottomFull {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Animation utility classes */
+.slide-out-to-right-full {
+  animation: slideOutRight 0.2s ease-in forwards;
+}
+
+.slide-out-to-left-52 {
+  animation: slideOutLeft52 0.2s ease-in forwards;
+}
+
+.slide-out-to-right-52 {
+  animation: slideOutRight52 0.2s ease-in forwards;
+}
+
+.slide-out-to-top {
+  animation: slideOutTop 0.2s ease-in forwards;
+}
+
+.slide-out-to-bottom {
+  animation: slideOutBottom 0.2s ease-in forwards;
+}
+
+.slide-out-to-left {
+  animation: slideOutLeft 0.2s ease-in forwards;
+}
+
+.slide-out-to-right {
+  animation: slideOutRight 0.2s ease-in forwards;
+}
+
+.slide-in-from-right {
+  animation: slideInRight 0.2s ease-out forwards;
+}
+
+.slide-in-from-left {
+  animation: slideInLeft 0.2s ease-out forwards;
+}
+
+.slide-in-from-top {
+  animation: slideInTop 0.2s ease-out forwards;
+}
+
+.slide-in-from-bottom {
+  animation: slideInBottom 0.2s ease-out forwards;
+}
+
+.slide-in-from-right-52 {
+  animation: slideInRight52 0.2s ease-out forwards;
+}
+
+.slide-in-from-left-52 {
+  animation: slideInLeft52 0.2s ease-out forwards;
+}
+
+.slide-in-from-top-full {
+  animation: slideInTopFull 0.2s ease-out forwards;
+}
+
+.slide-in-from-bottom-full {
+  animation: slideInBottomFull 0.2s ease-out forwards;
+}
+
+.animate-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-out {
+  animation: fadeOut 0.2s ease-in forwards;
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.2s ease-in forwards;
+}
+
+.fade-out-80 {
+  animation: fadeOut 0.2s ease-in forwards;
+  opacity: 0.8;
 }

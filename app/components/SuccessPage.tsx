@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CheckCircle, ExternalLink, ArrowLeft, Share2 } from 'lucide-react';
+import { CheckCircle, ExternalLink, ArrowLeft, Share2, Download } from 'lucide-react';
 
 interface SuccessPageProps {
     subdomain: string;
@@ -39,6 +39,29 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
         } else {
             // Fallback para navegadores que não suportam Web Share API
             copyToClipboard();
+        }
+    };
+
+    const downloadQRCode = async () => {
+        try {
+            // Usar a API do QR Server para gerar um QR Code real
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pageUrl)}`;
+            
+            // Baixar a imagem do QR Code
+            const response = await fetch(qrUrl);
+            const blob = await response.blob();
+            
+            // Criar link de download
+            const link = document.createElement('a');
+            link.download = `qr-code-${subdomain}.png`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            
+            // Limpar o URL do objeto
+            URL.revokeObjectURL(link.href);
+        } catch (error) {
+            console.error('Erro ao gerar QR Code:', error);
+            alert('Erro ao gerar QR Code. Tente novamente.');
         }
     };
 
@@ -122,6 +145,14 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
                             >
                                 <Share2 className="w-5 h-5 mr-2" />
                                 Compartilhar
+                            </button>
+
+                            <button
+                                onClick={downloadQRCode}
+                                className="inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors shadow-lg hover:shadow-xl"
+                            >
+                                <Download className="w-5 h-5 mr-2" />
+                                Baixar QR Code
                             </button>
                         </div>
                     </div>

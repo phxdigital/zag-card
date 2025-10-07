@@ -27,25 +27,10 @@
         "./*"
       ],
       "@/components/*": [
-        "./components/*"
-      ],
-      "@/app/*": [
-        "./app/*"
+        "./app/components/*"
       ],
       "@/lib/*": [
         "./lib/*"
-      ],
-      "@/types/*": [
-        "./types/*"
-      ],
-      "@/utils/*": [
-        "./utils/*"
-      ],
-      "@/constants/*": [
-        "./constants/*"
-      ],
-      "@/hooks/*": [
-        "./hooks/*"
       ]
     },
     "target": "ES2017"

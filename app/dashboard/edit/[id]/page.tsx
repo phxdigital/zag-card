@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { jsPDF } from 'jspdf';
 import { 
   ArrowLeft, 
   Save, 
@@ -24,7 +25,7 @@ import {
   PlusCircle,
   Edit,
   Trash2,
-  Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Circle, Square
+  Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Circle, Square, UserPlus
 } from 'lucide-react';
 
 type CustomLink = {
@@ -254,6 +255,207 @@ export default function EditPage() {
         setConfig(prev => ({ ...prev, [key]: value }));
     };
 
+    // Função para resetar slider para o valor do meio
+    const resetSliderToMiddle = (min: number, max: number, key: keyof PageConfig) => {
+        const middleValue = Math.round((min + max) / 2);
+        handleConfigChange(key, middleValue);
+    };
+
+    // Função para gerar imagem do cartão e retornar dataURL
+    const generateCardImage = async (side: 'front' | 'back', returnAsDataUrl: boolean = false): Promise<string | void> => {
+        return new Promise((resolve) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            if (!ctx) {
+                resolve();
+                return;
+            }
+
+            // Dimensões reais de cartão de crédito para impressão (85.6mm x 53.98mm)
+            // Convertendo para pixels em 300 DPI para alta qualidade de impressão
+            const cardWidth = 1011; // 85.6mm * 300 DPI / 25.4mm
+            const cardHeight = 638;  // 53.98mm * 300 DPI / 25.4mm
+            
+            canvas.width = cardWidth;
+            canvas.height = cardHeight;
+
+            // Configurar fundo
+            const bgColor = side === 'front' ? (config.cardBgColor || '#FFFFFF') : (config.cardBackBgColor || '#e2e8f0');
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, cardWidth, cardHeight);
+
+            // Função auxiliar para desenhar logo
+            const drawLogo = (img: HTMLImageElement, logoConfig: any) => {
+                // Manter proporção relativa: se no dashboard é 60% de 320px, no PDF será 60% de 1011px
+                const logoSize = (logoConfig.size || 60) * (cardWidth / 100);
+                const x = cardWidth / 2 + (logoConfig.position || 0) * (cardWidth / 100);
+                const y = cardHeight / 2;
+                
+                ctx.save();
+                ctx.globalAlpha = logoConfig.opacity || 1;
+                ctx.translate(x, y);
+                ctx.rotate((logoConfig.rotation || 0) * Math.PI / 180);
+                ctx.drawImage(img, -logoSize/2, -logoSize/2, logoSize, logoSize);
+                ctx.restore();
+            };
+
+            // Função auxiliar para desenhar QR Code
+            const drawQRCode = () => {
+                // Manter proporção relativa do QR Code
+                const qrSize = (config.qrCodeSize || 35) * (cardWidth / 100);
+                const qrX = config.qrCodePosition === 'justify-end' ? cardWidth - qrSize - 20 : 20;
+                const qrY = cardHeight / 2;
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(qrX, qrY - qrSize/2, qrSize, qrSize);
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(qrX + 5, qrY - qrSize/2 + 5, qrSize - 10, qrSize - 10);
+            };
+
+            // Função auxiliar para desenhar símbolo NFC
+            const drawNFC = () => {
+                const nfcImg = new window.Image();
+                nfcImg.onload = () => {
+                    // Manter proporção relativa: 24px em 320px = 7.5%, então 7.5% de 1011px
+                    const nfcSize = Math.round(24 * (cardWidth / 320));
+                    ctx.globalAlpha = 0.8;
+                    // Posição proporcional: 20px em 320px = 6.25%, então 6.25% de 1011px
+                    const marginTop = Math.round(20 * (cardHeight / 192));
+                    const marginRight = Math.round(20 * (cardWidth / 320));
+                    ctx.drawImage(nfcImg, cardWidth - nfcSize - marginRight, marginTop, nfcSize, nfcSize);
+                    ctx.globalAlpha = 1;
+                };
+                nfcImg.src = '/nfc-symbol.png';
+            };
+
+            // Função auxiliar para desenhar logo Zag
+            const drawZagLogo = () => {
+                const zagImg = new window.Image();
+                zagImg.onload = () => {
+                    // Manter proporção relativa da logo Zag: 12px em 192px = 6.25%, então 6.25% de 638px
+                    const zagHeight = Math.round(12 * (cardHeight / 192));
+                    const zagWidth = (zagHeight * 60) / 18; // Proporção 60:18 mantida
+                    // Posição proporcional: 4px em 192px = 2.08%, então 2.08% de 638px
+                    const marginBottom = Math.round(4 * (cardHeight / 192));
+                    const marginRight = Math.round(4 * (cardWidth / 320));
+                    ctx.drawImage(zagImg, cardWidth - zagWidth - marginRight, cardHeight - zagHeight - marginBottom, zagWidth, zagHeight);
+                };
+                zagImg.src = '/logo-zag.png';
+            };
+
+            // Função auxiliar para desenhar texto do cartão
+            const drawCardText = () => {
+                if (config.isTextEnabled && config.cardText) {
+                    ctx.fillStyle = config.cardTextColor || '#1e293b';
+                    // Manter proporção da fonte: 14px em 320px, então proporcional em 1011px
+                    const fontSize = Math.round(14 * (cardWidth / 320));
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    const textX = cardWidth / 2;
+                    const textY = cardHeight - 30;
+                    
+                    // Quebrar texto em linhas se necessário
+                    const words = config.cardText.split(' ');
+                    let line = '';
+                    let y = textY;
+                    
+                    for (let n = 0; n < words.length; n++) {
+                        const testLine = line + words[n] + ' ';
+                        const metrics = ctx.measureText(testLine);
+                        const testWidth = metrics.width;
+                        
+                        if (testWidth > cardWidth - 40 && n > 0) {
+                            ctx.fillText(line, textX, y);
+                            line = words[n] + ' ';
+                            y += 20;
+                        } else {
+                            line = testLine;
+                        }
+                    }
+                    ctx.fillText(line, textX, y);
+                }
+            };
+
+            if (side === 'front') {
+                if (logoDataUrl) {
+                    const img = new window.Image();
+                    img.onload = () => {
+                        drawLogo(img, {
+                            size: config.logoSize,
+                            opacity: config.logoOpacityFront,
+                            rotation: config.logoRotationFront,
+                            position: config.logoPosition
+                        });
+                        drawNFC();
+                        drawCardText();
+                        
+                        if (returnAsDataUrl) {
+                            resolve(canvas.toDataURL('image/png'));
+                        } else {
+                            downloadCardImage(canvas, 'cartao-frente');
+                            resolve();
+                        }
+                    };
+                    img.src = logoDataUrl;
+                } else {
+                    drawNFC();
+                    drawCardText();
+                    
+                    if (returnAsDataUrl) {
+                        resolve(canvas.toDataURL('image/png'));
+                    } else {
+                        downloadCardImage(canvas, 'cartao-frente');
+                        resolve();
+                    }
+                }
+            } else { // side === 'back'
+                if (logoDataUrl) {
+                    const img = new window.Image();
+                    img.onload = () => {
+                        drawLogo(img, {
+                            size: config.clientLogoBackSize,
+                            opacity: config.logoOpacityBack,
+                            rotation: config.logoRotationBack,
+                            position: config.logoPositionBack
+                        });
+                        drawQRCode();
+                        drawNFC();
+                        drawZagLogo();
+                        
+                        if (returnAsDataUrl) {
+                            resolve(canvas.toDataURL('image/png'));
+                        } else {
+                            downloadCardImage(canvas, 'cartao-verso');
+                            resolve();
+                        }
+                    };
+                    img.src = logoDataUrl;
+                } else {
+                    drawQRCode();
+                    drawNFC();
+                    drawZagLogo();
+                    
+                    if (returnAsDataUrl) {
+                        resolve(canvas.toDataURL('image/png'));
+                    } else {
+                        downloadCardImage(canvas, 'cartao-verso');
+                        resolve();
+                    }
+                }
+            }
+        });
+    };
+
+    const downloadCardImage = (canvas: HTMLCanvasElement, filename: string) => {
+        const link = document.createElement('a');
+        link.download = `${filename}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    };
+
     // Função para redimensionar imagem mantendo proporção e limitando às margens
     const resizeImageToFit = (file: File, maxWidth: number, maxHeight: number): Promise<string> => {
         return new Promise((resolve) => {
@@ -277,7 +479,12 @@ export default function EditPage() {
                 // Desenhar imagem redimensionada
                 ctx?.drawImage(img, 0, 0, width, height);
                 
-                resolve(canvas.toDataURL('image/png', 0.9));
+                // Detectar se é PNG e manter transparência
+                const isPng = file.type === 'image/png';
+                const optimizedDataUrl = isPng 
+                    ? canvas.toDataURL('image/png') 
+                    : canvas.toDataURL('image/jpeg', 0.8);
+                resolve(optimizedDataUrl);
             };
             
             img.src = URL.createObjectURL(file);
@@ -347,8 +554,63 @@ export default function EditPage() {
             });
 
             if (response.ok) {
+                // Gerar as imagens do cartão como data URLs
+                setSavingMessage('Gerando imagens do cartão...');
+                const frontImageDataUrl = await generateCardImage('front', true) as string;
+                const backImageDataUrl = await generateCardImage('back', true) as string;
+
+                let pdfDataUri: string | undefined;
+
+                if (frontImageDataUrl && backImageDataUrl) {
+                    setSavingMessage('Gerando PDF para impressão...');
+                    // Gerar o PDF com as dimensões reais de cartão de crédito
+                    // Dimensões padrão de cartão de crédito: 85.6mm x 53.98mm
+                    const containerWidth = 85.6; // mm
+                    const containerHeight = 53.98; // mm
+                    
+                    const doc = new jsPDF({
+                        orientation: 'landscape',
+                        unit: 'mm',
+                        format: [containerWidth, containerHeight]
+                    });
+
+                    // Adicionar imagem da frente
+                    doc.addImage(frontImageDataUrl, 'PNG', 0, 0, containerWidth, containerHeight);
+
+                    // Adicionar imagem do verso em uma nova página
+                    doc.addPage([containerWidth, containerHeight], 'landscape');
+                    doc.addImage(backImageDataUrl, 'PNG', 0, 0, containerWidth, containerHeight);
+
+                    pdfDataUri = doc.output('datauristring'); // Obter o PDF como data URI
+                }
+
+                // Notificar o administrador com o PDF
+                setSavingMessage('Notificando administrador...');
+                try {
+                    const notifyResponse = await fetch('/api/notify-admin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            subdomain,
+                            action: 'card_layout_updated',
+                            message: `O layout do cartão para o subdomínio "${subdomain}" foi atualizado e um PDF para impressão foi gerado.`,
+                            pdfData: pdfDataUri // Envia o PDF como data URI
+                        })
+                    });
+                    
+                    if (!notifyResponse.ok) {
+                        console.warn('Falha ao notificar admin, mas continuando...');
+                    }
+                } catch (error) {
+                    console.warn('Erro ao notificar admin:', error);
+                }
+
                 setSavingMessage('Redirecionando...');
                 await new Promise(resolve => setTimeout(resolve, 300));
+                // Adiciona o aviso de sucesso antes de redirecionar
+                alert('💡 O seu Layout foi salvo e será aprovado em poucos instantes, continue agora a configuração da sua página web');
                 router.push(`/success?subdomain=${subdomain}&pageId=${pageId}&edit=true`);
             } else {
                 let errorMessage = 'Erro ao salvar';
@@ -579,6 +841,14 @@ export default function EditPage() {
                                             </p>
                                         </div>
                                     )}
+                                    {/* Símbolo NFC fixo no canto superior direito */}
+                                    <Image 
+                                        src="/nfc-symbol.png" 
+                                        alt="NFC" 
+                                        width={24} 
+                                        height={24} 
+                                        className="absolute top-2 right-2 w-6 h-6 object-contain opacity-80" 
+                                    />
                                 </div>
                             </div>
 
@@ -588,7 +858,7 @@ export default function EditPage() {
                                 <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex items-center justify-between p-4 transition-colors duration-300 border-2">
                                     <div className="flex flex-col items-center">
                                         {logoDataUrl && (
-                                            <Image src={logoDataUrl} alt="Logo Preview" width={60} height={60} className="object-contain mb-2" style={{ width: `${config.clientLogoBackSize || 35}px`, height: `${config.clientLogoBackSize || 35}px`, opacity: config.logoOpacityBack ?? 1, transform: `rotate(${config.logoRotationBack || 0}deg)` }} />
+                                            <Image src={logoDataUrl} alt="Logo Preview" width={60} height={60} className="object-contain mb-2" style={{ width: `${config.clientLogoBackSize || 35}px`, height: `${config.clientLogoBackSize || 35}px`, opacity: config.logoOpacityBack ?? 1, transform: `rotate(${config.logoRotationBack || 0}deg) translateX(${(config.logoPositionBack ?? 0) * 1.2}px)` }} />
                                         )}
                                     </div>
                                     <div className={`flex ${config.qrCodePosition}`}>
@@ -596,6 +866,14 @@ export default function EditPage() {
                                             <div className="w-12 h-12 bg-slate-200 rounded"></div>
                                         </div>
                                     </div>
+                                    {/* Símbolo NFC fixo no canto superior direito */}
+                                    <Image 
+                                        src="/nfc-symbol.png" 
+                                        alt="NFC" 
+                                        width={24} 
+                                        height={24} 
+                                        className="absolute top-2 right-2 w-6 h-6 object-contain opacity-80" 
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -620,8 +898,9 @@ export default function EditPage() {
                                             type="range" 
                                             min={40} 
                                             max={100} 
-                                            value={config.logoSize || 60} 
+                                            value={config.logoSize || 60}
                                             onChange={(e) => handleConfigChange('logoSize', Number(e.target.value))} 
+                                            onDoubleClick={() => resetSliderToMiddle(40, 100, 'logoSize')}
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                         />
                                     </div>
@@ -644,6 +923,7 @@ export default function EditPage() {
                                                     max={30} 
                                                     value={config.logoPosition ?? 0} 
                                                     onChange={(e) => handleConfigChange('logoPosition', Number(e.target.value))} 
+                                                    onDoubleClick={() => resetSliderToMiddle(-30, 30, 'logoPosition')}
                                                     className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                                 />
                                                 <span className="text-xs text-slate-500">Direita</span>
@@ -669,6 +949,7 @@ export default function EditPage() {
                                             max={100} 
                                             value={Math.round((config.logoOpacityFront ?? 1) * 100)} 
                                             onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} 
+                                            onDoubleClick={() => resetSliderToMiddle(10, 100, 'logoOpacityFront')}
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                         />
                                     </div>
@@ -686,6 +967,7 @@ export default function EditPage() {
                                             max={180} 
                                             value={config.logoRotationFront || 0} 
                                             onChange={(e) => handleConfigChange('logoRotationFront', Number(e.target.value))} 
+                                            onDoubleClick={() => resetSliderToMiddle(-180, 180, 'logoRotationFront')}
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                         />
                                     </div>
@@ -720,6 +1002,7 @@ export default function EditPage() {
                                             max={80} 
                                             value={config.clientLogoBackSize || 35} 
                                             onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} 
+                                            onDoubleClick={() => resetSliderToMiddle(20, 80, 'clientLogoBackSize')}
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                         />
                                     </div>
@@ -737,6 +1020,7 @@ export default function EditPage() {
                                             max={100} 
                                             value={Math.round((config.logoOpacityBack ?? 1) * 100)} 
                                             onChange={(e) => handleConfigChange('logoOpacityBack', Number(e.target.value) / 100)} 
+                                            onDoubleClick={() => resetSliderToMiddle(10, 100, 'logoOpacityBack')}
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                         />
                                     </div>
@@ -754,6 +1038,7 @@ export default function EditPage() {
                                             max={180} 
                                             value={config.logoRotationBack || 0} 
                                             onChange={(e) => handleConfigChange('logoRotationBack', Number(e.target.value))} 
+                                            onDoubleClick={() => resetSliderToMiddle(-180, 180, 'logoRotationBack')}
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                         />
                                     </div>
@@ -775,6 +1060,7 @@ export default function EditPage() {
                                                 max={30} 
                                                 value={config.logoPositionBack ?? 0} 
                                                 onChange={(e) => handleConfigChange('logoPositionBack', Number(e.target.value))} 
+                                                onDoubleClick={() => resetSliderToMiddle(-30, 30, 'logoPositionBack')}
                                                 className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
                                             />
                                             <span className="text-xs text-slate-500">Direita</span>
@@ -788,6 +1074,7 @@ export default function EditPage() {
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 )}
 

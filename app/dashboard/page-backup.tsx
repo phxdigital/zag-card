@@ -16,6 +16,10 @@ import { canCreatePages } from '@/lib/config';
 
 import { jsPDF } from 'jspdf';
 
+// Novo sistema CR80
+import CardPreview, { CardElement, CardConfig } from '@/app/components/CardPreview';
+import { useCardStore, migrateLegacyConfig } from '@/lib/stores/cardStore';
+
 
 
 type CustomLink = {
@@ -288,6 +292,9 @@ export default function DashboardPage() {
 
     const [hasActiveSubscription] = useState(canCreatePages());
 
+    // Novo sistema CR80 - Store global
+    const { importConfig, exportConfig, syncBackgroundColors } = useCardStore();
+
     const [config, setConfig] = useState<PageConfig>({
 
         // Configurações do cartão - FRENTE
@@ -514,10 +521,6 @@ export default function DashboardPage() {
             const cardWidth = 1011; // 85.6mm * 300 DPI / 25.4mm
             const cardHeight = 638;  // 53.98mm * 300 DPI / 25.4mm
             
-            // Dimensões do preview para proporções
-            const PREVIEW_WIDTH = 320;
-            const PREVIEW_HEIGHT = 192;
-            
 
             canvas.width = cardWidth;
 
@@ -545,19 +548,9 @@ export default function DashboardPage() {
 
                     img.onload = () => {
 
-                        // ✅ Logo proporcional mantendo o aspect ratio real da imagem
-                        const logoSizePercent = config.logoSize || 60;
-                        const baseHeight = (logoSizePercent / 100) * cardHeight; // altura-alvo
-                        const logoRatio = (img.naturalWidth && img.naturalHeight)
-                            ? (img.naturalWidth / img.naturalHeight)
-                            : 1;
-                        const logoHeight = Math.round(baseHeight);
-                        const logoWidth = Math.round(baseHeight * logoRatio);
-                        
-                        // ✅ CORRIGIDO: Posicionamento com multiplicador 0.3 (igual ao CSS)
-                        const positionPercent = config.logoPosition || 0;
-                        const maxOffset = cardWidth * 0.15; // Limitar a 15% da largura
-                        const x = (cardWidth / 2) + (positionPercent / 100) * maxOffset;
+                        // Manter proporção relativa: se no dashboard é 60% de 320px, no PDF será 60% de 1011px
+                        const logoSize = (config.logoSize || 60) * (cardWidth / 100);
+                        const x = cardWidth / 2 + (config.logoPosition || 0) * (cardWidth / 100);
                         const y = cardHeight / 2;
 
                         
@@ -570,7 +563,7 @@ export default function DashboardPage() {
 
                         ctx.rotate((config.logoRotationFront || 0) * Math.PI / 180);
 
-                        ctx.drawImage(img, -logoWidth/2, -logoHeight/2, logoWidth, logoHeight);
+                        ctx.drawImage(img, -logoSize/2, -logoSize/2, logoSize, logoSize);
 
                         ctx.restore();
 
@@ -582,18 +575,14 @@ export default function DashboardPage() {
 
                         nfcImg.onload = () => {
 
-                            // Manter proporção do arquivo NFC
-                            const nfcHeight = Math.round(24 * (cardWidth / 320));
-                            const nfcRatio = (nfcImg.naturalWidth && nfcImg.naturalHeight)
-                                ? (nfcImg.naturalWidth / nfcImg.naturalHeight)
-                                : 1;
-                            const nfcWidth = Math.round(nfcHeight * nfcRatio);
+                            // Manter proporção relativa: 24px em 320px = 7.5%, então 7.5% de 1011px
+                            const nfcSize = Math.round(24 * (cardWidth / 320));
                             ctx.globalAlpha = 0.8;
 
-                            // Posição proporcional
+                            // Posição proporcional: 20px em 320px = 6.25%, então 6.25% de 1011px
                             const marginTop = Math.round(20 * (cardHeight / 192));
                             const marginRight = Math.round(20 * (cardWidth / 320));
-                            ctx.drawImage(nfcImg, cardWidth - nfcWidth - marginRight, marginTop, nfcWidth, nfcHeight);
+                            ctx.drawImage(nfcImg, cardWidth - nfcSize - marginRight, marginTop, nfcSize, nfcSize);
                             ctx.globalAlpha = 1;
 
                             
@@ -707,16 +696,14 @@ export default function DashboardPage() {
 
                     nfcImg.onload = () => {
 
-                        const nfcHeight = Math.round(24 * (cardWidth / 320));
-                        const nfcRatio = (nfcImg.naturalWidth && nfcImg.naturalHeight)
-                            ? (nfcImg.naturalWidth / nfcImg.naturalHeight)
-                            : 1;
-                        const nfcWidth = Math.round(nfcHeight * nfcRatio);
+                        // Manter proporção relativa: 24px em 320px = 7.5%, então 7.5% de 1011px
+                        const nfcSize = Math.round(24 * (cardWidth / 320));
                         ctx.globalAlpha = 0.8;
 
+                        // Posição proporcional: 20px em 320px = 6.25%, então 6.25% de 1011px
                         const marginTop = Math.round(20 * (cardHeight / 192));
                         const marginRight = Math.round(20 * (cardWidth / 320));
-                        ctx.drawImage(nfcImg, cardWidth - nfcWidth - marginRight, marginTop, nfcWidth, nfcHeight);
+                        ctx.drawImage(nfcImg, cardWidth - nfcSize - marginRight, marginTop, nfcSize, nfcSize);
                         ctx.globalAlpha = 1;
 
                         
@@ -828,19 +815,9 @@ export default function DashboardPage() {
 
                     img.onload = () => {
 
-                        // ✅ Logo do verso mantendo o aspect ratio real da imagem
-                        const logoSizePercent = config.clientLogoBackSize || 50;
-                        const baseWidth = (logoSizePercent / 100) * cardWidth; // largura-alvo
-                        const imgRatioBack = (img.naturalWidth && img.naturalHeight)
-                            ? (img.naturalWidth / img.naturalHeight)
-                            : 1;
-                        const logoWidth = Math.round(baseWidth);
-                        const logoHeight = Math.round(baseWidth / imgRatioBack);
-                        
-                        // Usar a mesma lógica do preview: 50% + (position * 1.2)%
-                        const positionPercent = config.logoPositionBack || 0;
-                        const xPercent = 50 + (positionPercent * 1.2);
-                        const x = (xPercent / 100) * cardWidth;
+                        // Manter proporção relativa da logo do verso
+                        const logoSize = (config.clientLogoBackSize || 50) * (cardWidth / 100);
+                        const x = cardWidth / 2 + (config.logoPositionBack || 0) * (cardWidth / 100);
                         const y = cardHeight / 2;
 
                         
@@ -853,7 +830,7 @@ export default function DashboardPage() {
 
                         ctx.rotate((config.logoRotationBack || 0) * Math.PI / 180);
 
-                        ctx.drawImage(img, -logoWidth/2, -logoHeight/2, logoWidth, logoHeight);
+                        ctx.drawImage(img, -logoSize/2, -logoSize/2, logoSize, logoSize);
 
                         ctx.restore();
 
@@ -861,21 +838,10 @@ export default function DashboardPage() {
 
                         // Desenhar QR Code real
 
-                        // ✅ QR Code baseado na LARGURA também
-                        const qrSizePercent = config.qrCodeSize || 35;
-                        const qrSizeBase = (qrSizePercent / 100) * cardWidth;
-                        // Reduzir mais 8% (total ~15.4% menor: 0.92 * 0.92 = 0.8464)
-                        const qrSize = Math.round(qrSizeBase * 0.846);
-                        
-                        // Posição considerando padding de 16px (p-4)
-                        const horizontalPadding = 16 * (cardWidth / PREVIEW_WIDTH);
-                        const qrX = config.qrCodePosition === 'justify-end' 
-                            ? cardWidth - qrSize - horizontalPadding 
-                            : horizontalPadding;
-                        
-                        // Usar exatamente a mesma lógica do preview
-                        // No preview: absolute inset-0 p-4 flex items-center
-                        // O items-center centraliza o elemento no container
+                        // Manter proporção relativa do QR Code
+                        const qrSize = (config.qrCodeSize || 35) * (cardWidth / 100);
+                        const qrX = config.qrCodePosition === 'justify-end' ? cardWidth - qrSize - 20 : 20;
+
                         const qrY = cardHeight / 2;
 
                         
@@ -902,19 +868,14 @@ export default function DashboardPage() {
 
                             nfcImg.onload = () => {
 
-                                // Base: 24px no preview (320x192) -> escalar para PDF
-                                const nfcHeight = Math.round(24 * (cardWidth / 320));
-                                // Manter proporção real do arquivo NFC (evita alongamento)
-                                const nfcRatio = (nfcImg.naturalWidth && nfcImg.naturalHeight)
-                                    ? (nfcImg.naturalWidth / nfcImg.naturalHeight)
-                                    : 1;
-                                const nfcWidth = Math.round(nfcHeight * nfcRatio);
+                                // Manter proporção relativa: 24px em 320px = 7.5%, então 7.5% de 1011px
+                                const nfcSize = Math.round(24 * (cardWidth / 320));
                                 ctx.globalAlpha = 0.8;
 
-                                // Margens proporcionais como no preview
+                                // Posição proporcional: 20px em 320px = 6.25%, então 6.25% de 1011px
                                 const marginTop = Math.round(20 * (cardHeight / 192));
                                 const marginRight = Math.round(20 * (cardWidth / 320));
-                                ctx.drawImage(nfcImg, cardWidth - nfcWidth - marginRight, marginTop, nfcWidth, nfcHeight);
+                                ctx.drawImage(nfcImg, cardWidth - nfcSize - marginRight, marginTop, nfcSize, nfcSize);
                                 ctx.globalAlpha = 1;
 
                                 
@@ -925,17 +886,14 @@ export default function DashboardPage() {
 
                                 zagImg.onload = () => {
 
-                                    // Altura proporcional ao preview (12px em 192px = 6.25%)
+                                    // Manter proporção da logo Zag (60x18 = 3.33:1)
+                                    // Manter proporção relativa da logo Zag: 12px em 192px = 6.25%, então 6.25% de 638px
                                     const zagHeight = Math.round(12 * (cardHeight / 192));
-                                    // Usar proporção real da imagem (fallback 60:18)
-                                    const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
-                                        ? (zagImg.naturalWidth / zagImg.naturalHeight)
-                                        : (60 / 18);
-                                    const zagWidth = Math.round(zagHeight * zagRatio);
-                                    // Usar as mesmas margens do NFC: right = marginRight, bottom = marginTop
-                                    const bottomMargin = marginTop; // espelha o top do NFC
-                                    const rightMargin = marginRight; // mesma distância da borda direita
-                                    ctx.drawImage(zagImg, cardWidth - zagWidth - rightMargin, cardHeight - zagHeight - bottomMargin, zagWidth, zagHeight);
+                                    const zagWidth = (zagHeight * 60) / 18; // Proporção 60:18 mantida
+                                    // Posição proporcional: 4px em 192px = 2.08%, então 2.08% de 638px
+                                    const marginBottom = Math.round(4 * (cardHeight / 192));
+                                    const marginRight = Math.round(4 * (cardWidth / 320));
+                                    ctx.drawImage(zagImg, cardWidth - zagWidth - marginRight, cardHeight - zagHeight - marginBottom, zagWidth, zagHeight);
                                     
 
                                     // Retornar dataURL ou baixar imagem
@@ -972,7 +930,7 @@ export default function DashboardPage() {
 
                                 };
 
-                                zagImg.src = '/zag-botom.png';
+                                zagImg.src = '/logo-zag.png';
 
                             };
 
@@ -984,19 +942,14 @@ export default function DashboardPage() {
 
                                 zagImg.onload = () => {
 
-                                    // Altura proporcional ao preview (12px em 192px = 6.25%)
+                                    // Manter proporção da logo Zag (60x18 = 3.33:1)
+                                    // Manter proporção relativa da logo Zag: 12px em 192px = 6.25%, então 6.25% de 638px
                                     const zagHeight = Math.round(12 * (cardHeight / 192));
-                                    // Usar proporção real da imagem (fallback 60:18)
-                                    const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
-                                        ? (zagImg.naturalWidth / zagImg.naturalHeight)
-                                        : (60 / 18);
-                                    const zagWidth = Math.round(zagHeight * zagRatio);
-                                    // Usar as mesmas margens do NFC
-                                    const marginTop = Math.round(20 * (cardHeight / 192));
-                                    const marginRight = Math.round(20 * (cardWidth / 320));
-                                    const bottomMargin = marginTop;
-                                    const rightMargin = marginRight;
-                                    ctx.drawImage(zagImg, cardWidth - zagWidth - rightMargin, cardHeight - zagHeight - bottomMargin, zagWidth, zagHeight);
+                                    const zagWidth = (zagHeight * 60) / 18; // Proporção 60:18 mantida
+                                    // Posição proporcional: 4px em 192px = 2.08%, então 2.08% de 638px
+                                    const marginBottom = Math.round(4 * (cardHeight / 192));
+                                    const marginRight = Math.round(4 * (cardWidth / 320));
+                                    ctx.drawImage(zagImg, cardWidth - zagWidth - marginRight, cardHeight - zagHeight - marginBottom, zagWidth, zagHeight);
                                     
 
                                     if (returnAsDataUrl) {
@@ -1031,7 +984,7 @@ export default function DashboardPage() {
 
                                 };
 
-                                zagImg.src = '/zag-botom.png';
+                                zagImg.src = '/logo-zag.png';
 
                             };
 
@@ -1073,22 +1026,12 @@ export default function DashboardPage() {
 
                                 zagImg.onload = () => {
 
-                                    // Escalar proporcionalmente da prévia (320x192) para o PDF (1011x638)
-                                    // Altura da logo no preview = 12px -> 6.25% da altura (12/192)
-                                    const zagHeight = Math.round(12 * (cardHeight / 192));
-                                    // Usar proporção real da imagem (fallback 60:18) para evitar achatamento
-                                    const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
-                                        ? (zagImg.naturalWidth / zagImg.naturalHeight)
-                                        : (60 / 18);
-                                    const zagWidth = Math.round(zagHeight * zagRatio);
-                                    // Margens proporcionais: 4px no preview -> escalar para PDF
-                                    const marginBottom = Math.round(4 * (cardHeight / 192));
-                                    const marginRight = Math.round(4 * (cardWidth / 320));
-                                    // Leve ajuste: mover para esquerda e para cima (≈ +2px do preview)
-                                    const offsetBottom = Math.round(2 * (cardHeight / 192));
-                                    const offsetRight = Math.round(2 * (cardWidth / 320));
-                                    // Posicionar no canto inferior direito com margens proporcionais
-                                    ctx.drawImage(zagImg, cardWidth - zagWidth - (marginRight + offsetRight), cardHeight - zagHeight - (marginBottom + offsetBottom), zagWidth, zagHeight);
+                                    const zagWidth = 60 * (cardWidth / 1011);
+
+                                    const zagHeight = 18 * (cardHeight / 638);
+
+                                    // Posição bottom-right com escala correta
+ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, zagWidth, zagHeight);
                                     
 
                                     if (returnAsDataUrl) {
@@ -1121,7 +1064,7 @@ export default function DashboardPage() {
 
                                 };
 
-                                zagImg.src = '/zag-botom.png';
+                                zagImg.src = '/logo-zag.png';
 
                             };
 
@@ -1155,17 +1098,10 @@ export default function DashboardPage() {
 
                     // Apenas QR Code real
 
-                    // ✅ QR Code baseado na LARGURA também
-                    const qrSizePercent = config.qrCodeSize || 35;
-                    const qrSize = (qrSizePercent / 100) * cardWidth;
-                    
-                    // Posição considerando padding de 16px (p-4)
-                    const horizontalPadding = 16 * (cardWidth / PREVIEW_WIDTH);
-                    const qrX = config.qrCodePosition === 'justify-end' 
-                        ? cardWidth - qrSize - horizontalPadding 
-                        : horizontalPadding;
-                    
-                    // Usar exatamente a mesma lógica do preview
+                    const qrSize = (config.qrCodeSize || 35) * cardWidth / 100;
+
+                    const qrX = config.qrCodePosition === 'justify-end' ? cardWidth - qrSize - 20 : 20;
+
                     const qrY = cardHeight / 2;
 
                     
@@ -1208,15 +1144,12 @@ export default function DashboardPage() {
 
                             zagImg.onload = () => {
 
-                                    // Escalar proporcionalmente da prévia (320x192) para o PDF (1011x638)
-                                    // Altura da logo no preview = 12px -> 6.25% da altura (12/192)
-                                    const zagHeight = Math.round(12 * (cardHeight / 192));
-                                    // Manter a proporção original da imagem 60:18 (3.33:1)
-                                    const zagWidth = (zagHeight * 60) / 18;
-                                    // Usar as mesmas margens do NFC
-                                    const bottomMargin = Math.round(20 * (cardHeight / 192)); // mesmo que marginTop do NFC
-                                    const rightMargin = Math.round(20 * (cardWidth / 320));
-                                    ctx.drawImage(zagImg, cardWidth - zagWidth - rightMargin, cardHeight - zagHeight - bottomMargin, zagWidth, zagHeight);
+                                const zagWidth = 60 * (cardWidth / 1011);
+
+                                const zagHeight = 18 * (cardHeight / 638);
+
+                                // Posição bottom-right com escala correta
+ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, zagWidth, zagHeight);
                                 
 
                                 if (returnAsDataUrl) {
@@ -1941,6 +1874,29 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
 
 
+    // Migrar configuração legada para o novo sistema CR80
+    useEffect(() => {
+        try {
+            const legacyConfig = {
+                cardBgColor: config.cardBgColor,
+                cardBackBgColor: config.cardBackBgColor,
+                logoDataUrl: logoDataUrl,
+                logoSize: config.logoSize,
+                logoOpacity: config.logoOpacityFront,
+                logoRotation: config.logoRotationFront,
+                logoPositionBack: config.logoPositionBack,
+                clientLogoBackSize: config.clientLogoBackSize,
+                logoOpacityBack: config.logoOpacityBack,
+                logoRotationBack: config.logoRotationBack
+            };
+
+            const newConfig = migrateLegacyConfig(legacyConfig);
+            importConfig(newConfig);
+        } catch (error) {
+            console.error('Erro ao migrar configuração para CR80:', error);
+        }
+    }, [config, logoDataUrl, importConfig]);
+
     // Garantir que a página sempre comece limpa
 
     useEffect(() => {
@@ -2547,9 +2503,17 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                     </div>
 
-                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border overflow-hidden card-preview">
+                                    {/* Novo sistema CR80 - Visualização da Frente */}
+                                    <div className="flex justify-center">
+                                        <CardPreview
+                                            side="front"
+                                            config={useCardStore.getState().frontConfig}
+                                            maxWidth={320}
+                                            className="shadow-lg"
+                                        />
+                                    </div>
 
-                                        {/* Logo com posicionamento simplificado e centralizado */}
+                                    {/* CÓDIGO ANTIGO REMOVIDO - SISTEMA CR80 IMPLEMENTADO */}
 
                                         {logoDataUrl ? (
 
@@ -2691,6 +2655,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                         />
 
                                     </div>
+                                    {/* CÓDIGO ANTIGO COMENTADO - FIM */}
 
                                     <div className="mt-6 space-y-4 max-w-sm mx-auto">
 
@@ -2966,9 +2931,18 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                     <p className="text-center font-semibold mb-4">Verso</p>
 
-                                    <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg p-4 border relative overflow-hidden card-preview">
+                                    {/* Novo sistema CR80 - Visualização do Verso */}
+                                    <div className="flex justify-center">
+                                        <CardPreview
+                                            side="back"
+                                            config={useCardStore.getState().backConfig}
+                                            maxWidth={320}
+                                            className="shadow-lg"
+                                        />
+                                    </div>
 
-                                        {logoDataUrl && (
+                                    {/* CÓDIGO ANTIGO VERSO COMENTADO - INÍCIO
+                                    {logoDataUrl && (
 
                                             <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300 image-transparent" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: `${50 + (config.logoPositionBack ?? 0) * 1.2}%`, transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3, background: 'transparent' }} />
 
@@ -3024,6 +2998,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                         />
 
                                     </div>
+                                    {/* CÓDIGO ANTIGO VERSO COMENTADO - FIM */}
 
                                     <div className="mt-6 space-y-4 max-w-sm mx-auto">
 

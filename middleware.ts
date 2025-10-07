@@ -63,6 +63,11 @@ export async function middleware(req: NextRequest) {
     host?.endsWith('.vercel.app') // Inclui todos os deploys do Vercel
   ) || host === 'zagnfc.com.br' || host === 'www.zagnfc.com.br';
   
+  // Permitir acesso à home page principal
+  if (pathname === '/' && (host === 'localhost:3001' || host === 'localhost:3000' || isMainDomain)) {
+    return res;
+  }
+  
   // Se for subdomínio e estiver na raiz, reescrever para a rota do subdomínio
   if (subdomain && subdomain !== 'www' && !isMainDomain && pathname === '/') {
     const url = req.nextUrl.clone();
