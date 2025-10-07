@@ -516,7 +516,6 @@ export default function DashboardPage() {
             
             // Dimensões do preview para proporções
             const PREVIEW_WIDTH = 320;
-            const PREVIEW_HEIGHT = 192;
             
 
             canvas.width = cardWidth;

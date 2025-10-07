@@ -35,7 +35,7 @@ export default function LoginPage() {
         try {
             if (isSignUp) {
                 // Cadastro
-                const { data, error } = await supabase.auth.signUp({
+                const { error } = await supabase.auth.signUp({
                     email,
                     password,
                 });
@@ -47,7 +47,7 @@ export default function LoginPage() {
                 }
             } else {
                 // Login
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { error } = await supabase.auth.signInWithPassword({
                     email,
                     password,
                 });

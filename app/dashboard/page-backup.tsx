@@ -2750,8 +2750,6 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                         </div>
 
-                                        </div>
-
 
 
                                         {/* 4. Rotação e Opacidade lado a lado */}
