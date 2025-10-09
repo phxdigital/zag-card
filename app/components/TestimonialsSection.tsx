@@ -1,8 +1,8 @@
-import { Star } from "lucide-react"
+import { Star } from &ldquo;lucide-react&rdquo;
 
 const testimonials = [
   {
-    name: "Carlos Silva",
+    name: &ldquo;Carlos Silva&rdquo;,
     role: "Corretor de Imóveis",
     content: "Desde que comecei a usar o Zag NFC, minhas conversões aumentaram 40%. Os clientes adoram a praticidade!",
     rating: 5,

@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata } from &ldquo;next&rdquo;;
+import { Inter } from &ldquo;next/font/google&rdquo;;
 import "./globals.css";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -52,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang=&ldquo;pt-BR&rdquo;>
       <body className="antialiased">
         {children}
       </body>

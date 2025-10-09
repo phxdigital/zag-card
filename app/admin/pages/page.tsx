@@ -47,7 +47,7 @@ export default function AdminPagesPage() {
     };
 
     const handleDelete = async (subdomain: string, id: string) => {
-        if (!confirm(`Tem certeza que deseja remover a página "${subdomain}.zagnfc.com.br"?\n\nEsta ação não pode ser desfeita!`)) {
+        if (!confirm(`Tem certeza que deseja remover a página &ldquo;${subdomain}.zagnfc.com.br&rdquo;?\n\nEsta ação não pode ser desfeita!`)) {
             return;
         }
 
@@ -105,8 +105,8 @@ export default function AdminPagesPage() {
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
-                        type="text"
-                        placeholder="🔍 Buscar por subdomínio ou usuário..."
+                        type=&ldquo;text&rdquo;
+                        placeholder="🔍 Buscar por subdomínio ou usuário...&ldquo;
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -123,7 +123,7 @@ export default function AdminPagesPage() {
                             Nenhuma página encontrada
                         </h3>
                         <p className="text-gray-500">
-                            {searchTerm ? `Nenhum resultado para "${searchTerm}"` : 'Ainda não há páginas criadas'}
+                            {searchTerm ? `Nenhum resultado para &ldquo;${searchTerm}&rdquo;` : 'Ainda não há páginas criadas'}
                         </p>
                     </div>
                 ) : (
@@ -158,8 +158,8 @@ export default function AdminPagesPage() {
                                                 <div>
                                                     <a
                                                         href={`https://${page.subdomain}.zagnfc.com.br`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
+                                                        target=&ldquo;_blank&rdquo;
+                                                        rel=&rdquo;noopener noreferrer"
                                                         className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center gap-1"
                                                     >
                                                         {page.subdomain}.zagnfc.com.br
@@ -207,7 +207,7 @@ export default function AdminPagesPage() {
                                                 <button
                                                     onClick={() => router.push(`/${page.subdomain}/edit-page`)}
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="Editar página"
+                                                    title="Editar página&ldquo;
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                 </button>
@@ -216,7 +216,7 @@ export default function AdminPagesPage() {
                                                 <button
                                                     onClick={() => handleDelete(page.subdomain, page.id)}
                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Remover página"
+                                                    title=&rdquo;Remover página"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>

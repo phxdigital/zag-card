@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 export async function GET() {
     try {
-        const cookieStore = await cookies();
+        const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
         
         // Verificar autenticação
@@ -99,7 +99,7 @@ export async function GET() {
 
 export async function DELETE(request: Request) {
     try {
-        const cookieStore = await cookies();
+        const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
         
         // Verificar autenticação

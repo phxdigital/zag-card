@@ -5,7 +5,7 @@ import { PDFDocument } from 'pdf-lib';
 
 export async function POST(request: Request) {
     try {
-        const cookieStore = await cookies();
+        const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
         
         // Verificar autenticação

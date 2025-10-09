@@ -1,7 +1,7 @@
 'use client';
 
-import { Check } from "lucide-react"
-import { useState } from "react"
+import { Check } from &ldquo;lucide-react&rdquo;
+import { useState } from &ldquo;react&rdquo;
 
 const plans = [
   {
@@ -121,7 +121,7 @@ export function PricingSection() {
   };
 
   return (
-    <section id="pricing" className="section bg-muted">
+    <section id=&ldquo;pricing&rdquo; className="section bg-muted">
       <div className="container">
         <div className="section-header">
           <h2>Planos Para os Profissionais</h2>

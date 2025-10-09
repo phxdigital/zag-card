@@ -78,11 +78,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-2">
               <Image 
-                src="/logo-zag.png" 
-                alt="Zag NFC" 
+                src=&ldquo;/logo-zag.png&rdquo; 
+                alt="Zag NFC&ldquo; 
                 width={64} 
                 height={64} 
-                className="h-12 w-auto"
+                className=&rdquo;h-12 w-auto"
               />
               <span className="text-sm font-medium text-gray-700">Menu</span>
             </div>
@@ -116,8 +116,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="border-t border-gray-200 p-4 space-y-2">
             {isAdmin && (
               <Link
-                href="/admin"
-                className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
+                href=&ldquo;/admin&rdquo;
+                className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md&ldquo;
               >
                 <Settings className="mr-3 h-5 w-5" />
                 Painel Admin
@@ -140,8 +140,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex h-16 items-center px-4">
             <div className="flex items-center gap-2">
               <Image 
-                src="/logo-zag.png" 
-                alt="Zag NFC" 
+                src=&ldquo;/logo-zag.png&rdquo; 
+                alt=&rdquo;Zag NFC" 
                 width={64} 
                 height={64} 
                 className="h-12 w-auto"
@@ -171,8 +171,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="border-t border-gray-200 p-4 space-y-2">
             {isAdmin && (
               <Link
-                href="/admin"
-                className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
+                href=&ldquo;/admin&rdquo;
+                className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md&ldquo;
               >
                 <Settings className="mr-3 h-5 w-5" />
                 Painel Admin
@@ -194,8 +194,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Top bar - apenas para mobile */}
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:hidden">
           <button
-            type="button"
-            className="-m-2.5 p-2.5 text-gray-700 flex items-center gap-2"
+            type=&ldquo;button&rdquo;
+            className=&rdquo;-m-2.5 p-2.5 text-gray-700 flex items-center gap-2"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-6 w-6" />
@@ -209,11 +209,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center justify-center flex-1">
               <div className="animate-slide-in-right">
                 <Image 
-                  src="/logo-zag.png" 
-                  alt="Zag Card Logo" 
+                  src=&ldquo;/logo-zag.png&rdquo; 
+                  alt="Zag Card Logo&ldquo; 
                   width={40} 
                   height={12} 
-                  className="h-3 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300" 
+                  className=&rdquo;h-3 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300" 
                   style={{ width: 'auto', height: 'auto' }}
                 />
               </div>

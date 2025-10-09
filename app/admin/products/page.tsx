@@ -110,7 +110,7 @@ export default function AdminProductsPage() {
   };
 
   const deleteProduct = async (productId: string, productName: string) => {
-    if (!confirm(`Tem certeza que deseja excluir "${productName}"?`)) return;
+    if (!confirm(`Tem certeza que deseja excluir &ldquo;${productName}&rdquo;?`)) return;
 
     try {
       const supabase = createClientComponentClient();
@@ -241,8 +241,8 @@ export default function AdminProductsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
-              type="text"
-              placeholder="Buscar produtos..."
+              type=&ldquo;text&rdquo;
+              placeholder="Buscar produtos...&ldquo;
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -254,9 +254,9 @@ export default function AdminProductsPage() {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="all">Todos os status</option>
-            <option value="active">Ativos</option>
-            <option value="inactive">Inativos</option>
+            <option value=&ldquo;all&rdquo;>Todos os status</option>
+            <option value=&ldquo;active&rdquo;>Ativos</option>
+            <option value=&ldquo;inactive&rdquo;>Inativos</option>
           </select>
 
           <select
@@ -264,10 +264,10 @@ export default function AdminProductsPage() {
             onChange={(e) => setFilterCategory(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="all">Todas as categorias</option>
-            <option value="Kits">Kits</option>
-            <option value="Cartões NFC">Cartões NFC</option>
-            <option value="Adesivos NFC">Adesivos NFC</option>
+            <option value=&ldquo;all&rdquo;>Todas as categorias</option>
+            <option value=&ldquo;Kits&rdquo;>Kits</option>
+            <option value=&ldquo;Cartões NFC&rdquo;>Cartões NFC</option>
+            <option value=&ldquo;Adesivos NFC&rdquo;>Adesivos NFC</option>
           </select>
         </div>
       </div>
@@ -375,7 +375,7 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => toggleFeatured(product.id, product.is_featured)}
                         className="text-yellow-600 hover:text-yellow-900"
-                        title={product.is_featured ? "Remover destaque" : "Destacar produto"}
+                        title={product.is_featured ? &rdquo;Remover destaque" : "Destacar produto"}
                       >
                         <Star className={`h-5 w-5 ${product.is_featured ? 'fill-current' : ''}`} />
                       </button>
@@ -383,7 +383,7 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => router.push(`/admin/products/${product.id}/edit`)}
                         className="text-blue-600 hover:text-blue-900"
-                        title="Editar"
+                        title="Editar&ldquo;
                       >
                         <Edit className="h-5 w-5" />
                       </button>
@@ -391,7 +391,7 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => deleteProduct(product.id, product.name)}
                         className="text-red-600 hover:text-red-900"
-                        title="Excluir"
+                        title=&rdquo;Excluir"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>

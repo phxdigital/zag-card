@@ -2,9 +2,9 @@
 
 const faqs = [
   {
-    question: "O que é tecnologia NFC?",
+    question: &ldquo;O que é tecnologia NFC?&rdquo;,
     answer:
-      "NFC (Near Field Communication) é uma tecnologia de comunicação sem fio de curto alcance que permite a troca de dados entre dispositivos próximos. No caso do Zag NFC, basta aproximar o cartão de um smartphone para compartilhar suas informações instantaneamente.",
+      &ldquo;NFC (Near Field Communication) é uma tecnologia de comunicação sem fio de curto alcance que permite a troca de dados entre dispositivos próximos. No caso do Zag NFC, basta aproximar o cartão de um smartphone para compartilhar suas informações instantaneamente.&rdquo;,
   },
   {
     question: "Funciona em todos os smartphones?",

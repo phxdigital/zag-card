@@ -1,9 +1,9 @@
-import { Globe, Lock, Zap, CreditCard, RefreshCw, QrCode } from "lucide-react"
+import { Globe, Lock, Zap, CreditCard, RefreshCw, QrCode } from &ldquo;lucide-react&rdquo;
 
 const features = [
   {
     icon: Globe,
-    title: "Página Web Instantânea",
+    title: &ldquo;Página Web Instantânea&rdquo;,
     description: "Configure sua página profissional em minutos com seu subdomínio personalizado.",
   },
   {

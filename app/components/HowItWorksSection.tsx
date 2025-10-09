@@ -1,9 +1,9 @@
-import { Smartphone, UserPlus, Share2 } from "lucide-react"
+import { Smartphone, UserPlus, Share2 } from &ldquo;lucide-react&rdquo;
 
 const steps = [
   {
     icon: UserPlus,
-    title: "Crie Seu Perfil",
+    title: &ldquo;Crie Seu Perfil&rdquo;,
     description: "Configure suas informações profissionais e personalize sua página em minutos.",
   },
   {

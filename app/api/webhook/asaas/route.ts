@@ -5,7 +5,7 @@ import type { AsaasWebhook } from '@/types/asaas';
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Verificar token de webhook (opcional, mas recomendado)

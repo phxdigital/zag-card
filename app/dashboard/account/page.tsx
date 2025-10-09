@@ -273,13 +273,13 @@ export default function AccountPage() {
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type="text"
+                    type=&ldquo;text&rdquo;
                     value={formData.full_name}
                     onChange={(e) => handleInputChange('full_name', e.target.value)}
                     className={`block w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                       errors.full_name ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="Seu nome completo"
+                    placeholder=&ldquo;Seu nome completo&rdquo;
                   />
                 </div>
                 {errors.full_name && (
@@ -296,11 +296,11 @@ export default function AccountPage() {
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type="email"
+                    type=&ldquo;email&rdquo;
                     value={formData.email}
                     disabled
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed sm:text-sm"
-                    placeholder="seu@email.com"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed sm:text-sm&ldquo;
+                    placeholder=&rdquo;seu@email.com"
                   />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
@@ -394,11 +394,11 @@ export default function AccountPage() {
                       className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                         errors.current_password ? 'border-red-300' : 'border-gray-300'
                       }`}
-                      placeholder="Digite sua senha atual"
+                      placeholder=&ldquo;Digite sua senha atual&rdquo;
                     />
                     <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      type=&ldquo;button&rdquo;
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center&ldquo;
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     >
                       {showCurrentPassword ? (
@@ -429,11 +429,11 @@ export default function AccountPage() {
                     className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                       errors.new_password ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="Digite sua nova senha"
+                    placeholder=&ldquo;Digite sua nova senha&rdquo;
                   />
                   <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    type=&ldquo;button&rdquo;
+                    className=&rdquo;absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
                     {showNewPassword ? (
@@ -463,10 +463,10 @@ export default function AccountPage() {
                     className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                       errors.confirm_password ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="Confirme sua nova senha"
+                    placeholder=&ldquo;Confirme sua nova senha&rdquo;
                   />
                   <button
-                    type="button"
+                    type=&ldquo;button&rdquo;
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >

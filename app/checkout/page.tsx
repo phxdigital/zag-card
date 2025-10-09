@@ -119,7 +119,7 @@ export default function CheckoutPage() {
           <div className="flex justify-center mb-4">
             <img 
               src={`data:image/png;base64,${paymentData.pix.qrCodeImage}`}
-              alt="QR Code PIX"
+              alt=&ldquo;QR Code PIX&rdquo;
               className="w-64 h-64 border-4 border-gray-200 rounded-lg"
             />
           </div>

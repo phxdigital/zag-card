@@ -1,6 +1,6 @@
-"use client"
+&ldquo;use client&rdquo;
 
-import { ArrowRight, Zap } from "lucide-react"
+import { ArrowRight, Zap } from &ldquo;lucide-react&rdquo;
 import { useState, useEffect } from "react"
 import Image from "next/image"
 
@@ -65,11 +65,11 @@ export function HeroSection() {
               </p>
 
               <div className="hero-buttons">
-                <a href="#" className="btn-lg btn-primary-lg">
+                <a href=&ldquo;#&rdquo; className="btn-lg btn-primary-lg&ldquo;>
                   Começar Agora
                   <ArrowRight className="h-4 w-4" />
                 </a>
-                <a href="#" className="btn-lg btn-outline">
+                <a href=&ldquo;#&rdquo; className=&rdquo;btn-lg btn-outline">
                   Ver Demonstração
                 </a>
               </div>

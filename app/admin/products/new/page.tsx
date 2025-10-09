@@ -162,11 +162,11 @@ export default function NewProductPage() {
                 Nome do Produto *
               </label>
               <input
-                type="text"
+                type=&ldquo;text&rdquo;
                 value={formData.name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: Kit Para Mim"
+                placeholder="Ex: Kit Para Mim&ldquo;
                 required
               />
             </div>
@@ -176,11 +176,11 @@ export default function NewProductPage() {
                 Slug (URL amigável) *
               </label>
               <input
-                type="text"
+                type=&ldquo;text&rdquo;
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="kit-para-mim"
+                placeholder=&rdquo;kit-para-mim"
                 required
               />
               <p className="mt-1 text-xs text-gray-500">
@@ -193,11 +193,11 @@ export default function NewProductPage() {
                 Descrição Curta
               </label>
               <input
-                type="text"
+                type=&ldquo;text&rdquo;
                 value={formData.short_description}
                 onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Resumo do produto em uma linha"
+                placeholder="Resumo do produto em uma linha&ldquo;
                 maxLength={150}
               />
             </div>
@@ -211,7 +211,7 @@ export default function NewProductPage() {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={6}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Descreva o produto em detalhes..."
+                placeholder=&rdquo;Descreva o produto em detalhes..."
               />
             </div>
           </div>
@@ -227,13 +227,13 @@ export default function NewProductPage() {
                 Preço de Venda * (R$)
               </label>
               <input
-                type="number"
-                step="0.01"
-                min="0"
+                type=&ldquo;number&rdquo;
+                step="0.01&ldquo;
+                min=&rdquo;0"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="89.00"
+                placeholder="89.00&ldquo;
                 required
               />
             </div>
@@ -243,13 +243,13 @@ export default function NewProductPage() {
                 Preço Comparativo (R$)
               </label>
               <input
-                type="number"
-                step="0.01"
+                type=&ldquo;number&rdquo;
+                step=&rdquo;0.01"
                 min="0"
                 value={formData.compare_price}
                 onChange={(e) => setFormData({ ...formData, compare_price: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="129.00"
+                placeholder="129.00&ldquo;
               />
               <p className="mt-1 text-xs text-gray-500">Preço &ldquo;de&rdquo; para mostrar desconto</p>
             </div>
@@ -263,9 +263,9 @@ export default function NewProductPage() {
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="Kits">Kits</option>
-                <option value="Cartões NFC">Cartões NFC</option>
-                <option value="Adesivos NFC">Adesivos NFC</option>
+                <option value=&ldquo;Kits&rdquo;>Kits</option>
+                <option value=&ldquo;Cartões NFC&rdquo;>Cartões NFC</option>
+                <option value=&ldquo;Adesivos NFC&rdquo;>Adesivos NFC</option>
               </select>
             </div>
 
@@ -274,11 +274,11 @@ export default function NewProductPage() {
                 Prazo de Entrega
               </label>
               <input
-                type="text"
+                type=&ldquo;text&rdquo;
                 value={formData.shipping_time}
                 onChange={(e) => setFormData({ ...formData, shipping_time: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="5-7 dias úteis"
+                placeholder=&rdquo;5-7 dias úteis"
               />
             </div>
           </div>
@@ -294,8 +294,8 @@ export default function NewProductPage() {
                 Quantidade em Estoque
               </label>
               <input
-                type="number"
-                min="0"
+                type=&ldquo;number&rdquo;
+                min="0&ldquo;
                 value={formData.stock_quantity}
                 onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -311,9 +311,9 @@ export default function NewProductPage() {
                 onChange={(e) => setFormData({ ...formData, stock_status: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="in_stock">Em estoque</option>
-                <option value="limited">Estoque limitado</option>
-                <option value="out_of_stock">Fora de estoque</option>
+                <option value=&ldquo;in_stock&rdquo;>Em estoque</option>
+                <option value=&ldquo;limited&rdquo;>Estoque limitado</option>
+                <option value=&ldquo;out_of_stock&rdquo;>Fora de estoque</option>
               </select>
             </div>
           </div>
@@ -327,14 +327,14 @@ export default function NewProductPage() {
             {features.map((feature, index) => (
               <div key={index} className="flex gap-2">
                 <input
-                  type="text"
+                  type=&ldquo;text&rdquo;
                   value={feature}
                   onChange={(e) => updateFeature(index, e.target.value)}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Ex: 1 Cartão NFC Premium"
+                  placeholder=&rdquo;Ex: 1 Cartão NFC Premium"
                 />
                 <button
-                  type="button"
+                  type=&ldquo;button&rdquo;
                   onClick={() => removeFeature(index)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                 >
@@ -344,9 +344,9 @@ export default function NewProductPage() {
             ))}
             
             <button
-              type="button"
+              type=&ldquo;button&rdquo;
               onClick={addFeature}
-              className="inline-flex items-center px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+              className="inline-flex items-center px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg&ldquo;
             >
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Feature
@@ -363,19 +363,19 @@ export default function NewProductPage() {
               URL da Imagem
             </label>
             <input
-              type="url"
+              type=&ldquo;url&rdquo;
               value={thumbnailUrl}
               onChange={(e) => setThumbnailUrl(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="https://exemplo.com/imagem.jpg"
+              placeholder=&rdquo;https://exemplo.com/imagem.jpg"
             />
             {thumbnailUrl && (
               <div className="mt-4">
                 <p className="text-sm text-gray-600 mb-2">Preview:</p>
                 <img 
                   src={thumbnailUrl} 
-                  alt="Preview" 
-                  className="h-40 w-40 object-cover rounded-lg border border-gray-300"
+                  alt=&ldquo;Preview&rdquo; 
+                  className="h-40 w-40 object-cover rounded-lg border border-gray-300&ldquo;
                   onError={(e) => {
                     e.currentTarget.src = '';
                     e.currentTarget.alt = 'Erro ao carregar imagem';
@@ -393,7 +393,7 @@ export default function NewProductPage() {
           <div className="space-y-4">
             <label className="flex items-center">
               <input
-                type="checkbox"
+                type=&ldquo;checkbox&rdquo;
                 checked={formData.is_active}
                 onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -403,7 +403,7 @@ export default function NewProductPage() {
 
             <label className="flex items-center">
               <input
-                type="checkbox"
+                type=&ldquo;checkbox&rdquo;
                 checked={formData.is_featured}
                 onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -413,7 +413,7 @@ export default function NewProductPage() {
 
             <label className="flex items-center">
               <input
-                type="checkbox"
+                type=&ldquo;checkbox&rdquo;
                 checked={formData.requires_shipping}
                 onChange={(e) => setFormData({ ...formData, requires_shipping: e.target.checked })}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -426,7 +426,7 @@ export default function NewProductPage() {
         {/* Ações */}
         <div className="flex gap-4 justify-end">
           <button
-            type="button"
+            type=&ldquo;button&rdquo;
             onClick={() => router.back()}
             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
             disabled={loading}
@@ -434,9 +434,9 @@ export default function NewProductPage() {
             Cancelar
           </button>
           <button
-            type="submit"
+            type=&ldquo;submit&rdquo;
             disabled={loading}
-            className="inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className=&rdquo;inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? (
               <>

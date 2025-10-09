@@ -19,6 +19,12 @@ const fixes = [
         description: 'Corrige tipo de params para Next.js 15'
     },
     {
+        name: 'Next.js 15 cookies await',
+        pattern: /const cookieStore = await cookies\(\);/g,
+        replacement: 'const cookieStore = cookies();',
+        description: 'Remove await desnecessário do cookies()'
+    },
+    {
         name: 'Require para Import',
         pattern: /require\(['"]([^'"]+)['"]\)/g,
         replacement: "import('$1')",
@@ -30,12 +36,19 @@ const fixes = [
         replacement: ': unknown',
         description: 'Substitui any por unknown'
     },
-    {
-        name: 'Aspas não escapadas',
-        pattern: /"([^"]*)"([^>]*>)/g,
-        replacement: '&ldquo;$1&rdquo;$2',
-        description: 'Escapa aspas em JSX'
-    }
+    // Temporariamente desabilitado - causando problemas de sintaxe
+    // {
+    //     name: 'Aspas não escapadas em texto',
+    //     pattern: /([^=])"([^"]*)"([^>]*>)/g,
+    //     replacement: '$1&ldquo;$2&rdquo;$3',
+    //     description: 'Escapa aspas em texto JSX (não em atributos)'
+    // },
+    // {
+    //     name: 'Corrigir className com aspas escapadas',
+    //     pattern: /className=&ldquo;([^&]*)&rdquo;/g,
+    //     replacement: 'className="$1"',
+    //     description: 'Corrige className com aspas escapadas incorretamente'
+    // }
 ];
 
 // Função para processar arquivo
