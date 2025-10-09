@@ -5,7 +5,7 @@ import {
     MessageCircle, Instagram, Facebook, Link as LinkIcon,
     ShoppingCart, Globe, Wifi, MapPin,
     Phone, Mail, Star, Image as ImageIcon, Video,
-    Heart, Camera, Music, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Share2, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Youtube, Twitter, UserPlus, Linkedin, Send
+    Heart, Camera, Music, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share2, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Youtube, Twitter, UserPlus, Linkedin, Send
 } from 'lucide-react';
 import Image from 'next/image';
 import PixIconCustom from '@/app/components/PixIcon';
