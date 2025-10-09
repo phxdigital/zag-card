@@ -1,4 +1,4 @@
-export default function PixIcon({ size = 24, className = &ldquo;&rdquo; }: { size?: number; className?: string }) {
+export default function PixIcon({ size = 24, className = "" }: { size?: number; className?: string }) {
     return (
         <svg 
             width={size} 
