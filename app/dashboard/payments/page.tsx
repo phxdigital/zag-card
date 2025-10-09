@@ -96,17 +96,13 @@ export default function PaymentsPage() {
       setProfile(profileData);
 
       // Carregar pagamentos
-      const { data: paymentsData, error } = await supabase
+      const { data: paymentsData } = await supabase
         .from('payments')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Erro ao carregar pagamentos:', error);
-      } else {
-        setPayments(paymentsData || []);
-      }
+      setPayments(paymentsData || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {

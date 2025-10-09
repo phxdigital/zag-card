@@ -3,9 +3,16 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, Loader, RefreshCw } from 'lucide-react';
 
+interface TestResult {
+    success: boolean;
+    error?: string;
+    data?: unknown;
+    message?: string;
+}
+
 export default function TestAsaasPage() {
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<TestResult | null>(null);
     const [environment, setEnvironment] = useState<'sandbox' | 'production'>('sandbox');
 
     const runTest = async () => {
