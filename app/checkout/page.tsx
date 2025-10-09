@@ -166,7 +166,7 @@ export default function CheckoutPage() {
             </li>
             <li className="flex">
               <span className="font-semibold mr-2">2.</span>
-              <span>Escolha a opção PIX e &ldquo;Ler QR Code&rdquo; ou &ldquo;Pix Copia e Cola&rdquo;</span>
+              <span>Escolha a opção PIX e &quot;Ler QR Code&quot; ou &quot;Pix Copia e Cola&quot;</span>
             </li>
             <li className="flex">
               <span className="font-semibold mr-2">3.</span>
