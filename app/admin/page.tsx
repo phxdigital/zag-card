@@ -34,7 +34,7 @@ export default function AdminPanel() {
                 const data = await response.json();
                 setNotifications(data.notifications || []);
             }
-        } catch {
+        } catch (error) {
             console.error('Erro ao carregar notificações:', error);
         } finally {
             setLoading(false);
