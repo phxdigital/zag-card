@@ -398,7 +398,7 @@ export default function AccountPage() {
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center&ldquo;
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     >
                       {showCurrentPassword ? (
@@ -433,7 +433,7 @@ export default function AccountPage() {
                   />
                   <button
                     type="button"
-                    className=&rdquo;absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
                     {showNewPassword ? (

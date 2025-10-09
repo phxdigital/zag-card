@@ -159,7 +159,7 @@ export default function AdminPagesPage() {
                                                     <a
                                                         href={`https://${page.subdomain}.zagnfc.com.br`}
                                                         target="_blank"
-                                                        rel=&rdquo;noopener noreferrer"
+                                                        rel="noopener noreferrer"
                                                         className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center gap-1"
                                                     >
                                                         {page.subdomain}.zagnfc.com.br

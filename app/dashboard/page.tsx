@@ -2512,7 +2512,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                             href="/dashboard/payments"
 
-                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 inline-block&ldquo;
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 inline-block"
 
                         >
 
@@ -2658,7 +2658,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
 
-                                                title=&rdquo;Limpar logo do cartão"
+                                                title="Limpar logo do cartão"
 
                                             >
 
@@ -3040,7 +3040,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 type="text" 
 
-                                                placeholder="Seu Nome ou Empresa&ldquo; 
+                                                placeholder="Seu Nome ou Empresa" 
 
                                                 value={config.cardText || ''} 
 
@@ -3066,7 +3066,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                         className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
 
-                                                        title=&rdquo;Limpar texto"
+                                                        title="Limpar texto"
 
                                                     >
 
@@ -3418,7 +3418,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                     type="text" 
 
-                                                    placeholder="sua-empresa&ldquo; 
+                                                    placeholder="sua-empresa" 
 
                                                     value={subdomain} 
 
@@ -3539,7 +3539,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                         <img 
                                                             src={logoDataUrl} 
                                                             alt="Logo Preview" 
-                                                            className=&rdquo;object-contain w-full h-full" 
+                                                            className="object-contain w-full h-full" 
                                                             style={{ 
                                                                 filter: 'none',
                                                                 mixBlendMode: 'normal',
@@ -3724,7 +3724,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                     <div className="relative">
 
-                                                        <input type="text" placeholder="Sua frase de efeito aqui&ldquo; value={config.landingPageSubtitleText || ''} onChange={(e) => handleConfigChange('landingPageSubtitleText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md pr-10" />
+                                                        <input type="text" placeholder="Sua frase de efeito aqui" value={config.landingPageSubtitleText || ''} onChange={(e) => handleConfigChange('landingPageSubtitleText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md pr-10" />
 
                                                         <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600">😊</button>
 
@@ -4150,7 +4150,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                                     className="p-1 text-slate-500 hover:text-slate-800 disabled:text-slate-300 disabled:cursor-not-allowed"
 
-                                                                    title=&rdquo;Mover para cima"
+                                                                    title="Mover para cima"
 
                                                                 >
 
@@ -4789,7 +4789,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                     <label className="block text-sm font-medium text-slate-700 mb-1">Texto do Botão</label>
 
-                <input type="text" value={data.text} onChange={(e) => setData({ ...data, text: e.target.value })} placeholder="Ex: Meu Site" className="w-full px-3 py-2 border border-slate-300 rounded-md&ldquo; />
+                <input type="text" value={data.text} onChange={(e) => setData({ ...data, text: e.target.value })} placeholder="Ex: Meu Site" className="w-full px-3 py-2 border border-slate-300 rounded-md" />
 
                 </div>
 
@@ -4821,7 +4821,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                         }} 
 
-                        placeholder={getSocialBaseUrl(data.icon) ? "seuusuario" : &rdquo;exemplo.com"} 
+                        placeholder={getSocialBaseUrl(data.icon) ? "seuusuario" : "exemplo.com"} 
 
                         className="flex-1 px-3 py-2 border border-slate-300 rounded-r-md" 
 

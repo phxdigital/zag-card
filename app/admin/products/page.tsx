@@ -375,7 +375,7 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => toggleFeatured(product.id, product.is_featured)}
                         className="text-yellow-600 hover:text-yellow-900"
-                        title={product.is_featured ? &rdquo;Remover destaque" : "Destacar produto"}
+                        title={product.is_featured ? "Remover destaque" : "Destacar produto"}
                       >
                         <Star className={`h-5 w-5 ${product.is_featured ? 'fill-current' : ''}`} />
                       </button>

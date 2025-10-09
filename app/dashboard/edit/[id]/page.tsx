@@ -682,7 +682,7 @@ export default function EditPage() {
                     <div className="flex items-center space-x-4">
                         <Link
                             href="/dashboard/pages"
-                            className="inline-flex items-center text-gray-600 hover:text-gray-900&ldquo;
+                            className="inline-flex items-center text-gray-600 hover:text-gray-900"
                         >
                             <ArrowLeft className="h-5 w-5 mr-2" />
                             Voltar
@@ -741,7 +741,7 @@ export default function EditPage() {
                                             type="text" 
                                             value={subdomain} 
                                             disabled 
-                                            className=&rdquo;w-full px-3 py-2 border border-blue-300 rounded-md bg-blue-100 text-blue-800 font-mono" 
+                                            className="w-full px-3 py-2 border border-blue-300 rounded-md bg-blue-100 text-blue-800 font-mono" 
                                         />
                                         <span className="text-sm text-blue-600">.zagnfc.com.br</span>
                                     </div>
@@ -827,7 +827,7 @@ export default function EditPage() {
                                                 left: `${50 + (config.logoPosition ?? 0) * 0.3}%`, 
                                                 transform: 'translate(-50%, -50%)'
                                             }}
-                                            title="Clique para fazer upload do logo&ldquo;
+                                            title="Clique para fazer upload do logo"
                                         >
                                             <ImageIcon className="w-8 h-8 text-slate-400" />
                                         </button>
@@ -844,7 +844,7 @@ export default function EditPage() {
                                     {/* Símbolo NFC fixo no canto superior direito */}
                                     <Image 
                                         src="/nfc-symbol.png" 
-                                        alt=&rdquo;NFC" 
+                                        alt="NFC" 
                                         width={24} 
                                         height={24} 
                                         className="absolute top-2 right-2 w-6 h-6 object-contain opacity-80" 
