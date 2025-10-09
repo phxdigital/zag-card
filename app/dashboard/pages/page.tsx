@@ -208,7 +208,7 @@ export default function MyPagesPage() {
           <div className="mt-6">
             <Link
               href="/dashboard"
-              className=&rdquo;inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
             >
               <Plus className="h-4 w-4 mr-2" />
               Criar Primeira Página
