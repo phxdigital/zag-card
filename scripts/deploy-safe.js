@@ -30,6 +30,14 @@ try {
     process.exit(1);
 }
 
+// Executar correção automática de erros comuns
+console.log('🔧 Aplicando correções automáticas...\n');
+try {
+    execSync('node scripts/fix-common-errors.js', { stdio: 'inherit' });
+} catch (error) {
+    console.log('⚠️  Correção automática falhou, continuando...\n');
+}
+
 // Executar teste de build
 console.log('🧪 Testando build local...\n');
 try {
