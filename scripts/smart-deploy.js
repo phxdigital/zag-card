@@ -142,6 +142,20 @@ const smartFixes = [
         critical: true
     },
     {
+        name: 'Catch sem variável error (com instanceof)',
+        pattern: /} catch \{\s*const errorMessage = error instanceof Error/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch com instanceof',
+        critical: true
+    },
+    {
+        name: 'Catch sem variável error (com template literals)',
+        pattern: /} catch \{\s*[^}]*\$\{error[^}]*\}/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch com template literals',
+        critical: true
+    },
+    {
         name: 'Variáveis não usadas em catch',
         pattern: /} catch \(error\) \{[^}]*console\.error[^}]*\}/g,
         replacement: (match) => match.replace(/} catch \(error\) \{/, '} catch {'),
