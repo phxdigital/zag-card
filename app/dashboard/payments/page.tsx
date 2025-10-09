@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CreditCard, CheckCircle, AlertCircle, Clock, Package, 
-  Download, Truck, MapPin, Award, ExternalLink, 
+  Truck, Award, ExternalLink, 
   RefreshCw, FileText, Receipt, ShoppingCart, Copy,
   Calendar, DollarSign, Star, TrendingUp
 } from 'lucide-react';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 interface Payment {
   id: string;
@@ -31,8 +31,17 @@ interface UserProfile {
   features?: string[];
 }
 
+interface ProductInfo {
+  name: string;
+  price: number;
+  items: string[];
+  shipping: string;
+  color: string;
+  popular?: boolean;
+}
+
 // Informações dos produtos/planos
-const PRODUCT_INFO: Record<string, any> = {
+const PRODUCT_INFO: Record<string, ProductInfo> = {
   para_mim: {
     name: 'Para Mim',
     price: 89.00,
@@ -61,7 +70,6 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -70,7 +78,7 @@ export default function PaymentsPage() {
 
   const loadData = async () => {
     try {
-      const supabase = createSupabaseClient();
+      const supabase = createClientComponentClient();
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
