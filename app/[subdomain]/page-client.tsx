@@ -1,13 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
     MessageCircle, Instagram, Facebook, Link as LinkIcon,
     ShoppingCart, Globe, Wifi, MapPin,
     Phone, Mail, Star, Image as ImageIcon, Video,
-    Heart, Camera, Music, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Youtube, Twitter
+    Heart, Camera, Music, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Share2, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Youtube, Twitter, UserPlus, Linkedin, Send
 } from 'lucide-react';
 import Image from 'next/image';
+import PixIconCustom from '@/app/components/PixIcon';
+import { ensureBackwardCompatibility } from '@/lib/page-compatibility';
 
 // --- Tipos de Dados ---
 export type CustomLink = {
@@ -42,7 +44,7 @@ interface PageClientProps {
     logoUrl: string;
 }
 
-type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high';
+type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high' | 'user-plus' | 'pix' | 'linkedin';
 
 // Configuração das redes sociais
 const socialMediaConfig: { [key: string]: { icon: IconName; baseUrl: string } } = {
@@ -59,7 +61,12 @@ const LucideIcon = ({ name, size = 24, className, ...props }: {
     className?: string; 
     [key: string]: string | number | undefined;
 }) => {
-    const icons: { [key in IconName]: React.ElementType } = {
+    // Caso especial para o ícone PIX customizado
+    if (name === 'pix') {
+        return <PixIconCustom size={size} className={className} />;
+    }
+
+    const icons: Record<string, React.ElementType> = {
         'message-circle': MessageCircle,
         instagram: Instagram,
         facebook: Facebook,
@@ -95,7 +102,8 @@ const LucideIcon = ({ name, size = 24, className, ...props }: {
         settings: Settings,
         download: Download,
         upload: Upload,
-        share: Share,
+        share: Share2,
+        share2: Share2, // Alias para share2
         copy: Copy,
         check: Check,
         x: X,
@@ -131,10 +139,16 @@ const LucideIcon = ({ name, size = 24, className, ...props }: {
         'signal-low': SignalLow,
         'signal-medium': SignalMedium,
         'signal-high': SignalHigh,
+        'user-plus': UserPlus,
+        linkedin: Linkedin,
     };
     
     const IconComponent = icons[name];
-    return IconComponent ? <IconComponent size={size} className={className} {...props} /> : null;
+    if (!IconComponent) {
+        console.warn(`Icon "${name}" not found in icon map`);
+        return null;
+    }
+    return <IconComponent size={size} className={className} {...props} />;
 };
 
 // Função para lidar com cliques nos links
@@ -150,7 +164,7 @@ const handleLinkClick = (url: string): void => {
     } else if (url.startsWith('pix:')) {
         const textToCopy = url.substring(4);
         navigator.clipboard.writeText(textToCopy).then(() => {
-            alert('Código PIX copiado! Cole no seu app de banco.');
+            alert('Pix copia e cola copiado com sucesso');
         }).catch(err => {
             console.error('Erro ao copiar PIX:', err);
             alert('Não foi possível copiar o código PIX.');
@@ -163,6 +177,49 @@ const handleLinkClick = (url: string): void => {
 };
 
 export default function PageClient({ config, logoUrl }: PageClientProps) {
+    const [showShareModal, setShowShareModal] = useState(false);
+    const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+    // 🛡️ RETROCOMPATIBILIDADE: Garante que páginas antigas continuem funcionando
+    // Adiciona valores padrão para propriedades que podem estar faltando
+    const safeCustomLinks = ensureBackwardCompatibility(config.customLinks);
+
+    // Função para compartilhar em diferentes redes sociais
+    const shareToSocial = (platform: string) => {
+        const encodedUrl = encodeURIComponent(pageUrl);
+        const title = encodeURIComponent(config.landingPageTitleText || 'Confira meu cartão digital');
+        
+        const shareUrls: { [key: string]: string } = {
+            whatsapp: `https://wa.me/?text=${title}%20${encodedUrl}`,
+            facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+            twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${title}`,
+            telegram: `https://t.me/share/url?url=${encodedUrl}&text=${title}`,
+            linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+            email: `mailto:?subject=${title}&body=${title}%20-%20${encodedUrl}`,
+            copy: pageUrl
+        };
+
+        if (platform === 'copy') {
+            navigator.clipboard.writeText(pageUrl).then(() => {
+                alert('Link copiado para a área de transferência!');
+                setShowShareModal(false);
+            }).catch(() => {
+                alert('Não foi possível copiar o link.');
+            });
+        } else {
+            window.open(shareUrls[platform], '_blank', 'noopener,noreferrer');
+            setShowShareModal(false);
+        }
+    };
+
+    const handleLinkClickWrapper = (url: string) => {
+        if (url.startsWith('share:') || url === 'share:') {
+            setShowShareModal(true);
+        } else {
+            handleLinkClick(url);
+        }
+    };
+
     return (
         <main 
             className="flex min-h-screen flex-col items-center justify-center p-4"
@@ -228,46 +285,218 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                     })}
                 </div>
 
-                {/* Botões Sociais (Redondos) */}
-                <div className="w-full flex flex-wrap justify-center items-center gap-3 mt-6 mb-4">
-                    {config.customLinks?.filter(link => link.isSocial).map((link) => (
-                        <button
-                            key={link.id}
-                            onClick={() => handleLinkClick(link.url)}
-                            style={{
-                                background: link.styleType === 'gradient' 
-                                    ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
-                                    : link.bgColor1
-                            }}
-                            className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            aria-label={link.text}
-                        >
-                            {link.icon && <LucideIcon name={link.icon as IconName} size={20} />}
-                        </button>
-                    ))}
+                {/* Botões Sociais - Duas linhas */}
+                <div className="w-full mt-6 mb-4">
+                    {/* Linha 1: Salvar Contato (pill) e Compartilhar (redondo) */}
+                    <div className="flex flex-wrap justify-center items-center gap-3 mb-3">
+                        {safeCustomLinks?.filter(link => link.isSocial && (link.icon === 'user-plus' || link.icon === 'share')).map((link) => {
+                            const isPillButton = link.icon === 'user-plus';
+                            
+                            return (
+                                <button
+                                    key={link.id}
+                                    onClick={() => handleLinkClickWrapper(link.url)}
+                                    style={{
+                                        background: link.styleType === 'gradient' 
+                                            ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
+                                            : link.bgColor1
+                                    }}
+                                    className={`${
+                                        isPillButton 
+                                            ? 'h-10 px-4 rounded-full gap-2 font-medium' 
+                                            : 'w-10 h-10 rounded-full'
+                                    } flex items-center justify-center text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                                    aria-label={link.text}
+                                >
+                                    {link.icon && <LucideIcon name={link.icon as IconName} size={isPillButton ? 16 : 18} />}
+                                    {isPillButton && <span className="text-xs whitespace-nowrap">{link.text}</span>}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Linha 2: Botões de redes sociais pequenos (exceto salvar-contato e compartilhar) */}
+                    <div className="flex flex-wrap justify-center items-center gap-3">
+                        {safeCustomLinks?.filter(link => link.isSocial && link.icon !== 'user-plus' && link.icon !== 'share').map((link) => {
+                            return (
+                                <button
+                                    key={link.id}
+                                    onClick={() => handleLinkClickWrapper(link.url)}
+                                    style={{
+                                        background: link.styleType === 'gradient' 
+                                            ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
+                                            : link.bgColor1
+                                    }}
+                                    className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                    aria-label={link.text}
+                                >
+                                    {link.icon && <LucideIcon name={link.icon as IconName} size={20} />}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* Botões Personalizados (Retangulares) */}
-                <div className="w-full space-y-3">
-                    {config.customLinks?.filter(link => !link.isSocial).map(link => (
+                <div className="w-full flex flex-col items-center gap-2">
+                    {safeCustomLinks?.filter(link => !link.isSocial).map(link => (
                         <button 
                             key={link.id} 
-                            onClick={() => handleLinkClick(link.url)}
+                            onClick={() => handleLinkClickWrapper(link.url)}
                             style={{
                                 color: link.textColor, 
                                 background: link.styleType === 'gradient' 
                                     ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
                                     : link.bgColor1
                             }} 
-                            className="w-full flex items-center justify-center gap-3 font-semibold py-3 px-4 rounded-lg transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md gap-2 transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             aria-label={link.text}
                         >
-                            {link.icon && <LucideIcon name={link.icon as IconName} className="w-5 h-5 flex-shrink-0" />}
-                            <span>{link.text}</span>
+                            {link.icon && <LucideIcon name={link.icon as IconName} size={16} />}
+                            <span className="text-sm font-medium">{link.text}</span>
                         </button>
                     ))}
                 </div>
             </div>
+
+            {/* Modal de Compartilhamento */}
+            {showShareModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+                    {/* Overlay */}
+                    <div 
+                        className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+                        onClick={() => setShowShareModal(false)}
+                    ></div>
+                    
+                    {/* Modal Content */}
+                    <div className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-slideUp"
+                         style={{
+                             animation: 'slideUp 0.3s ease-out'
+                         }}>
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-bold text-gray-800">Compartilhar</h3>
+                            <button 
+                                onClick={() => setShowShareModal(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label="Fechar"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <p className="text-sm text-gray-600 mb-6">Escolha onde deseja compartilhar:</p>
+
+                        {/* Share Options Grid */}
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                            {/* WhatsApp */}
+                            <button
+                                onClick={() => shareToSocial('whatsapp')}
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 transition-all hover:scale-105"
+                            >
+                                <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center">
+                                    <MessageCircle size={28} className="text-white" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-700">WhatsApp</span>
+                            </button>
+
+                            {/* Facebook */}
+                            <button
+                                onClick={() => shareToSocial('facebook')}
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 transition-all hover:scale-105"
+                            >
+                                <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <Facebook size={28} className="text-white" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-700">Facebook</span>
+                            </button>
+
+                            {/* Twitter */}
+                            <button
+                                onClick={() => shareToSocial('twitter')}
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 transition-all hover:scale-105"
+                            >
+                                <div className="w-14 h-14 bg-sky-500 rounded-full flex items-center justify-center">
+                                    <Twitter size={28} className="text-white" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-700">Twitter</span>
+                            </button>
+
+                            {/* Telegram */}
+                            <button
+                                onClick={() => shareToSocial('telegram')}
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 transition-all hover:scale-105"
+                            >
+                                <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <Send size={28} className="text-white" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-700">Telegram</span>
+                            </button>
+
+                            {/* LinkedIn */}
+                            <button
+                                onClick={() => shareToSocial('linkedin')}
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 transition-all hover:scale-105"
+                            >
+                                <div className="w-14 h-14 bg-blue-700 rounded-full flex items-center justify-center">
+                                    <Linkedin size={28} className="text-white" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-700">LinkedIn</span>
+                            </button>
+
+                            {/* Email */}
+                            <button
+                                onClick={() => shareToSocial('email')}
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 transition-all hover:scale-105"
+                            >
+                                <div className="w-14 h-14 bg-gray-600 rounded-full flex items-center justify-center">
+                                    <Mail size={28} className="text-white" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-700">Email</span>
+                            </button>
+                        </div>
+
+                        {/* Copy Link Button */}
+                        <button
+                            onClick={() => shareToSocial('copy')}
+                            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Copy size={18} />
+                            <span>Copiar Link</span>
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Animações CSS */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    @keyframes slideUp {
+                        from {
+                            opacity: 0;
+                            transform: translateY(20px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+                    @keyframes fadeIn {
+                        from {
+                            opacity: 0;
+                        }
+                        to {
+                            opacity: 1;
+                        }
+                    }
+                    .animate-slideUp {
+                        animation: slideUp 0.3s ease-out;
+                    }
+                    .animate-fadeIn {
+                        animation: fadeIn 0.2s ease-out;
+                    }
+                `
+            }} />
         </main>
     );
 }

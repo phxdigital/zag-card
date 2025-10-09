@@ -13,10 +13,10 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Buscar notificações do Supabase
+        // Buscar notificações do Supabase (SEM pdf_data para evitar timeout)
         const { data: notifications, error } = await supabase
             .from('admin_notifications')
-            .select('*')
+            .select('id, subdomain, action, message, status, created_at, updated_at')
             .order('created_at', { ascending: false });
 
         if (error) {

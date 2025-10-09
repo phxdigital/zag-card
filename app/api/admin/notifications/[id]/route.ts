@@ -60,3 +60,48 @@ export async function PATCH(request: Request) {
         );
     }
 }
+
+export async function DELETE(request: Request) {
+    try {
+        const url = new URL(request.url);
+        const pathParts = url.pathname.split('/').filter(Boolean);
+        const id = pathParts[pathParts.length - 1];
+
+        const cookieStore = cookies();
+        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+        
+        // Verificar autenticação
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Excluir notificação do Supabase
+        const { error } = await supabase
+            .from('admin_notifications')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Erro ao excluir notificação:', error);
+            return NextResponse.json(
+                { success: false, error: 'Erro ao excluir notificação' },
+                { status: 500 }
+            );
+        }
+
+        console.log(`🗑️ Notificação ${id} excluída com sucesso`);
+
+        return NextResponse.json({ 
+            success: true, 
+            message: 'Notificação excluída com sucesso' 
+        });
+
+    } catch (error) {
+        console.error('Erro ao excluir notificação:', error);
+        return NextResponse.json(
+            { success: false, error: 'Erro interno do servidor' },
+            { status: 500 }
+        );
+    }
+}

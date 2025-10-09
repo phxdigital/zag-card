@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import path from 'path';
+
+// Carregar .env.local manualmente ANTES de tudo
+require('./env-loader');
 
 const nextConfig: NextConfig = {
   images: {
@@ -18,6 +22,8 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['@supabase/supabase-js'],
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname),
 };
 
 export default nextConfig;

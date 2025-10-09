@@ -1,0 +1,108 @@
+================================================================================
+CONFIGURAÇÃO COMPLETA - SISTEMA DE PAGAMENTOS ASAAS
+================================================================================
+
+✅ TUDO FOI CONFIGURADO! Siga os passos abaixo:
+
+================================================================================
+PASSO 1: CONFIGURAR ARQUIVO .env.local (DESENVOLVIMENTO LOCAL)
+================================================================================
+
+Abra o arquivo .env.local na raiz do projeto e adicione estas linhas:
+
+# API Key do Asaas (Produção)
+ASAAS_API_KEY=$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmNhNWRmMmRiLTU0ZDAtNDMzOC1iOTc3LTgzZWQyOTljY2NhZDo6JGFhY2hfYzNkOThmNTMtNTAzNS00ZGY1LWIxYzItNDViOGI1YWIwYThm
+
+# URL da API (Produção)
+ASAAS_API_URL=https://api.asaas.com/v3
+
+# Token de Webhook
+ASAAS_WEBHOOK_TOKEN=zag-nfc-assas
+
+# Wallet ID
+ASAAS_WALLET_ID=8b692b75-dba6-4420-a187-388551f9a7ce
+
+# Links de Pagamento
+NEXT_PUBLIC_ASAAS_LINK_PARA_MIM=https://www.asaas.com/c/aiu54b2u55725oa4
+NEXT_PUBLIC_ASAAS_LINK_PARA_EQUIPE=https://www.asaas.com/c/6zhfj1jq19tscfj3
+NEXT_PUBLIC_ASAAS_LINK_PARA_NEGOCIO=https://www.asaas.com/c/dg8vyn2rdkdcatdz
+
+================================================================================
+PASSO 2: CONFIGURAR NA VERCEL (PRODUÇÃO)
+================================================================================
+
+Acesse: https://vercel.com → Seu Projeto → Settings → Environment Variables
+
+Adicione CADA uma dessas variáveis:
+
+Nome: ASAAS_API_KEY
+Valor: $aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmNhNWRmMmRiLTU0ZDAtNDMzOC1iOTc3LTgzZWQyOTljY2NhZDo6JGFhY2hfYzNkOThmNTMtNTAzNS00ZGY1LWIxYzItNDViOGI1YWIwYThm
+
+Nome: ASAAS_API_URL
+Valor: https://api.asaas.com/v3
+
+Nome: ASAAS_WEBHOOK_TOKEN
+Valor: zag-nfc-assas
+
+Nome: ASAAS_WALLET_ID
+Valor: 8b692b75-dba6-4420-a187-388551f9a7ce
+
+Nome: NEXT_PUBLIC_ASAAS_LINK_PARA_MIM
+Valor: https://www.asaas.com/c/aiu54b2u55725oa4
+
+Nome: NEXT_PUBLIC_ASAAS_LINK_PARA_EQUIPE
+Valor: https://www.asaas.com/c/6zhfj1jq19tscfj3
+
+Nome: NEXT_PUBLIC_ASAAS_LINK_PARA_NEGOCIO
+Valor: https://www.asaas.com/c/dg8vyn2rdkdcatdz
+
+⚠️ IMPORTANTE: Depois de adicionar, faça um REDEPLOY!
+
+================================================================================
+PASSO 3: CONFIGURAR WEBHOOK NO ASAAS
+================================================================================
+
+1. Acesse: https://www.asaas.com
+2. Vá em: Integrações → Webhooks
+3. Clique em: Adicionar Webhook
+4. Configure:
+   
+   URL: https://zagnfc.com.br/api/webhook/asaas
+   Token de autenticação: zag-nfc-assas
+   
+   Eventos (marque todos):
+   ✅ PAYMENT_CREATED
+   ✅ PAYMENT_CONFIRMED
+   ✅ PAYMENT_RECEIVED
+   ✅ PAYMENT_OVERDUE
+   ✅ PAYMENT_REFUNDED
+
+5. Clique em: Salvar
+
+================================================================================
+SEUS PLANOS CONFIGURADOS
+================================================================================
+
+✅ Para Mim       - R$ 89,00  - https://www.asaas.com/c/aiu54b2u55725oa4
+✅ Para Equipe    - R$ 387,00 - https://www.asaas.com/c/6zhfj1jq19tscfj3
+✅ Para Negócio   - R$ 928,00 - https://www.asaas.com/c/dg8vyn2rdkdcatdz
+
+================================================================================
+TESTAR SE FUNCIONOU
+================================================================================
+
+1. Teste local:
+   npm run dev
+   Acesse: http://localhost:3000
+   Clique em um plano
+
+2. Teste produção (depois do deploy):
+   https://zagnfc.com.br/api/webhook/status
+   
+3. Teste webhook no Asaas:
+   Painel → Webhooks → Testar webhook
+
+================================================================================
+🎉 PRONTO! O SISTEMA DE PAGAMENTOS ESTÁ CONFIGURADO!
+================================================================================
+

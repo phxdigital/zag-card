@@ -10,7 +10,11 @@ import Link from 'next/link';
 
 import { useRouter } from 'next/navigation';
 
-import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter, Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, CreditCard as PixIcon, Linkedin, UserPlus } from 'lucide-react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+
+import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter, Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Share2, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Linkedin, UserPlus } from 'lucide-react';
+
+import PixIconCustom from '@/app/components/PixIcon';
 
 import { canCreatePages } from '@/lib/config';
 
@@ -80,6 +84,10 @@ type PageConfig = {
 
     landingPageLogoSize?: number;
 
+    landingPageLogoUrl?: string | null;
+
+    landingPageBannerUrl?: string | null;
+
     // new options
 
     logoOpacityFront?: number;
@@ -116,13 +124,18 @@ interface QRCodeConstructor {
 
 
 
-type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high' | 'pix' | 'linkedin';
+type IconName = 'image' | 'message-circle' | 'instagram' | 'facebook' | 'globe' | 'map-pin' | 'phone' | 'mail' | 'shopping-cart' | 'link' | 'youtube' | 'twitter' | 'heart' | 'star' | 'camera' | 'music' | 'video' | 'calendar' | 'clock' | 'user' | 'users' | 'home' | 'building' | 'car' | 'plane' | 'coffee' | 'gift' | 'book' | 'gamepad2' | 'headphones' | 'mic' | 'search' | 'settings' | 'download' | 'upload' | 'share' | 'copy' | 'check' | 'x' | 'plus' | 'minus' | 'arrow-right' | 'arrow-left' | 'arrow-up' | 'arrow-down' | 'chevron-right' | 'chevron-left' | 'chevron-up' | 'chevron-down' | 'zap' | 'target' | 'award' | 'trophy' | 'shield' | 'lock' | 'unlock' | 'eye' | 'eye-off' | 'bell' | 'bell-off' | 'volume2' | 'volume-x' | 'wifi' | 'wifi-off' | 'battery' | 'battery-low' | 'signal' | 'signal-zero' | 'signal-low' | 'signal-medium' | 'signal-high' | 'pix' | 'linkedin' | 'user-plus';
 
 
 
 const IconForName = ({ name, className, size = 16 }: { name: IconName; className?: string; size?: number }) => {
 
-    const map: Record<IconName, React.ElementType> = {
+    // Caso especial para o ícone PIX customizado
+    if (name === 'pix') {
+        return <PixIconCustom size={size} className={className} />;
+    }
+
+    const map: Record<Exclude<IconName, 'pix'>, React.ElementType> = {
 
         'message-circle': MessageCircle,
 
@@ -194,7 +207,7 @@ const IconForName = ({ name, className, size = 16 }: { name: IconName; className
 
         upload: Upload,
 
-        share: Share,
+        share: Share2,
 
         copy: Copy,
 
@@ -266,17 +279,15 @@ const IconForName = ({ name, className, size = 16 }: { name: IconName; className
 
         'signal-high': SignalHigh,
 
-        pix: PixIcon,
-
         linkedin: Linkedin,
 
-        // 'user-plus': UserPlus, // removido para evitar unused var
+        'user-plus': UserPlus,
 
     };
 
-    const C = map[name];
+    const C = map[name as Exclude<IconName, 'pix'>];
 
-    return <C className={className} size={size} />;
+    return C ? <C className={className} size={size} /> : null;
 
 };
 
@@ -287,6 +298,10 @@ export default function DashboardPage() {
     const router = useRouter();
 
     const [hasActiveSubscription] = useState(canCreatePages());
+
+    const [userName, setUserName] = useState<string>('');
+
+    const [userEmail, setUserEmail] = useState<string>('');
 
     const [config, setConfig] = useState<PageConfig>({
 
@@ -345,6 +360,10 @@ export default function DashboardPage() {
         landingPageLogoShape: 'circle',
 
         landingPageLogoSize: 96,
+
+        landingPageLogoUrl: null,
+
+        landingPageBannerUrl: null,
 
         landingFont: 'Inter',
 
@@ -1885,11 +1904,44 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
     };
 
+    // Função para adicionar botão PIX personalizado
+    const openPixEditor = () => {
+        // Verificar se já existe um botão PIX
+        const existingPix = config.customLinks?.find(link => link.icon === 'pix');
+        if (existingPix) {
+            alert('Já existe um botão PIX adicionado. Você pode editar ou remover o existente.');
+            return;
+        }
+
+        // Verificar limite de botões personalizados
+        if ((config.customLinks?.filter(b => !b.isSocial).length || 0) >= 4) {
+            alert('Você pode adicionar no máximo 4 botões personalizados.');
+            return;
+        }
+
+        // Pré-configurar o editor com valores PIX (sem id para ser tratado como novo)
+        const pixTemplate = {
+            id: 0, // id temporário para identificar no editor
+            text: 'PIX',
+            url: 'pix:',
+            icon: 'pix',
+            isSocial: false,
+            styleType: 'solid' as const,
+            bgColor1: '#32BCAD',
+            bgColor2: '#32BCAD',
+            textColor: '#ffffff'
+        };
+        
+        setEditingLink(pixTemplate as CustomLink);
+        setShowLinkEditor(true);
+    };
+
 
 
     const saveCustomLink = (linkData: Omit<CustomLink, 'id'>) => {
 
-        if (editingLink) {
+        // Se editingLink existe E tem id diferente de 0, é uma edição
+        if (editingLink && editingLink.id !== 0) {
 
             setConfig((prev) => ({
 
@@ -1900,6 +1952,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
             }));
 
         } else {
+            // É um novo botão (editingLink null ou id === 0)
 
             if ((config.customLinks?.filter(b => !b.isSocial).length || 0) >= 4) {
 
@@ -2115,7 +2168,51 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
 
 
-    const addSocialPreset = (kind: 'whatsapp' | 'instagram' | 'youtube' | 'pix' | 'linkedin' | 'save-contact') => {
+    // Carregar dados do usuário logado
+
+    useEffect(() => {
+
+        const loadUserData = async () => {
+
+            try {
+
+                const supabase = createClientComponentClient();
+
+                const { data: { session } } = await supabase.auth.getSession();
+
+                
+
+                if (session?.user) {
+
+                    const user = session.user;
+
+                    // Priorizar nome completo do metadata, senão usar email
+
+                    const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
+
+                    setUserName(name);
+
+                    setUserEmail(user.email || '');
+
+                }
+
+            } catch (error) {
+
+                console.error('Erro ao carregar dados do usuário:', error);
+
+            }
+
+        };
+
+        
+
+        loadUserData();
+
+    }, []);
+
+
+
+    const addSocialPreset = (kind: 'whatsapp' | 'instagram' | 'youtube' | 'linkedin' | 'save-contact' | 'share') => {
 
         const presets: { [k in typeof kind]: { text: string; url: string; icon: IconName; color: string } } = {
 
@@ -2125,11 +2222,11 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             youtube: { text: 'YouTube', url: 'https://youtube.com/', icon: 'youtube', color: '#DC2626' },
 
-            pix: { text: 'PIX', url: 'https://pix.example.com/', icon: 'pix', color: '#32BCAD' },
-
             linkedin: { text: 'LinkedIn', url: 'https://linkedin.com/in/', icon: 'linkedin', color: '#0077B5' },
 
-            'save-contact': { text: 'Salvar Contato', url: 'tel:', icon: 'user', color: '#059669' },
+            'save-contact': { text: 'Salvar Contato', url: 'tel:', icon: 'user-plus', color: '#059669' },
+
+            'share': { text: 'Compartilhar', url: 'share:', icon: 'share', color: '#8B5CF6' },
 
         } as const;
 
@@ -2163,7 +2260,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
 
 
-    const isSocialButtonActive = (kind: 'whatsapp' | 'instagram' | 'youtube' | 'pix' | 'linkedin' | 'save-contact') => {
+    const isSocialButtonActive = (kind: 'whatsapp' | 'instagram' | 'youtube' | 'linkedin' | 'save-contact' | 'share') => {
 
         const iconMap = {
 
@@ -2173,11 +2270,11 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             youtube: 'youtube',
 
-            pix: 'pix',
-
             linkedin: 'linkedin',
 
             'save-contact': 'user-plus',
+
+            'share': 'share',
 
         };
 
@@ -2459,6 +2556,32 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
             
 
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 card-container">
+
+                {/* Mensagem de Boas-vindas */}
+
+                {(userName || userEmail) && (
+
+                    <div className="mb-4 sm:mb-6 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+
+                        <p className="text-sm sm:text-base text-slate-700">
+
+                            <span className="font-semibold">Seja bem-vindo(a), </span>
+
+                            <span className="text-blue-600 font-medium">
+
+                                {userName || userEmail.split('@')[0]}
+
+                            </span>
+
+                            ! 👋
+
+                        </p>
+
+                    </div>
+
+                )}
+
+
 
                 <header className="text-center mb-4 sm:mb-6">
                     <div>
@@ -3779,9 +3902,10 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 <div>
 
-                                                    <label className="block text-sm font-bold text-slate-700 mb-2">Adicione aqui os botões desejados</label>
+                                                    <label className="block text-sm font-bold text-slate-700 mb-2">Adiciones botões sociais</label>
 
-                                                    <div className="flex flex-wrap gap-2 mb-4">
+                                                    {/* Primeira linha - Redes sociais */}
+                                                    <div className="flex flex-wrap gap-2 mb-2">
 
                                                         <button 
 
@@ -3845,26 +3969,6 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                         <button 
 
-                                                            onClick={() => addSocialPreset('pix')} 
-
-                                                            className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-colors ${
-
-                                                                isSocialButtonActive('pix') 
-
-                                                                    ? 'bg-blue-500 text-white' 
-
-                                                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-
-                                                            }`}
-
-                                                        >
-
-                                                            <PixIcon size={14}/> PIX
-
-                                                        </button>
-
-                                                        <button 
-
                                                             onClick={() => addSocialPreset('linkedin')} 
 
                                                             className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-colors ${
@@ -3883,11 +3987,16 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                         </button>
 
+                                                    </div>
+
+                                                    {/* Segunda linha - Salvar Contato e Compartilhar */}
+                                                    <div className="grid grid-cols-2 gap-2 mb-4">
+
                                                         <button 
 
                                                             onClick={() => addSocialPreset('save-contact')} 
 
-                                                            className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 transition-colors ${
+                                                            className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-colors ${
 
                                                                 isSocialButtonActive('save-contact') 
 
@@ -3899,7 +4008,27 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                         >
 
-                                                            <UserPlus size={14}/> Salvar Contato
+                                                            <UserPlus size={16}/> Salvar Contato
+
+                                                        </button>
+
+                                                        <button 
+
+                                                            onClick={() => addSocialPreset('share')} 
+
+                                                            className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-colors ${
+
+                                                                isSocialButtonActive('share') 
+
+                                                                    ? 'bg-blue-500 text-white' 
+
+                                                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+
+                                                            }`}
+
+                                                        >
+
+                                                            <Share size={16}/> Compartilhar
 
                                                         </button>
 
@@ -3981,14 +4110,20 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                         <fieldset className="border-t pt-4">
 
-                                            <legend className="text-lg font-semibold text-slate-800 -mt-7 px-2 bg-white">Botões Personalizados (até 4) + Sociais (ilimitados)</legend>
-
                                             <div className="space-y-4 mt-4">
 
                                                 <button onClick={() => openLinkEditor(null)} className="w-full bg-amber-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-amber-600 flex items-center justify-center gap-2">
 
                                                     <PlusCircle /> Adicionar Novo Botão
 
+                                                </button>
+
+                                                {/* Botão PIX Destacado */}
+                                                <button 
+                                                    onClick={openPixEditor} 
+                                                    className="w-full font-bold py-4 px-6 rounded-lg flex items-center justify-center gap-3 transition-all text-lg bg-blue-500 text-white hover:bg-blue-600 shadow-md"
+                                                >
+                                                    <PixIconCustom size={24}/> Adicionar Botão PIX
                                                 </button>
 
                                                 <div className="space-y-2">
@@ -4071,13 +4206,75 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                         </div>
 
-                                        <div style={{ backgroundColor: config.landingPageBgColor, backgroundImage: config.landingPageBgImage ? `url('${config.landingPageBgImage}')` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }} className="flex-grow overflow-y-auto p-4 rounded-2xl">
+                                        <div style={{ backgroundColor: config.landingPageBgColor, backgroundImage: config.landingPageBgImage ? `url('${config.landingPageBgImage}')` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }} className="flex-grow overflow-y-auto p-4 rounded-2xl relative">
 
-                                            <div className="flex flex-col items-center text-center space-y-4">
+                                            {/* Banner do Topo (atrás da logo) */}
+                                            {config.landingPageBannerUrl ? (
+                                                <>
+                                                    {/* Imagem do banner (camada de fundo) */}
+                                                    <div className="absolute top-0 left-0 right-0 z-0" style={{ height: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px)` }}>
+                                                        <img src={config.landingPageBannerUrl} alt="Banner" className="w-full h-full object-cover" />
+                                                    </div>
+                                                    {/* Área clicável do banner (acima do banner, abaixo da logo) */}
+                                                    <div 
+                                                        className="absolute top-0 left-0 right-0 group cursor-pointer"
+                                                        style={{ height: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px)`, zIndex: 1 }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            document.getElementById('banner-upload-input')?.click();
+                                                        }}
+                                                    >
+                                                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                            <span className="text-white text-xs font-medium">Trocar Banner</span>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div 
+                                                    className="absolute top-0 left-0 right-0 bg-gray-100 bg-opacity-50 border-2 border-dashed border-gray-300 group hover:bg-opacity-70 transition-opacity cursor-pointer"
+                                                    style={{ height: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px)`, zIndex: 1 }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        document.getElementById('banner-upload-input')?.click();
+                                                    }}
+                                                >
+                                                    <div className="absolute top-2 left-0 right-0 text-center pointer-events-none">
+                                                        <span className="text-xs text-gray-500 font-medium">Adicionar Banner</span>
+                                                    </div>
+                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        <ImageIcon className="w-6 h-6 text-gray-400" />
+                                                    </div>
+                                                </div>
+                                            )}
 
-                                                {logoDataUrl ? (
+                                            <input
+                                                id="banner-upload-input"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = (event) => {
+                                                            setConfig(prev => ({ ...prev, landingPageBannerUrl: event.target?.result as string }));
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
 
-                                                    <Image src={logoDataUrl} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
+                                            {/* Logo com botão de troca - Posicionada absolutamente sobre o banner */}
+                                            <div 
+                                                className="absolute left-1/2 transform -translate-x-1/2 group"
+                                                style={{ 
+                                                    top: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px - ${(config.landingPageLogoSize || 96) / 2}px)`,
+                                                    zIndex: 20
+                                                }}
+                                            >
+                                                {config.landingPageLogoUrl || logoDataUrl ? (
+
+                                                    <Image src={config.landingPageLogoUrl || logoDataUrl || ''} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
 
                                                 ) : (
 
@@ -4088,32 +4285,73 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                     </div>
 
                                                 )}
+                                                
+                                                {/* Botão de troca de logo (aparece ao hover) */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        document.getElementById('logo-upload-input')?.click();
+                                                    }}
+                                                    className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <span className="text-white text-xs font-medium">Trocar Logo</span>
+                                                </button>
+                                            </div>
 
-                                                <h1 className="text-xl font-bold break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageTitleColor || '#1e293b' }}>{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
+                                            <input
+                                                id="logo-upload-input"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = (event) => {
+                                                            setConfig(prev => ({ ...prev, landingPageLogoUrl: event.target?.result as string }));
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
 
-                                                {config.landingPageSubtitleText && <p className="text-sm px-2 break-words" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageSubtitleColor || '#64748b' }}>{config.landingPageSubtitleText}</p>}
+                                            <div className="flex flex-col items-center text-center relative" style={{ zIndex: 5, marginTop: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px + ${(config.landingPageLogoSize || 96) / 2}px)` }}>
 
-                                                {/* Botões Sociais (Redondos) */}
+                                                <h1 className="text-xl font-bold break-words mt-4 mb-1" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageTitleColor || '#1e293b' }}>{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
 
+                                                {config.landingPageSubtitleText && <p className="text-sm px-2 break-words mb-4" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageSubtitleColor || '#64748b' }}>{config.landingPageSubtitleText}</p>}
+
+                                                {/* Botões Sociais - Todos na mesma linha */}
                                                 <div className="w-full flex flex-wrap justify-center items-center gap-3 mb-4">
 
                                                     {config.customLinks?.filter(link => link.isSocial).map((link) => {
 
                                                         const globalColor = config.socialButtonColor || '#3B82F6';
+                                                        const isPillButton = link.icon === 'user-plus';
 
                                                         return (
 
-                                                            <div key={link.id} className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : globalColor }}>
+                                                            <div 
+                                                                key={link.id} 
+                                                                className={`${
+                                                                    isPillButton 
+                                                                        ? 'h-10 px-4 rounded-full gap-2 font-medium' 
+                                                                        : 'w-12 h-12 rounded-full'
+                                                                } flex items-center justify-center text-white shadow-md`}
+                                                                style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : globalColor }}
+                                                            >
 
                                                             {link.icon ? (
 
-                                                                <IconForName name={link.icon as IconName} size={20} />
+                                                                <IconForName name={link.icon as IconName} size={isPillButton ? 16 : 20} />
 
                                                             ) : (
 
                                                                 <span className="text-xs font-bold">?</span>
 
                                                             )}
+
+                                                            {isPillButton && <span className="text-xs whitespace-nowrap">{link.text}</span>}
 
                                                         </div>
 
@@ -4447,7 +4685,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
             'youtube': 'https://youtube.com/',
 
-            'pix': 'https://pix.example.com/',
+            'pix': 'pix:',
 
             'linkedin': 'https://linkedin.com/in/',
 
@@ -4473,7 +4711,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
             'youtube': 'Ex: @seucanal',
 
-            'pix': 'Ex: chave-pix',
+            'pix': 'Ex: sua-chave-pix@email.com ou CPF ou telefone',
 
             'linkedin': 'Ex: seuusuario',
 

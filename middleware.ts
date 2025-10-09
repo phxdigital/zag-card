@@ -1,6 +1,7 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { ADMIN_EMAILS } from './lib/auth-config';
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
@@ -25,15 +26,39 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
-  // Autenticação apenas para rotas protegidas (desabilitada durante desenvolvimento)
+  // Proteção especial para rota /admin (SEMPRE ATIVA)
+  if (pathname.startsWith('/admin')) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      // Se não estiver logado, redirecionar para login
+      if (!session) {
+        const redirectUrl = req.nextUrl.clone();
+        redirectUrl.pathname = '/login';
+        return NextResponse.redirect(redirectUrl);
+      }
+
+      // Se estiver logado mas não for admin, redirecionar para acesso negado
+      const isAdmin = ADMIN_EMAILS.includes(session.user.email?.toLowerCase() || '');
+      if (!isAdmin) {
+        console.warn('Tentativa de acesso não autorizado ao /admin:', session.user.email);
+        const redirectUrl = req.nextUrl.clone();
+        redirectUrl.pathname = '/access-denied';
+        return NextResponse.redirect(redirectUrl);
+      }
+
+      // Se for admin, permitir acesso
+      return res;
+    } catch (error) {
+      console.error('Admin auth middleware error:', error);
+      const redirectUrl = req.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Autenticação para dashboard
   if (pathname.startsWith('/dashboard')) {
-    // Durante desenvolvimento, permitir acesso direto ao dashboard
-    // TODO: Reativar autenticação quando configurar Google/Meta OAuth
-    console.log('Dashboard access allowed (auth disabled for development)');
-    return res;
-    
-    // Código de autenticação comentado para desenvolvimento:
-    /*
     try {
       const {
         data: { session },
@@ -46,9 +71,10 @@ export async function middleware(req: NextRequest) {
       }
     } catch (error) {
       console.error('Auth middleware error:', error);
-      return res;
+      const redirectUrl = req.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      return NextResponse.redirect(redirectUrl);
     }
-    */
   }
 
   // Lógica de subdomínio apenas para requests específicos

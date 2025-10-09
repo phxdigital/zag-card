@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Download, Eye, Calendar, User, FileText, AlertCircle, CheckCircle } from 'lucide-react';
-import Image from 'next/image';
+import { Download, Eye, Calendar, User, FileText, AlertCircle, CheckCircle, Trash2, FileStack, Loader } from 'lucide-react';
 
 interface Notification {
     id: string;
@@ -17,7 +16,12 @@ interface Notification {
 export default function AdminPanel() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+    const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [merging, setMerging] = useState(false);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         loadNotifications();
@@ -59,12 +63,156 @@ export default function AdminPanel() {
         }
     };
 
-    const downloadPDF = (notification: Notification) => {
-        if (notification.pdf_data) {
+    const deleteNotification = async (id: string, subdomain: string) => {
+        if (!confirm(`Tem certeza que deseja excluir a notificação de "${subdomain}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/admin/notifications/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                setNotifications(prev => prev.filter(notif => notif.id !== id));
+                setSelectedIds(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(id);
+                    return newSet;
+                });
+                alert('Notificação excluída com sucesso!');
+            } else {
+                alert('Erro ao excluir notificação');
+            }
+        } catch (error) {
+            console.error('Erro ao excluir notificação:', error);
+            alert('Erro ao excluir notificação');
+        }
+    };
+
+    const deleteSelected = async () => {
+        if (selectedIds.size === 0) {
+            alert('Nenhuma notificação selecionada');
+            return;
+        }
+
+        if (!confirm(`Tem certeza que deseja excluir ${selectedIds.size} notificação(ões) selecionada(s)?`)) {
+            return;
+        }
+
+        setLoading(true);
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const id of Array.from(selectedIds)) {
             try {
+                const response = await fetch(`/api/admin/notifications/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            } catch (error) {
+                console.error('Erro ao excluir notificação:', error);
+                errorCount++;
+            }
+        }
+
+        // Atualizar lista
+        setNotifications(prev => prev.filter(notif => !selectedIds.has(notif.id)));
+        setSelectedIds(new Set());
+        setLoading(false);
+
+        if (errorCount > 0) {
+            alert(`${successCount} excluída(s) com sucesso.\n${errorCount} erro(s).`);
+        } else {
+            alert(`${successCount} notificação(ões) excluída(s) com sucesso!`);
+        }
+    };
+
+    const toggleSelection = (id: string) => {
+        setSelectedIds(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === paginatedNotifications.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(paginatedNotifications.map(n => n.id)));
+        }
+    };
+
+    const mergePDFs = async () => {
+        if (selectedIds.size === 0) {
+            alert('Selecione os cartões para gerar o PDF A4');
+            return;
+        }
+
+        if (selectedIds.size !== 5) {
+            alert('Selecione exatamente 5 cartões (5 frentes + 5 versos = 1 página A4)');
+            return;
+        }
+
+        setMerging(true);
+        try {
+            const response = await fetch('/api/admin/merge-pdfs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    notificationIds: Array.from(selectedIds) 
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+                console.error('Erro da API:', errorData);
+                throw new Error(errorData.error || 'Erro ao mesclar PDFs');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `impressao-cartoes-A4-${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            alert(`PDF A4 gerado com 5 frentes + 5 versos!\nPronto para enviar à gráfica.`);
+            setSelectedIds(new Set());
+        } catch (error: any) {
+            console.error('Erro ao mesclar PDFs:', error);
+            alert(`Erro: ${error.message || 'Erro ao mesclar PDFs'}`);
+        } finally {
+            setMerging(false);
+        }
+    };
+
+    const downloadPDF = async (notification: Notification) => {
+        try {
+            // Buscar PDF da API
+            const response = await fetch(`/api/admin/notifications/${notification.id}/pdf`);
+            if (!response.ok) {
+                throw new Error('PDF não encontrado');
+            }
+            
+            const data = await response.json();
+            if (data.pdf_data) {
                 // Criar link de download
                 const link = document.createElement('a');
-                link.href = notification.pdf_data;
+                link.href = data.pdf_data;
                 link.download = `cartao-${notification.subdomain}-${new Date(notification.created_at).toISOString().split('T')[0]}.pdf`;
                 link.target = '_blank';
                 
@@ -74,18 +222,35 @@ export default function AdminPanel() {
                 document.body.removeChild(link);
                 
                 console.log('PDF baixado com sucesso:', notification.subdomain);
+            } else {
+                alert('PDF não disponível para esta notificação.');
+            }
             } catch (error) {
                 console.error('Erro ao baixar PDF:', error);
                 alert('Erro ao baixar PDF. Tente novamente.');
-            }
-        } else {
-            alert('PDF não disponível para esta notificação.');
         }
     };
 
-    const filteredNotifications = notifications.filter(notif => 
-        filter === 'all' || notif.status === filter
-    );
+    // Filtrar por status e busca
+    const filteredNotifications = notifications
+        .filter(notif => notif.status === filter)
+        .filter(notif => 
+            searchTerm === '' || 
+            notif.subdomain.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            notif.message.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // Mais antigas primeiro
+
+    // Paginação
+    const totalPages = Math.ceil(filteredNotifications.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedNotifications = filteredNotifications.slice(startIndex, endIndex);
+
+    // Resetar para página 1 quando filtro ou busca mudar
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter, searchTerm]);
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -125,47 +290,24 @@ export default function AdminPanel() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-6">
-                        <div className="flex items-center space-x-4">
-                            <Image 
-                                src="/logo-zag.png" 
-                                alt="Zag NFC" 
-                                width={40} 
-                                height={40} 
-                                className="h-10 w-auto"
-                            />
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Painel Administrativo</h1>
-                                <p className="text-sm text-gray-500">Gerencie notificações e layouts de cartões</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-500">
-                                {notifications.length} notificação(ões)
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="bg-gray-50">{/* Container principal sem min-h-screen pois está no layout */}
 
-            {/* Filtros */}
+            {/* Barra de Pesquisa e Filtros */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                    {/* Barra de Pesquisa */}
+                    <div className="mb-4">
+                        <input
+                            type="text"
+                            placeholder="🔍 Buscar por nome ou mensagem..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+
+                    {/* Filtros de Status */}
                     <div className="flex flex-wrap gap-2">
-                        <button
-                            onClick={() => setFilter('all')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                filter === 'all' 
-                                    ? 'bg-blue-100 text-blue-700' 
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Todas ({notifications.length})
-                        </button>
                         <button
                             onClick={() => setFilter('pending')}
                             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -199,6 +341,76 @@ export default function AdminPanel() {
                     </div>
                 </div>
 
+                {/* Barra de Ferramentas: Seleção e Mesclar PDFs */}
+                {filteredNotifications.length > 0 && (
+                    <div className="bg-white rounded-lg shadow-sm border p-4 mb-4">
+                        <div className="flex items-center justify-between">
+                            {/* Esquerda: Info de paginação e seleção */}
+                            <div className="flex items-center gap-6">
+                                <span className="text-sm text-gray-600">
+                                    Mostrando {startIndex + 1}-{Math.min(endIndex, filteredNotifications.length)} de {filteredNotifications.length}
+                                </span>
+                                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={paginatedNotifications.length > 0 && selectedIds.size === paginatedNotifications.length}
+                                        onChange={toggleSelectAll}
+                                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    />
+                                    <span>Selecionar todos ({selectedIds.size})</span>
+                                </label>
+                            </div>
+
+                            {/* Direita: Botões de Ação */}
+                            {selectedIds.size > 0 && (
+                                <div className="flex items-center gap-3">
+                                    {/* Botão Gerar PDF A4 */}
+                                    <button
+                                        onClick={mergePDFs}
+                                        disabled={merging || selectedIds.size !== 5}
+                                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title={selectedIds.size !== 5 ? 'Selecione exatamente 5 cartões' : 'Gerar PDF A4 para impressão'}
+                                    >
+                                        {merging ? (
+                                            <>
+                                                <Loader className="w-4 h-4 animate-spin" />
+                                                <span>Mesclando...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FileStack className="w-4 h-4" />
+                                                <span className={selectedIds.size === 5 ? 'text-white' : 'text-white opacity-80'}>
+                                                    {selectedIds.size === 5 ? '✓ Gerar PDF A4 (5 cartões)' : `Selecione 5 (${selectedIds.size}/5)`}
+                                                </span>
+                                            </>
+                                        )}
+                                    </button>
+
+                                    {/* Botão Excluir Selecionadas */}
+                                    <button
+                                        onClick={deleteSelected}
+                                        disabled={loading}
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title={`Excluir ${selectedIds.size} selecionada(s)`}
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <Loader className="w-4 h-4 animate-spin" />
+                                                <span>Excluindo...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Trash2 className="w-4 h-4" />
+                                                <span>Excluir {selectedIds.size}</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Lista de Notificações */}
                 <div className="space-y-4">
                     {filteredNotifications.length === 0 ? (
@@ -208,15 +420,28 @@ export default function AdminPanel() {
                                 Nenhuma notificação encontrada
                             </h3>
                             <p className="text-gray-500">
-                                {filter === 'all' 
-                                    ? 'Não há notificações no sistema.'
+                                {searchTerm 
+                                    ? `Nenhum resultado para "${searchTerm}".`
                                     : `Não há notificações com status "${filter}".`
                                 }
                             </p>
                         </div>
                     ) : (
-                        filteredNotifications.map((notification) => (
+                        paginatedNotifications.map((notification) => (
                             <div key={notification.id} className="bg-white rounded-lg shadow-sm border p-6">
+                                <div className="flex items-start gap-4">
+                                    {/* Checkbox de Seleção */}
+                                    <div className="pt-1">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(notification.id)}
+                                            onChange={() => toggleSelection(notification.id)}
+                                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                            title="Selecionar para mesclar"
+                                        />
+                                    </div>
+
+                                    <div className="flex-1">
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <div className="flex items-center space-x-3 mb-3">
@@ -246,24 +471,26 @@ export default function AdminPanel() {
                                                 <Calendar className="w-4 h-4" />
                                                 <span>{new Date(notification.created_at).toLocaleDateString('pt-BR')}</span>
                                             </div>
-                                            {notification.pdf_data && (
                                                 <div className="flex items-center space-x-2 text-sm text-gray-500">
                                                     <FileText className="w-4 h-4" />
-                                                    <span>PDF disponível ({(notification.pdf_data.length / 1024).toFixed(1)} KB)</span>
+                                                <span>PDF disponível</span>
                                                 </div>
-                                            )}
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center space-x-2 ml-4">
-                                        {notification.pdf_data && (
-                                            <>
+                                    <div className="ml-4 space-y-3">
+                                        {/* Linha 1: Visualizar e Baixar | Aprovar e Rejeitar */}
+                                        <div className="flex items-center justify-between gap-4">
+                                            {/* Grupo Esquerdo: PDF */}
+                                            <div className="flex items-center gap-2">
                                                 <button
-                                                    onClick={() => {
+                                                    onClick={async () => {
                                                         try {
-                                                            // Criar uma nova janela com o PDF
+                                                            const response = await fetch(`/api/admin/notifications/${notification.id}/pdf`);
+                                                            const data = await response.json();
+                                                            if (data.pdf_data) {
                                                             const newWindow = window.open('', '_blank');
-                                                            if (newWindow && notification.pdf_data) {
+                                                                if (newWindow) {
                                                                 newWindow.document.write(`
                                                                     <html>
                                                                         <head>
@@ -274,18 +501,21 @@ export default function AdminPanel() {
                                                                             </style>
                                                                         </head>
                                                                         <body>
-                                                                            <iframe src="${notification.pdf_data}" type="application/pdf"></iframe>
+                                                                                <iframe src="${data.pdf_data}" type="application/pdf"></iframe>
                                                                         </body>
                                                                     </html>
                                                                 `);
                                                                 newWindow.document.close();
+                                                                }
+                                                            } else {
+                                                                alert('PDF não disponível');
                                                             }
                                                         } catch (error) {
-                                                            console.error('Erro ao abrir PDF:', error);
-                                                            alert('Erro ao visualizar PDF. Tente baixar o arquivo.');
+                                                            console.error('Erro ao visualizar PDF:', error);
+                                                            alert('Erro ao visualizar PDF');
                                                         }
                                                     }}
-                                                    className="flex items-center space-x-2 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                                                    className="flex items-center space-x-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"
                                                     title="Visualizar PDF"
                                                 >
                                                     <Eye className="w-4 h-4" />
@@ -293,39 +523,122 @@ export default function AdminPanel() {
                                                 </button>
                                                 <button
                                                     onClick={() => downloadPDF(notification)}
-                                                    className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                                    className="flex items-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
                                                     title="Baixar PDF"
                                                 >
                                                     <Download className="w-4 h-4" />
                                                     <span>Baixar</span>
                                                 </button>
-                                            </>
-                                        )}
+                                            </div>
                                         
+                                            {/* Grupo Direito: Aprovar/Rejeitar (apenas pendentes) */}
                                         {notification.status === 'pending' && (
-                                            <div className="flex space-x-2">
+                                                <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => updateNotificationStatus(notification.id, 'approved')}
-                                                    className="flex items-center space-x-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                                                        className="flex items-center space-x-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
                                                 >
                                                     <CheckCircle className="w-4 h-4" />
                                                     <span>Aprovar</span>
                                                 </button>
                                                 <button
                                                     onClick={() => updateNotificationStatus(notification.id, 'rejected')}
-                                                    className="flex items-center space-x-2 px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                                                        className="flex items-center space-x-1 px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-sm"
                                                 >
                                                     <AlertCircle className="w-4 h-4" />
                                                     <span>Rejeitar</span>
                                                 </button>
                                             </div>
                                         )}
+                                        </div>
+
+                                        {/* Linha 2: Excluir (canto direito) */}
+                                        <div className="flex justify-end">
+                                            <button
+                                                onClick={() => deleteNotification(notification.id, notification.subdomain)}
+                                                className="flex items-center space-x-1 px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+                                                title="Excluir notificação"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                                <span>Excluir</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                     </div>
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
+
+                {/* Controles de Paginação */}
+                {filteredNotifications.length > itemsPerPage && (
+                    <div className="bg-white rounded-lg shadow-sm border p-6 mt-6">
+                        <div className="flex items-center justify-between">
+                            {/* Botão Anterior */}
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    currentPage === 1
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
+                            >
+                                ← Anterior
+                            </button>
+
+                            {/* Números de Página */}
+                            <div className="flex items-center gap-2">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                                    // Mostrar apenas algumas páginas (primeira, última, atual e adjacentes)
+                                    const showPage = 
+                                        page === 1 || 
+                                        page === totalPages || 
+                                        (page >= currentPage - 1 && page <= currentPage + 1);
+                                    
+                                    const showEllipsis = 
+                                        (page === currentPage - 2 && currentPage > 3) ||
+                                        (page === currentPage + 2 && currentPage < totalPages - 2);
+
+                                    if (showEllipsis) {
+                                        return <span key={page} className="text-gray-400">...</span>;
+                                    }
+
+                                    if (!showPage) return null;
+
+                                    return (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`w-10 h-10 rounded-md text-sm font-medium transition-colors ${
+                                                currentPage === page
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Botão Próximo */}
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    currentPage === totalPages
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
+                            >
+                                Próximo →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

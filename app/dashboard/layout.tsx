@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { isAdminEmail } from '@/lib/auth-config';
 import { 
   LayoutDashboard, 
   CreditCard, 
@@ -21,7 +23,19 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        setIsAdmin(isAdminEmail(session.user.email));
+      }
+    };
+    checkAdmin();
+  }, [supabase]);
 
   const menuItems = [
     {
@@ -100,13 +114,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             })}
           </nav>
           <div className="border-t border-gray-200 p-4 space-y-2">
-            <Link
-              href="/admin"
-              className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Painel Admin
-            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
+              >
+                <Settings className="mr-3 h-5 w-5" />
+                Painel Admin
+              </Link>
+            )}
             <button
               onClick={handleLogout}
               className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
@@ -153,13 +169,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             })}
           </nav>
           <div className="border-t border-gray-200 p-4 space-y-2">
-            <Link
-              href="/admin"
-              className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Painel Admin
-            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
+              >
+                <Settings className="mr-3 h-5 w-5" />
+                Painel Admin
+              </Link>
+            )}
             <button
               onClick={handleLogout}
               className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
