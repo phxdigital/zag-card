@@ -1,5 +1,5 @@
-import { HeroSection } from &ldquo;@/components/HeroSection&rdquo;
-import { FeaturesSection } from &ldquo;@/components/FeaturesSection&rdquo;
+import { HeroSection } from "@/components/HeroSection"
+import { FeaturesSection } from "@/components/FeaturesSection"
 import { HowItWorksSection } from "@/components/HowItWorksSection"
 import { TestimonialsSection } from "@/components/TestimonialsSection"
 import { PricingSection } from "@/components/PricingSection"

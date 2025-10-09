@@ -38,7 +38,7 @@ export default function AdminPagesPage() {
 
             const data = await response.json();
             setPages(data.pages || []);
-        } catch (error) {
+        } catch {
             console.error('Erro ao carregar páginas:', error);
             alert('Erro ao carregar páginas. Verifique suas permissões.');
         } finally {
@@ -47,7 +47,7 @@ export default function AdminPagesPage() {
     };
 
     const handleDelete = async (subdomain: string, id: string) => {
-        if (!confirm(`Tem certeza que deseja remover a página &ldquo;${subdomain}.zagnfc.com.br&rdquo;?\n\nEsta ação não pode ser desfeita!`)) {
+        if (!confirm(`Tem certeza que deseja remover a página "${subdomain}.zagnfc.com.br"?\n\nEsta ação não pode ser desfeita!`)) {
             return;
         }
 
@@ -64,7 +64,7 @@ export default function AdminPagesPage() {
 
             alert('Página removida com sucesso!');
             setPages(prev => prev.filter(p => p.id !== id));
-        } catch (error) {
+        } catch {
             console.error('Erro ao remover página:', error);
             alert('Erro ao remover página. Tente novamente.');
         }
@@ -123,7 +123,7 @@ export default function AdminPagesPage() {
                             Nenhuma página encontrada
                         </h3>
                         <p className="text-gray-500">
-                            {searchTerm ? `Nenhum resultado para &ldquo;${searchTerm}&rdquo;` : 'Ainda não há páginas criadas'}
+                            {searchTerm ? `Nenhum resultado para "${searchTerm}"` : 'Ainda não há páginas criadas'}
                         </p>
                     </div>
                 ) : (
@@ -158,7 +158,7 @@ export default function AdminPagesPage() {
                                                 <div>
                                                     <a
                                                         href={`https://${page.subdomain}.zagnfc.com.br`}
-                                                        target=&ldquo;_blank&rdquo;
+                                                        target="_blank"
                                                         rel=&rdquo;noopener noreferrer"
                                                         className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center gap-1"
                                                     >
@@ -207,7 +207,7 @@ export default function AdminPagesPage() {
                                                 <button
                                                     onClick={() => router.push(`/${page.subdomain}/edit-page`)}
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="Editar página&ldquo;
+                                                    title="Editar página"
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                 </button>
@@ -216,7 +216,7 @@ export default function AdminPagesPage() {
                                                 <button
                                                     onClick={() => handleDelete(page.subdomain, page.id)}
                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title=&rdquo;Remover página"
+                                                    title="Remover página"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>

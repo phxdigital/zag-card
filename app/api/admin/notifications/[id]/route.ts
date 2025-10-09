@@ -52,7 +52,7 @@ export async function PATCH(request: Request) {
             notification 
         });
 
-    } catch (error) {
+    } catch {
         console.error('Erro ao atualizar notificação:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' },
@@ -97,7 +97,7 @@ export async function DELETE(request: Request) {
             message: 'Notificação excluída com sucesso' 
         });
 
-    } catch (error) {
+    } catch {
         console.error('Erro ao excluir notificação:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' },

@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error) {
+  } catch {
     console.error('Erro ao criar cobrança:', error);
     return NextResponse.json(
       { 

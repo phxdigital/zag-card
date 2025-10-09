@@ -103,7 +103,7 @@ export default function PaymentsPage() {
         .order('created_at', { ascending: false });
 
       setPayments(paymentsData || []);
-    } catch (error) {
+    } catch {
       console.error('Erro ao carregar dados:', error);
     } finally {
       setLoading(false);
@@ -472,9 +472,9 @@ export default function PaymentsPage() {
                         
                         <a
                           href={`https://www.asaas.com/c/${payment.asaas_payment_id}`}
-                          target=&ldquo;_blank&rdquo;
-                          rel="noopener noreferrer&ldquo;
-                          className=&rdquo;inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                         >
                           <ExternalLink className="h-4 w-4 mr-1" />
                           Asaas

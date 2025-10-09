@@ -42,7 +42,7 @@ export default function MyPagesPage() {
         const data = await response.json();
         setPages(data);
       }
-    } catch (error) {
+    } catch {
       console.error('Erro ao carregar páginas:', error);
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ export default function MyPagesPage() {
         alert(`Erro ao deletar página: ${errorData.error || 'Erro desconhecido'}`);
         console.log('=== DELETE FALHOU ===');
       }
-    } catch (error) {
+    } catch {
       console.error('❌ Erro na requisição:', error);
       console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
       alert(`Erro ao deletar página: ${error instanceof Error ? error.message : 'Verifique sua conexão e tente novamente'}`);
@@ -125,7 +125,7 @@ export default function MyPagesPage() {
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0">
           <Link
-            href=&ldquo;/dashboard&rdquo;
+            href="/dashboard"
             className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600&ldquo;
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -207,7 +207,7 @@ export default function MyPagesPage() {
           </p>
           <div className="mt-6">
             <Link
-              href=&ldquo;/dashboard&rdquo;
+              href="/dashboard"
               className=&rdquo;inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -225,20 +225,20 @@ export default function MyPagesPage() {
                   {page.thumbnail_url ? (
                     <Image
                       src={page.thumbnail_url}
-                      alt=&ldquo;Preview da Landing Page&rdquo;
+                      alt="Preview da Landing Page"
                       width={300}
                       height={200}
-                      className="w-full h-32 object-cover rounded-lg&ldquo;
+                      className="w-full h-32 object-cover rounded-lg"
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center p-4 h-32">
                       {page.logo_url ? (
                         <Image
                           src={page.logo_url}
-                          alt=&ldquo;Logo&rdquo;
+                          alt="Logo"
                           width={48}
                           height={48}
-                          className=&rdquo;w-12 h-12 rounded-full object-cover mb-2"
+                          className="w-12 h-12 rounded-full object-cover mb-2"
                         />
                       ) : (
                         <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
@@ -284,9 +284,9 @@ export default function MyPagesPage() {
                   <div className="flex space-x-3">
                     <a
                       href={getPageUrl(page.subdomain)}
-                      target=&ldquo;_blank&rdquo;
-                      rel="noopener noreferrer&ldquo;
-                      className=&rdquo;inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       Visualizar

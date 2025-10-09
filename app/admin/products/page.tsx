@@ -68,7 +68,7 @@ export default function AdminProductsPage() {
 
       if (error) throw error;
       setProducts(data || []);
-    } catch (error) {
+    } catch {
       console.error('Erro ao carregar produtos:', error);
     } finally {
       setLoading(false);
@@ -86,7 +86,7 @@ export default function AdminProductsPage() {
       if (error) throw error;
       
       loadProducts();
-    } catch (error) {
+    } catch {
       console.error('Erro ao atualizar status:', error);
       alert('Erro ao atualizar status do produto');
     }
@@ -103,14 +103,14 @@ export default function AdminProductsPage() {
       if (error) throw error;
       
       loadProducts();
-    } catch (error) {
+    } catch {
       console.error('Erro ao atualizar destaque:', error);
       alert('Erro ao atualizar destaque do produto');
     }
   };
 
   const deleteProduct = async (productId: string, productName: string) => {
-    if (!confirm(`Tem certeza que deseja excluir &ldquo;${productName}&rdquo;?`)) return;
+    if (!confirm(`Tem certeza que deseja excluir "${productName}"?`)) return;
 
     try {
       const supabase = createClientComponentClient();
@@ -123,7 +123,7 @@ export default function AdminProductsPage() {
       
       alert('Produto excluído com sucesso!');
       loadProducts();
-    } catch (error) {
+    } catch {
       console.error('Erro ao excluir produto:', error);
       alert('Erro ao excluir produto');
     }
@@ -254,9 +254,9 @@ export default function AdminProductsPage() {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value=&ldquo;all&rdquo;>Todos os status</option>
-            <option value=&ldquo;active&rdquo;>Ativos</option>
-            <option value=&ldquo;inactive&rdquo;>Inativos</option>
+            <option value="all">Todos os status</option>
+            <option value="active">Ativos</option>
+            <option value="inactive">Inativos</option>
           </select>
 
           <select
@@ -264,10 +264,10 @@ export default function AdminProductsPage() {
             onChange={(e) => setFilterCategory(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value=&ldquo;all&rdquo;>Todas as categorias</option>
-            <option value=&ldquo;Kits&rdquo;>Kits</option>
-            <option value=&ldquo;Cartões NFC&rdquo;>Cartões NFC</option>
-            <option value=&ldquo;Adesivos NFC&rdquo;>Adesivos NFC</option>
+            <option value="all">Todas as categorias</option>
+            <option value="Kits">Kits</option>
+            <option value="Cartões NFC">Cartões NFC</option>
+            <option value="Adesivos NFC">Adesivos NFC</option>
           </select>
         </div>
       </div>
@@ -383,7 +383,7 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => router.push(`/admin/products/${product.id}/edit`)}
                         className="text-blue-600 hover:text-blue-900"
-                        title="Editar&ldquo;
+                        title="Editar"
                       >
                         <Edit className="h-5 w-5" />
                       </button>
@@ -391,7 +391,7 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => deleteProduct(product.id, product.name)}
                         className="text-red-600 hover:text-red-900"
-                        title=&rdquo;Excluir"
+                        title="Excluir"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>

@@ -239,7 +239,7 @@ export default function EditPage() {
                 alert('Página não encontrada');
                 router.push('/dashboard/pages');
             }
-        } catch (error) {
+        } catch {
             console.error('Erro ao carregar página:', error);
             alert('Erro ao carregar página');
         } finally {
@@ -595,7 +595,7 @@ export default function EditPage() {
                         body: JSON.stringify({
                             subdomain,
                             action: 'card_layout_updated',
-                            message: `O layout do cartão para o subdomínio &ldquo;${subdomain}&rdquo; foi atualizado e um PDF para impressão foi gerado.`,
+                            message: `O layout do cartão para o subdomínio "${subdomain}" foi atualizado e um PDF para impressão foi gerado.`,
                             pdfData: pdfDataUri // Envia o PDF como data URI
                         })
                     });
@@ -625,7 +625,7 @@ export default function EditPage() {
                 }
                 throw new Error(errorMessage);
             }
-        } catch (error) {
+        } catch {
             console.error('Erro ao salvar:', error);
             alert('Erro ao salvar: ' + (error as Error).message);
         } finally {
@@ -681,7 +681,7 @@ export default function EditPage() {
                 <div className="mb-8 flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         <Link
-                            href=&ldquo;/dashboard/pages&rdquo;
+                            href="/dashboard/pages"
                             className="inline-flex items-center text-gray-600 hover:text-gray-900&ldquo;
                         >
                             <ArrowLeft className="h-5 w-5 mr-2" />
@@ -738,7 +738,7 @@ export default function EditPage() {
                                     <label className="block text-sm font-medium text-blue-700 mb-2">Subdomínio</label>
                                     <div className="flex items-center space-x-2">
                                         <input 
-                                            type=&ldquo;text&rdquo; 
+                                            type="text" 
                                             value={subdomain} 
                                             disabled 
                                             className=&rdquo;w-full px-3 py-2 border border-blue-300 rounded-md bg-blue-100 text-blue-800 font-mono" 
@@ -751,10 +751,10 @@ export default function EditPage() {
                                     <label className="block text-sm font-medium text-blue-700 mb-2">URL da Página</label>
                                     <div className="flex items-center space-x-2">
                                         <input 
-                                            type=&ldquo;text&rdquo; 
+                                            type="text" 
                                             value={`https://${subdomain}.zagnfc.com.br`} 
                                             disabled 
-                                            className="w-full px-3 py-2 border border-blue-300 rounded-md bg-blue-100 text-blue-800 font-mono text-sm&ldquo; 
+                                            className="w-full px-3 py-2 border border-blue-300 rounded-md bg-blue-100 text-blue-800 font-mono text-sm" 
                                         />
                                         <button
                                             onClick={() => {
@@ -779,10 +779,10 @@ export default function EditPage() {
                                     {logoDataUrl ? (
                                         <Image 
                                             src={logoDataUrl} 
-                                            alt=&ldquo;Logo Preview&rdquo; 
+                                            alt="Logo Preview" 
                                             width={120} 
                                             height={120} 
-                                            className=&rdquo;object-contain absolute transition-all duration-300" 
+                                            className="object-contain absolute transition-all duration-300" 
                                             style={{ 
                                                 width: `${config.logoSize || 60}%`, 
                                                 height: 'auto',
@@ -813,7 +813,7 @@ export default function EditPage() {
                                                             // Redimensionar imagem para caber no cartão (máximo 200x120px)
                                                             const resizedImage = await resizeImageToFit(file, 200, 120);
                                                             setLogoDataUrl(resizedImage);
-                                                        } catch (error) {
+                                                        } catch {
                                                             console.error('Erro ao processar imagem:', error);
                                                             alert('Erro ao processar a imagem. Tente novamente.');
                                                         }
@@ -843,7 +843,7 @@ export default function EditPage() {
                                     )}
                                     {/* Símbolo NFC fixo no canto superior direito */}
                                     <Image 
-                                        src=&ldquo;/nfc-symbol.png&rdquo; 
+                                        src="/nfc-symbol.png" 
                                         alt=&rdquo;NFC" 
                                         width={24} 
                                         height={24} 
@@ -858,7 +858,7 @@ export default function EditPage() {
                                 <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex items-center justify-between p-4 transition-colors duration-300 border-2">
                                     <div className="flex flex-col items-center">
                                         {logoDataUrl && (
-                                            <Image src={logoDataUrl} alt=&ldquo;Logo Preview&rdquo; width={60} height={60} className="object-contain mb-2&ldquo; style={{ width: `${config.clientLogoBackSize || 35}px`, height: `${config.clientLogoBackSize || 35}px`, opacity: config.logoOpacityBack ?? 1, transform: `rotate(${config.logoRotationBack || 0}deg) translateX(${(config.logoPositionBack ?? 0) * 1.2}px)` }} />
+                                            <Image src={logoDataUrl} alt="Logo Preview" width={60} height={60} className="object-contain mb-2" style={{ width: `${config.clientLogoBackSize || 35}px`, height: `${config.clientLogoBackSize || 35}px`, opacity: config.logoOpacityBack ?? 1, transform: `rotate(${config.logoRotationBack || 0}deg) translateX(${(config.logoPositionBack ?? 0) * 1.2}px)` }} />
                                         )}
                                     </div>
                                     <div className={`flex ${config.qrCodePosition}`}>
@@ -868,8 +868,8 @@ export default function EditPage() {
                                     </div>
                                     {/* Símbolo NFC fixo no canto superior direito */}
                                     <Image 
-                                        src=&ldquo;/nfc-symbol.png&rdquo; 
-                                        alt=&rdquo;NFC" 
+                                        src="/nfc-symbol.png" 
+                                        alt="NFC" 
                                         width={24} 
                                         height={24} 
                                         className="absolute top-2 right-2 w-6 h-6 object-contain opacity-80" 
@@ -895,7 +895,7 @@ export default function EditPage() {
                                     }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho ({config.logoSize || 60}%)</label>
                                         <input 
-                                            type=&ldquo;range&rdquo; 
+                                            type="range" 
                                             min={40} 
                                             max={100} 
                                             value={config.logoSize || 60}
@@ -918,7 +918,7 @@ export default function EditPage() {
                                             <div className="flex items-center space-x-3">
                                                 <span className="text-xs text-slate-500">Esquerda</span>
                                                 <input 
-                                                    type=&ldquo;range&rdquo; 
+                                                    type="range" 
                                                     min={-30} 
                                                     max={30} 
                                                     value={config.logoPosition ?? 0} 
@@ -944,7 +944,7 @@ export default function EditPage() {
                                     }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
                                         <input 
-                                            type=&ldquo;range&rdquo; 
+                                            type="range" 
                                             min={10} 
                                             max={100} 
                                             value={Math.round((config.logoOpacityFront ?? 1) * 100)} 
@@ -962,7 +962,7 @@ export default function EditPage() {
                                     }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Rotação ({config.logoRotationFront || 0}°)</label>
                                         <input 
-                                            type=&ldquo;range&rdquo; 
+                                            type="range" 
                                             min={-180} 
                                             max={180} 
                                             value={config.logoRotationFront || 0} 
@@ -975,7 +975,7 @@ export default function EditPage() {
                                     <div>
                                         <label className="flex items-center space-x-2">
                                             <input 
-                                                type=&ldquo;checkbox&rdquo; 
+                                                type="checkbox" 
                                                 checked={config.removeLogoBackground || false} 
                                                 onChange={(e) => handleConfigChange('removeLogoBackground', e.target.checked)} 
                                                 className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" 
@@ -997,7 +997,7 @@ export default function EditPage() {
                                     }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho ({config.clientLogoBackSize || 35}%)</label>
                                         <input 
-                                            type=&ldquo;range&rdquo; 
+                                            type="range" 
                                             min={20} 
                                             max={80} 
                                             value={config.clientLogoBackSize || 35} 
@@ -1015,7 +1015,7 @@ export default function EditPage() {
                                     }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Opacidade ({Math.round((config.logoOpacityBack ?? 1) * 100)}%)</label>
                                         <input 
-                                            type=&ldquo;range&rdquo; 
+                                            type="range" 
                                             min={10} 
                                             max={100} 
                                             value={Math.round((config.logoOpacityBack ?? 1) * 100)} 
@@ -1033,7 +1033,7 @@ export default function EditPage() {
                                     }}>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Rotação ({config.logoRotationBack || 0}°)</label>
                                         <input 
-                                            type=&ldquo;range&rdquo; 
+                                            type="range" 
                                             min={-180} 
                                             max={180} 
                                             value={config.logoRotationBack || 0} 
@@ -1055,7 +1055,7 @@ export default function EditPage() {
                                         <div className="flex items-center space-x-3">
                                             <span className="text-xs text-slate-500">Esquerda</span>
                                             <input 
-                                                type=&ldquo;range&rdquo; 
+                                                type="range" 
                                                 min={-30} 
                                                 max={30} 
                                                 value={config.logoPositionBack ?? 0} 
@@ -1087,7 +1087,7 @@ export default function EditPage() {
                             <div className="w-80 h-96 mx-auto rounded-xl shadow-lg overflow-hidden" style={{ backgroundColor: config.landingPageBgColor || '#F8FAFC' }}>
                                 <div className="p-4 h-full flex flex-col items-center justify-center text-center">
                                     {logoDataUrl ? (
-                                        <Image src={logoDataUrl} alt=&ldquo;Logo Preview&rdquo; width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} />
+                                        <Image src={logoDataUrl} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} />
                                     ) : (
                                         <div className={`w-24 h-24 bg-slate-200 flex items-center justify-center shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`}>
                                             <ImageIcon className="w-8 h-8 text-slate-400" />
@@ -1129,30 +1129,30 @@ export default function EditPage() {
                             {/* Background Color */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">Cor de Fundo</label>
-                                <input type=&ldquo;color&rdquo; value={config.landingPageBgColor || '#F8FAFC'} onChange={(e) => handleConfigChange('landingPageBgColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                <input type="color" value={config.landingPageBgColor || '#F8FAFC'} onChange={(e) => handleConfigChange('landingPageBgColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
                             </div>
 
                             {/* Title */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">Título</label>
-                                <input type=&ldquo;text&rdquo; value={config.landingPageTitleText || ''} onChange={(e) => handleConfigChange('landingPageTitleText', e.target.value)} placeholder=&ldquo;Ex: Bem-vindo(a)!&rdquo; className="w-full px-3 py-2 border border-slate-300 rounded-md&ldquo; />
+                                <input type="text" value={config.landingPageTitleText || ''} onChange={(e) => handleConfigChange('landingPageTitleText', e.target.value)} placeholder="Ex: Bem-vindo(a)!" className="w-full px-3 py-2 border border-slate-300 rounded-md" />
                             </div>
 
                             {/* Subtitle */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">Subtítulo</label>
-                                <input type=&ldquo;text&rdquo; value={config.landingPageSubtitleText || ''} onChange={(e) => handleConfigChange('landingPageSubtitleText', e.target.value)} placeholder=&ldquo;Ex: Conheça mais sobre nós!&rdquo; className=&rdquo;w-full px-3 py-2 border border-slate-300 rounded-md" />
+                                <input type="text" value={config.landingPageSubtitleText || ''} onChange={(e) => handleConfigChange('landingPageSubtitleText', e.target.value)} placeholder="Ex: Conheça mais sobre nós!" className="w-full px-3 py-2 border border-slate-300 rounded-md" />
                             </div>
 
                             {/* Font */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">Fonte</label>
                                 <select value={config.landingFont || 'Inter'} onChange={(e) => handleConfigChange('landingFont', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md">
-                                    <option value=&ldquo;Inter&rdquo;>Inter</option>
-                                    <option value=&ldquo;Roboto&rdquo;>Roboto</option>
-                                    <option value=&ldquo;Poppins&rdquo;>Poppins</option>
-                                    <option value=&ldquo;Montserrat&rdquo;>Montserrat</option>
-                                    <option value=&ldquo;Open Sans&rdquo;>Open Sans</option>
+                                    <option value="Inter">Inter</option>
+                                    <option value="Roboto">Roboto</option>
+                                    <option value="Poppins">Poppins</option>
+                                    <option value="Montserrat">Montserrat</option>
+                                    <option value="Open Sans">Open Sans</option>
                                 </select>
                             </div>
 
@@ -1165,7 +1165,7 @@ export default function EditPage() {
                             }}>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho da Logo na Página ({config.landingPageLogoSize || 96}px)</label>
                                 <input 
-                                    type=&ldquo;range&rdquo; 
+                                    type="range" 
                                     min={32} 
                                     max={200} 
                                     value={config.landingPageLogoSize || 96} 
@@ -1198,11 +1198,11 @@ export default function EditPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">Cor do Título</label>
-                                    <input type=&ldquo;color&rdquo; value={config.landingPageTitleColor || '#1e293b'} onChange={(e) => handleConfigChange('landingPageTitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                    <input type="color" value={config.landingPageTitleColor || '#1e293b'} onChange={(e) => handleConfigChange('landingPageTitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">Cor do Subtítulo</label>
-                                    <input type=&ldquo;color&rdquo; value={config.landingPageSubtitleColor || '#64748b'} onChange={(e) => handleConfigChange('landingPageSubtitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
+                                    <input type="color" value={config.landingPageSubtitleColor || '#64748b'} onChange={(e) => handleConfigChange('landingPageSubtitleColor', e.target.value)} className="w-full h-10 border border-slate-300 rounded-md" />
                                 </div>
                             </div>
 
@@ -1223,7 +1223,7 @@ export default function EditPage() {
                                 <label className="block text-sm font-medium text-slate-700 mb-2">Cor dos Botões Sociais</label>
                                 <div className="flex items-center space-x-3">
                                     <input 
-                                        type=&ldquo;color&rdquo; 
+                                        type="color" 
                                         value={config.socialButtonColor || '#3B82F6'} 
                                         onChange={(e) => {
                                             const newColor = e.target.value;
@@ -1366,7 +1366,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Texto do Botão</label>
                 <input
-                    type=&ldquo;text&rdquo;
+                    type="text"
                     value={formData.text}
                     onChange={(e) => setFormData(prev => ({ ...prev, text: e.target.value }))}
                     className="w-full px-3 py-2 border border-slate-300 rounded-md"
@@ -1377,7 +1377,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">URL</label>
                 <input
-                    type=&ldquo;url&rdquo;
+                    type="url"
                     value={formData.url}
                     onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
                     className="w-full px-3 py-2 border border-slate-300 rounded-md"
@@ -1407,14 +1407,14 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                 <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Estilo</label>
                 <div className="flex space-x-2">
                     <button
-                        type=&ldquo;button&rdquo;
+                        type="button"
                         onClick={() => setFormData(prev => ({ ...prev, styleType: 'solid' }))}
                         className={`px-3 py-1 rounded text-sm ${formData.styleType === 'solid' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'}`}
                     >
                         Sólido
                     </button>
                     <button
-                        type=&ldquo;button&rdquo;
+                        type="button"
                         onClick={() => setFormData(prev => ({ ...prev, styleType: 'gradient' }))}
                         className={`px-3 py-1 rounded text-sm ${formData.styleType === 'gradient' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'}`}
                     >
@@ -1427,7 +1427,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Cor Principal</label>
                     <input
-                        type=&ldquo;color&rdquo;
+                        type="color"
                         value={formData.bgColor1}
                         onChange={(e) => setFormData(prev => ({ ...prev, bgColor1: e.target.value }))}
                         className="w-full h-10 border border-slate-300 rounded-md"
@@ -1437,7 +1437,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Cor Secundária</label>
                         <input
-                            type=&ldquo;color&rdquo;
+                            type="color"
                             value={formData.bgColor2}
                             onChange={(e) => setFormData(prev => ({ ...prev, bgColor2: e.target.value }))}
                             className="w-full h-10 border border-slate-300 rounded-md"
@@ -1449,7 +1449,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Texto</label>
                 <input
-                    type=&ldquo;color&rdquo;
+                    type="color"
                     value={formData.textColor}
                     onChange={(e) => setFormData(prev => ({ ...prev, textColor: e.target.value }))}
                     className="w-full h-10 border border-slate-300 rounded-md"
@@ -1458,15 +1458,15 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
             <div className="flex justify-end space-x-3">
                 <button
-                    type=&ldquo;button&rdquo;
+                    type="button"
                     onClick={onCancel}
-                    className="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-50&ldquo;
+                    className="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-50"
                 >
                     Cancelar
                 </button>
                 <button
-                    type=&ldquo;submit&rdquo;
-                    className=&rdquo;px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                     {initial ? 'Atualizar' : 'Adicionar'}
                 </button>

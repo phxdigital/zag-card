@@ -57,7 +57,7 @@ export async function PUT(
     let body;
     try {
       body = await request.json();
-    } catch (error) {
+    } catch {
       console.error('JSON parse error:', error);
       return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
     }
@@ -132,7 +132,7 @@ export async function DELETE(
 
     console.log('Page deleted successfully');
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     console.error('DELETE API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

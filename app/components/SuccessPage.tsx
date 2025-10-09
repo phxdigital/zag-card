@@ -66,7 +66,7 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
             
             // Limpar o URL do objeto
             URL.revokeObjectURL(link.href);
-        } catch (error) {
+        } catch {
             console.error('Erro ao gerar QR Code:', error);
             alert('Erro ao gerar QR Code. Tente novamente.');
         }

@@ -34,7 +34,7 @@ export default function AdminPanel() {
                 const data = await response.json();
                 setNotifications(data.notifications || []);
             }
-        } catch (error) {
+        } catch {
             console.error('Erro ao carregar notificações:', error);
         } finally {
             setLoading(false);
@@ -58,7 +58,7 @@ export default function AdminPanel() {
                     )
                 );
             }
-        } catch (error) {
+        } catch {
             console.error('Erro ao atualizar status:', error);
         }
     };
@@ -84,7 +84,7 @@ export default function AdminPanel() {
             } else {
                 alert('Erro ao excluir notificação');
             }
-        } catch (error) {
+        } catch {
             console.error('Erro ao excluir notificação:', error);
             alert('Erro ao excluir notificação');
         }
@@ -115,7 +115,7 @@ export default function AdminPanel() {
                 } else {
                     errorCount++;
                 }
-            } catch (error) {
+            } catch {
                 console.error('Erro ao excluir notificação:', error);
                 errorCount++;
             }
@@ -192,7 +192,7 @@ export default function AdminPanel() {
 
             alert(`PDF A4 gerado com 5 frentes + 5 versos!\nPronto para enviar à gráfica.`);
             setSelectedIds(new Set());
-        } catch (error) {
+        } catch {
             const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar PDFs';
             console.error('Erro ao mesclar PDFs:', error);
             alert(`Erro: ${errorMessage}`);
@@ -226,7 +226,7 @@ export default function AdminPanel() {
             } else {
                 alert('PDF não disponível para esta notificação.');
             }
-            } catch (error) {
+            } catch {
                 console.error('Erro ao baixar PDF:', error);
                 alert('Erro ao baixar PDF. Tente novamente.');
         }
@@ -511,7 +511,7 @@ export default function AdminPanel() {
                                                             } else {
                                                                 alert('PDF não disponível');
                                                             }
-                                                        } catch (error) {
+                                                        } catch {
                                                             console.error('Erro ao visualizar PDF:', error);
                                                             alert('Erro ao visualizar PDF');
                                                         }

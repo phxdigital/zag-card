@@ -34,7 +34,7 @@ export async function GET() {
             })) || []
         });
 
-    } catch (error) {
+    } catch {
         console.error('Erro no teste PDF:', error);
         return NextResponse.json({
             success: false,

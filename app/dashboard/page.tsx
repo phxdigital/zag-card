@@ -1460,7 +1460,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             localStorage.removeItem('zag-dashboard-config');
 
-        } catch (error) {
+        } catch {
 
             console.error('Error clearing localStorage:', error);
 
@@ -1600,7 +1600,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             }
 
-        } catch (error) {
+        } catch {
 
             console.error('Erro ao verificar subdomínio:', error);
 
@@ -1878,7 +1878,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             setActiveStep(2);
 
-        } catch (error) {
+        } catch {
 
             console.error('Erro ao processar layout:', error);
 
@@ -2004,7 +2004,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             localStorage.removeItem('zag-dashboard-config');
 
-        } catch (error) {
+        } catch {
 
             console.error('Error clearing localStorage:', error);
 
@@ -2196,7 +2196,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                 }
 
-            } catch (error) {
+            } catch {
 
                 console.error('Erro ao carregar dados do usuário:', error);
 
@@ -2510,7 +2510,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                         <Link
 
-                            href=&ldquo;/dashboard/payments&rdquo;
+                            href="/dashboard/payments"
 
                             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 inline-block&ldquo;
 
@@ -2706,13 +2706,13 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                     src={logoDataUrl} 
 
-                                                    alt=&ldquo;Logo Preview&rdquo; 
+                                                    alt="Logo Preview" 
 
                                                     width={120} 
 
                                                     height={120} 
 
-                                                    className="object-contain w-full h-full image-transparent&ldquo; 
+                                                    className="object-contain w-full h-full image-transparent" 
 
                                                     style={{ 
 
@@ -2768,7 +2768,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 }}
 
-                                                title=&rdquo;Clique para carregar sua logomarca"
+                                                title="Clique para carregar sua logomarca"
 
                                             >
 
@@ -2802,15 +2802,15 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                         <Image 
 
-                                            src=&ldquo;/nfc-symbol.png&rdquo; 
+                                            src="/nfc-symbol.png" 
 
-                                            alt="NFC&ldquo; 
+                                            alt="NFC" 
 
                                             width={24} 
 
                                             height={24} 
 
-                                            className=&rdquo;absolute top-5 right-5 w-6 h-6 object-contain opacity-80" 
+                                            className="absolute top-5 right-5 w-6 h-6 object-contain opacity-80" 
                                         />
 
                                     </div>
@@ -2845,7 +2845,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                             <input 
 
-                                                type=&ldquo;range&rdquo; 
+                                                type="range" 
 
                                                 min={20} 
 
@@ -2873,13 +2873,13 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                             <div>
 
                                                 <label className="block text-xs font-medium text-slate-700 mb-1">Cor de Fundo</label>
-                                                <input type=&ldquo;color&rdquo; value={config.cardBgColor} onChange={(e) => handleConfigChange('cardBgColor', e.target.value)} className="w-full h-6 border border-slate-300 rounded-md" />
+                                                <input type="color" value={config.cardBgColor} onChange={(e) => handleConfigChange('cardBgColor', e.target.value)} className="w-full h-6 border border-slate-300 rounded-md" />
                                             </div>
 
                                             <div>
 
                                                 <label className="block text-xs font-medium text-slate-700 mb-1">Cor do Texto</label>
-                                                <input type=&ldquo;color&rdquo; value={config.cardTextColor} onChange={(e) => handleConfigChange('cardTextColor', e.target.value)} className="w-full h-6 border border-slate-300 rounded-md" />
+                                                <input type="color" value={config.cardTextColor} onChange={(e) => handleConfigChange('cardTextColor', e.target.value)} className="w-full h-6 border border-slate-300 rounded-md" />
                                             </div>
 
                                             <div>
@@ -2887,18 +2887,18 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                 <label className="block text-xs font-medium text-slate-700 mb-1">Remover Fundo</label>
                                                 <a 
 
-                                                    href=&ldquo;https://www.remove.bg/&rdquo; 
+                                                    href="https://www.remove.bg/" 
 
-                                                    target="_blank&ldquo; 
+                                                    target="_blank" 
 
-                                                    rel=&rdquo;noopener noreferrer"
+                                                    rel="noopener noreferrer"
 
                                                     className="inline-flex items-center justify-center w-full h-6 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                                                 >
 
-                                                    <svg className="w-3 h-3 mr-1" fill="none&ldquo; stroke=&rdquo;currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
-                                                        <path strokeLinecap=&ldquo;round&rdquo; strokeLinejoin="round&ldquo; strokeWidth={2} d=&rdquo;M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
 
                                                     </svg>
 
@@ -2944,7 +2944,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                 <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Rotação ({config.logoRotationFront || 0}°)</label>
 
                                                 <input 
-                                                    type=&ldquo;range&rdquo; 
+                                                    type="range" 
                                                     min={-180} 
                                                     max={180} 
                                                     value={config.logoRotationFront || 0} 
@@ -2972,7 +2972,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Opacidade ({Math.round((config.logoOpacityFront ?? 1) * 100)}%)</label>
 
-                                                <input type=&ldquo;range&rdquo; min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                                <input type="range" min={10} max={100} value={Math.round((config.logoOpacityFront ?? 1) * 100)} onChange={(e) => handleConfigChange('logoOpacityFront', Number(e.target.value) / 100)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
 
                                             </div>
 
@@ -2996,7 +2996,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 <input 
 
-                                                    type=&ldquo;range&rdquo; 
+                                                    type="range" 
 
                                                     min={-30} 
 
@@ -3038,7 +3038,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                             <input 
 
-                                                type=&ldquo;text&rdquo; 
+                                                type="text" 
 
                                                 placeholder="Seu Nome ou Empresa&ldquo; 
 
@@ -3094,7 +3094,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                         {logoDataUrl && (
 
-                                            <Image src={logoDataUrl} alt=&ldquo;Logo Verso&rdquo; width={150} height={150} className="object-contain absolute transition-all duration-300 image-transparent&ldquo; style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: `${50 + (config.logoPositionBack ?? 0) * 1.2}%`, transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3, background: 'transparent' }} />
+                                            <Image src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300 image-transparent" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: `${50 + (config.logoPositionBack ?? 0) * 1.2}%`, transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3, background: 'transparent' }} />
 
                                         )}
 
@@ -3108,9 +3108,9 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                         <Image 
 
-                                            src=&ldquo;/logo-zag.png&rdquo; 
+                                            src="/logo-zag.png" 
 
-                                            alt=&rdquo;Logo Zag Card" 
+                                            alt="Logo Zag Card" 
 
                                             width={60} 
 
@@ -3136,15 +3136,15 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                         <Image 
 
-                                            src=&ldquo;/nfc-symbol.png&rdquo; 
+                                            src="/nfc-symbol.png" 
 
-                                            alt="NFC&ldquo; 
+                                            alt="NFC" 
 
                                             width={24} 
 
                                             height={24} 
 
-                                            className=&rdquo;absolute top-5 right-5 w-6 h-6 object-contain opacity-80" 
+                                            className="absolute top-5 right-5 w-6 h-6 object-contain opacity-80" 
                                         />
 
                                     </div>
@@ -3175,7 +3175,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                             <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da Logo ({config.clientLogoBackSize}%)</label>
 
-                                            <input type=&ldquo;range&rdquo; min={10} max={120} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                            <input type="range" min={10} max={120} value={config.clientLogoBackSize} onChange={(e) => handleConfigChange('clientLogoBackSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
 
                                             <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
 
@@ -3191,7 +3191,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
 
-                                                <input type=&ldquo;color&rdquo; value={config.cardBackBgColor} onChange={(e) => handleConfigChange('cardBackBgColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
+                                                <input type="color" value={config.cardBackBgColor} onChange={(e) => handleConfigChange('cardBackBgColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
 
                                             </div>
 
@@ -3269,7 +3269,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 <input 
 
-                                                    type=&ldquo;range&rdquo; 
+                                                    type="range" 
 
                                                     min={10} 
 
@@ -3316,7 +3316,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 <input 
 
-                                                    type=&ldquo;range&rdquo; 
+                                                    type="range" 
 
                                                     min={-180} 
 
@@ -3352,7 +3352,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 <input 
 
-                                                    type=&ldquo;range&rdquo; 
+                                                    type="range" 
 
                                                     min={-30} 
 
@@ -3416,7 +3416,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                 <input 
 
-                                                    type=&ldquo;text&rdquo; 
+                                                    type="text" 
 
                                                     placeholder="sua-empresa&ldquo; 
 
@@ -3538,7 +3538,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                     >
                                                         <img 
                                                             src={logoDataUrl} 
-                                                            alt=&ldquo;Logo Preview&rdquo; 
+                                                            alt="Logo Preview" 
                                                             className=&rdquo;object-contain w-full h-full" 
                                                             style={{ 
                                                                 filter: 'none',
@@ -3559,9 +3559,9 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                 )}
                                                 {/* Símbolo NFC fixo no canto superior direito */}
                                                 <img 
-                                                    src=&ldquo;/nfc-symbol.png&rdquo; 
-                                                    alt="NFC&ldquo; 
-                                                    className=&rdquo;absolute top-4 right-4 w-4 h-4 object-contain opacity-80" 
+                                                    src="/nfc-symbol.png" 
+                                                    alt="NFC" 
+                                                    className="absolute top-4 right-4 w-4 h-4 object-contain opacity-80" 
                                                 />
                                             </div>
                                         </div>
@@ -3578,8 +3578,8 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                 {logoDataUrl && (
                                                     <img 
                                                         src={logoDataUrl} 
-                                                        alt=&ldquo;Logo Verso&rdquo; 
-                                                        className="object-contain absolute transition-all duration-300&ldquo; 
+                                                        alt="Logo Verso" 
+                                                        className="object-contain absolute transition-all duration-300" 
                                                         style={{ 
                                                             width: `${config.clientLogoBackSize}%`, 
                                                             top: '50%', 
@@ -3602,8 +3602,8 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                 </div>
                                                 {/* Logo Zag fixa no canto inferior direito - sempre visível e sutil */}
                                                 <img 
-                                                    src=&ldquo;/logo-zag.png&rdquo; 
-                                                    alt=&rdquo;Logo Zag Card" 
+                                                    src="/logo-zag.png" 
+                                                    alt="Logo Zag Card" 
                                                     className="absolute bottom-1 right-1 h-3 w-auto object-contain opacity-100" 
                                                     style={{ 
                                                         width: 'auto', 
@@ -3614,9 +3614,9 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                 />
                                                 {/* Símbolo NFC fixo no canto superior direito */}
                                                 <img 
-                                                    src=&ldquo;/nfc-symbol.png&rdquo; 
-                                                    alt="NFC&ldquo; 
-                                                    className=&rdquo;absolute top-4 right-4 w-4 h-4 object-contain opacity-80" 
+                                                    src="/nfc-symbol.png" 
+                                                    alt="NFC" 
+                                                    className="absolute top-4 right-4 w-4 h-4 object-contain opacity-80" 
                                                 />
                                             </div>
                                         </div>
@@ -3626,8 +3626,8 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                                     <div className="flex items-start">
                                         <div className="flex-shrink-0">
-                                            <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20&ldquo; fill=&rdquo;currentColor">
-                                                <path fillRule=&ldquo;evenodd&rdquo; d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z&ldquo; clipRule=&rdquo;evenodd" />
+                                            <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                             </svg>
                                         </div>
                                         <div className="ml-3">
@@ -3714,7 +3714,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                     <label className="block text-sm font-medium text-slate-700 mb-1">Título Principal</label>
 
-                                                    <input type=&ldquo;text&rdquo; value={config.landingPageTitleText || ''} onChange={(e) => handleConfigChange('landingPageTitleText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
+                                                    <input type="text" value={config.landingPageTitleText || ''} onChange={(e) => handleConfigChange('landingPageTitleText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
 
                                                 </div>
 
@@ -3724,7 +3724,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                     <div className="relative">
 
-                                                        <input type=&ldquo;text&rdquo; placeholder="Sua frase de efeito aqui&ldquo; value={config.landingPageSubtitleText || ''} onChange={(e) => handleConfigChange('landingPageSubtitleText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md pr-10" />
+                                                        <input type="text" placeholder="Sua frase de efeito aqui&ldquo; value={config.landingPageSubtitleText || ''} onChange={(e) => handleConfigChange('landingPageSubtitleText', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md pr-10" />
 
                                                         <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600">😊</button>
 
@@ -3854,15 +3854,15 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                     <select value={config.landingFont || 'Inter'} onChange={(e) => handleConfigChange('landingFont', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md">
 
-                                                        <option value=&ldquo;Inter&rdquo;>Inter</option>
+                                                        <option value="Inter">Inter</option>
 
-                                                        <option value=&ldquo;Roboto&rdquo;>Roboto</option>
+                                                        <option value="Roboto">Roboto</option>
 
-                                                        <option value=&ldquo;Poppins&rdquo;>Poppins</option>
+                                                        <option value="Poppins">Poppins</option>
 
-                                                        <option value=&ldquo;Montserrat&rdquo;>Montserrat</option>
+                                                        <option value="Montserrat">Montserrat</option>
 
-                                                        <option value=&ldquo;Open Sans&rdquo;>Open Sans</option>
+                                                        <option value="Open Sans">Open Sans</option>
 
                                                     </select>
 
@@ -3876,7 +3876,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                         <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Título</label>
 
-                                                        <input type=&ldquo;color&rdquo; value={config.landingPageTitleColor || '#1e293b'} onChange={(e) => handleConfigChange('landingPageTitleColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
+                                                        <input type="color" value={config.landingPageTitleColor || '#1e293b'} onChange={(e) => handleConfigChange('landingPageTitleColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
 
                                             </div>
 
@@ -3884,7 +3884,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                         <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Subtítulo</label>
 
-                                                        <input type=&ldquo;color&rdquo; value={config.landingPageSubtitleColor || '#64748b'} onChange={(e) => handleConfigChange('landingPageSubtitleColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
+                                                        <input type="color" value={config.landingPageSubtitleColor || '#64748b'} onChange={(e) => handleConfigChange('landingPageSubtitleColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
 
                                                     </div>
 
@@ -3892,7 +3892,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                         <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo</label>
 
-                                                        <input type=&ldquo;color&rdquo; value={config.landingPageBgColor || '#ffffff'} onChange={(e) => handleConfigChange('landingPageBgColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
+                                                        <input type="color" value={config.landingPageBgColor || '#ffffff'} onChange={(e) => handleConfigChange('landingPageBgColor', e.target.value)} className="w-full h-8 border border-slate-300 rounded-md" />
 
                                                     </div>
 
@@ -4048,7 +4048,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                                 <input 
 
-                                                                    type=&ldquo;color&rdquo; 
+                                                                    type="color" 
 
                                                                     value={config.socialButtonColor || '#3B82F6'} 
 
@@ -4096,7 +4096,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                     <label className="block text-sm font-medium text-slate-700 mb-1 slider-label">Tamanho da Logo na Página ({config.landingPageLogoSize}px)</label>
 
-                                                    <input type=&ldquo;range&rdquo; min={32} max={200} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
+                                                    <input type="range" min={32} max={200} value={config.landingPageLogoSize} onChange={(e) => handleConfigChange('landingPageLogoSize', Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer no-select" />
 
                                                     <p className="text-xs text-slate-500 mt-1">💡 Ajuste conforme o tamanho da sua imagem</p>
 
@@ -4166,7 +4166,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                                     className="p-1 text-slate-500 hover:text-slate-800 disabled:text-slate-300 disabled:cursor-not-allowed"
 
-                                                                    title="Mover para baixo&ldquo;
+                                                                    title="Mover para baixo"
 
                                                                 >
 
@@ -4213,7 +4213,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                                 <>
                                                     {/* Imagem do banner (camada de fundo) */}
                                                     <div className="absolute top-0 left-0 right-0 z-0" style={{ height: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px)` }}>
-                                                        <img src={config.landingPageBannerUrl} alt=&ldquo;Banner&rdquo; className=&rdquo;w-full h-full object-cover" />
+                                                        <img src={config.landingPageBannerUrl} alt="Banner" className="w-full h-full object-cover" />
                                                     </div>
                                                     {/* Área clicável do banner (acima do banner, abaixo da logo) */}
                                                     <div 
@@ -4248,9 +4248,9 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                             )}
 
                                             <input
-                                                id=&ldquo;banner-upload-input&rdquo;
-                                                type="file&ldquo;
-                                                accept=&rdquo;image/*"
+                                                id="banner-upload-input"
+                                                type="file"
+                                                accept="image/*"
                                                 className="hidden"
                                                 onChange={(e) => {
                                                     const file = e.target.files?.[0];
@@ -4274,7 +4274,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                             >
                                                 {config.landingPageLogoUrl || logoDataUrl ? (
 
-                                                    <Image src={config.landingPageLogoUrl || logoDataUrl || ''} alt=&ldquo;Logo Preview&rdquo; width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
+                                                    <Image src={config.landingPageLogoUrl || logoDataUrl || ''} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
 
                                                 ) : (
 
@@ -4299,9 +4299,9 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
                                             </div>
 
                                             <input
-                                                id=&ldquo;logo-upload-input&rdquo;
-                                                type="file&ldquo;
-                                                accept=&rdquo;image/*"
+                                                id="logo-upload-input"
+                                                type="file"
+                                                accept="image/*"
                                                 className="hidden"
                                                 onChange={(e) => {
                                                     const file = e.target.files?.[0];
@@ -4549,7 +4549,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                             router.push(`/success?subdomain=${subdomain}&pageId=${pageData.id}`);
 
-                                        } catch (error) {
+                                        } catch {
 
                                             console.error('Erro ao salvar:', error);
 
@@ -4789,7 +4789,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                     <label className="block text-sm font-medium text-slate-700 mb-1">Texto do Botão</label>
 
-                <input type=&ldquo;text&rdquo; value={data.text} onChange={(e) => setData({ ...data, text: e.target.value })} placeholder=&ldquo;Ex: Meu Site&rdquo; className="w-full px-3 py-2 border border-slate-300 rounded-md&ldquo; />
+                <input type="text" value={data.text} onChange={(e) => setData({ ...data, text: e.target.value })} placeholder="Ex: Meu Site" className="w-full px-3 py-2 border border-slate-300 rounded-md&ldquo; />
 
                 </div>
 
@@ -4807,7 +4807,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                     <input 
 
-                        type=&ldquo;text&rdquo; 
+                        type="text" 
 
                         value={getSocialBaseUrl(data.icon) ? data.url.replace(getSocialBaseUrl(data.icon), '') : data.url} 
 
@@ -4821,7 +4821,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                         }} 
 
-                        placeholder={getSocialBaseUrl(data.icon) ? &ldquo;seuusuario&rdquo; : &rdquo;exemplo.com"} 
+                        placeholder={getSocialBaseUrl(data.icon) ? "seuusuario" : &rdquo;exemplo.com"} 
 
                         className="flex-1 px-3 py-2 border border-slate-300 rounded-r-md" 
 
@@ -4873,9 +4873,9 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                     <div className="flex items-center">
 
-                    <input id=&ldquo;gradient-toggle&rdquo; type="checkbox&ldquo; checked={data.styleType === 'gradient'} onChange={(e) => setData({ ...data, styleType: e.target.checked ? 'gradient' : 'solid' })} className="h-4 w-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500" />
+                    <input id="gradient-toggle" type="checkbox" checked={data.styleType === 'gradient'} onChange={(e) => setData({ ...data, styleType: e.target.checked ? 'gradient' : 'solid' })} className="h-4 w-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500" />
 
-                    <label htmlFor=&ldquo;gradient-toggle&rdquo; className=&rdquo;ml-2 block text-sm text-gray-900">Usar fundo gradiente</label>
+                    <label htmlFor="gradient-toggle" className="ml-2 block text-sm text-gray-900">Usar fundo gradiente</label>
 
                     </div>
 
@@ -4885,7 +4885,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                             <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo 1</label>
 
-                        <input type=&ldquo;color&rdquo; value={data.bgColor1} onChange={(e) => setData({ ...data, bgColor1: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
+                        <input type="color" value={data.bgColor1} onChange={(e) => setData({ ...data, bgColor1: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
 
                         </div>
 
@@ -4895,7 +4895,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                             <label className="block text-sm font-medium text-slate-700 mb-1">Cor de Fundo 2</label>
 
-                            <input type=&ldquo;color&rdquo; value={data.bgColor2} onChange={(e) => setData({ ...data, bgColor2: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
+                            <input type="color" value={data.bgColor2} onChange={(e) => setData({ ...data, bgColor2: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
 
                         </div>
 
@@ -4905,7 +4905,7 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
                             <label className="block text-sm font-medium text-slate-700 mb-1">Cor do Texto</label>
 
-                        <input type=&ldquo;color&rdquo; value={data.textColor} onChange={(e) => setData({ ...data, textColor: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
+                        <input type="color" value={data.textColor} onChange={(e) => setData({ ...data, textColor: e.target.value })} className="w-full h-10 border border-slate-300 rounded-md" />
 
                         </div>
 

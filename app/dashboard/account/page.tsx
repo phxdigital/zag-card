@@ -91,7 +91,7 @@ export default function AccountPage() {
         confirm_password: ''
       });
       
-    } catch (error) {
+    } catch {
       console.error('Erro ao carregar perfil:', error);
       alert('Erro ao carregar perfil. Por favor, tente novamente.');
     } finally {
@@ -200,7 +200,7 @@ export default function AccountPage() {
       // Limpar mensagem após 5 segundos
       setTimeout(() => setSuccessMessage(''), 5000);
       
-    } catch (error) {
+    } catch {
       console.error('Erro ao salvar perfil:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       alert(errorMessage);
@@ -273,13 +273,13 @@ export default function AccountPage() {
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type=&ldquo;text&rdquo;
+                    type="text"
                     value={formData.full_name}
                     onChange={(e) => handleInputChange('full_name', e.target.value)}
                     className={`block w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                       errors.full_name ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder=&ldquo;Seu nome completo&rdquo;
+                    placeholder="Seu nome completo"
                   />
                 </div>
                 {errors.full_name && (
@@ -296,11 +296,11 @@ export default function AccountPage() {
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type=&ldquo;email&rdquo;
+                    type="email"
                     value={formData.email}
                     disabled
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed sm:text-sm&ldquo;
-                    placeholder=&rdquo;seu@email.com"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed sm:text-sm"
+                    placeholder="seu@email.com"
                   />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
@@ -394,10 +394,10 @@ export default function AccountPage() {
                       className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                         errors.current_password ? 'border-red-300' : 'border-gray-300'
                       }`}
-                      placeholder=&ldquo;Digite sua senha atual&rdquo;
+                      placeholder="Digite sua senha atual"
                     />
                     <button
-                      type=&ldquo;button&rdquo;
+                      type="button"
                       className="absolute inset-y-0 right-0 pr-3 flex items-center&ldquo;
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     >
@@ -429,10 +429,10 @@ export default function AccountPage() {
                     className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                       errors.new_password ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder=&ldquo;Digite sua nova senha&rdquo;
+                    placeholder="Digite sua nova senha"
                   />
                   <button
-                    type=&ldquo;button&rdquo;
+                    type="button"
                     className=&rdquo;absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
@@ -463,10 +463,10 @@ export default function AccountPage() {
                     className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                       errors.confirm_password ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder=&ldquo;Confirme sua nova senha&rdquo;
+                    placeholder="Confirme sua nova senha"
                   />
                   <button
-                    type=&ldquo;button&rdquo;
+                    type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >

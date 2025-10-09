@@ -103,7 +103,7 @@ export async function GET(
                 height: 630,
             }
         );
-    } catch (error) {
+    } catch {
         console.error('Error generating OG image:', error);
         return new NextResponse('Internal Server Error', { status: 500 });
     }

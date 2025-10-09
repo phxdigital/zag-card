@@ -1,7 +1,7 @@
 'use client';
 
-import { Check } from &ldquo;lucide-react&rdquo;
-import { useState } from &ldquo;react&rdquo;
+import { Check } from "lucide-react"
+import { useState } from "react"
 
 const plans = [
   {
@@ -112,7 +112,7 @@ export function PricingSection() {
         window.location.href = data.payment.invoiceUrl;
       }
 
-    } catch (error) {
+    } catch {
       console.error('Erro ao selecionar plano:', error);
       alert('Erro ao processar pagamento. Por favor, faça login e tente novamente.');
     } finally {
@@ -121,7 +121,7 @@ export function PricingSection() {
   };
 
   return (
-    <section id=&ldquo;pricing&rdquo; className="section bg-muted">
+    <section id="pricing" className="section bg-muted">
       <div className="container">
         <div className="section-header">
           <h2>Planos Para os Profissionais</h2>
