@@ -201,9 +201,9 @@ export default function AccountPage() {
       setTimeout(() => setSuccessMessage(''), 5000);
       
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao salvar perfil:', error);
-      alert(error.message || 'Erro ao salvar perfil. Tente novamente.');
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }

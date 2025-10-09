@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Github, Chrome } from 'lucide-react';
+import { Chrome } from 'lucide-react';
 
 interface OAuthButtonsProps {
     redirectTo?: string;

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Carregar env manualmente
-require('../../../env-loader');
+import '../../../env-loader';
 
 export async function GET() {
     const key = process.env.ASAAS_API_KEY;

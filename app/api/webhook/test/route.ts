@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       receivedData: body,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({
       success: false,
       error: 'Erro ao processar POST',
