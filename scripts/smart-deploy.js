@@ -72,6 +72,13 @@ const smartFixes = [
         critical: true
     },
     {
+        name: 'Aspas não escapadas em texto',
+        pattern: /"([^"]*)"([^>]*>)/g,
+        replacement: '&quot;$1&quot;$2',
+        description: 'Escapa aspas em texto JSX',
+        critical: true
+    },
+    {
         name: 'Next.js 15 params Promise',
         pattern: /{ params }: { params: { ([^}]+) } }/g,
         replacement: '{ params }: { params: Promise<{ $1 }> }',
@@ -100,10 +107,30 @@ const smartFixes = [
         critical: false
     },
     {
+        name: 'Catch sem variável error',
+        pattern: /} catch \{\s*console\.error\([^,]*,\s*error\)/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch quando usada',
+        critical: true
+    },
+    {
         name: 'Variáveis não usadas em catch',
         pattern: /} catch \(error\) \{[^}]*console\.error[^}]*\}/g,
         replacement: (match) => match.replace(/} catch \(error\) \{/, '} catch {'),
         description: 'Remove variável error não usada em catch',
+        critical: false
+    },
+    {
+        name: 'Imports não usados',
+        pattern: /import\s*\{\s*([^}]*)\s*\}\s*from\s*['"][^'"]*['"];?\s*$/gm,
+        replacement: (match, imports) => {
+            // Remove imports não usados (simplificado)
+            if (imports.includes('Share') && !match.includes('Share')) {
+                return match.replace(/,?\s*Share\s*,?/, '');
+            }
+            return match;
+        },
+        description: 'Remove imports não usados',
         critical: false
     }
 ];
