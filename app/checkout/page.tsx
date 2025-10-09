@@ -119,7 +119,7 @@ export default function CheckoutPage() {
           <div className="flex justify-center mb-4">
             <img 
               src={`data:image/png;base64,${paymentData.pix.qrCodeImage}`}
-              alt=&ldquo;QR Code PIX&rdquo;
+              alt="QR Code PIX"
               className="w-64 h-64 border-4 border-gray-200 rounded-lg"
             />
           </div>
@@ -166,7 +166,7 @@ export default function CheckoutPage() {
             </li>
             <li className="flex">
               <span className="font-semibold mr-2">2.</span>
-              <span>Escolha a opção PIX e &ldquo;Ler QR Code&rdquo; ou &ldquo;Pix Copia e Cola&rdquo;</span>
+              <span>Escolha a opção PIX e "Ler QR Code" ou "Pix Copia e Cola"</span>
             </li>
             <li className="flex">
               <span className="font-semibold mr-2">3.</span>
