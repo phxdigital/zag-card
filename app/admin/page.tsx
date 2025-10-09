@@ -84,7 +84,7 @@ export default function AdminPanel() {
             } else {
                 alert('Erro ao excluir notificação');
             }
-        } catch {
+        } catch (error) {
             console.error('Erro ao excluir notificação:', error);
             alert('Erro ao excluir notificação');
         }
