@@ -64,7 +64,7 @@ export default function AdminPagesPage() {
 
             alert('Página removida com sucesso!');
             setPages(prev => prev.filter(p => p.id !== id));
-        } catch {
+        } catch (error) {
             console.error('Erro ao remover página:', error);
             alert('Erro ao remover página. Tente novamente.');
         }
