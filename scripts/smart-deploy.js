@@ -156,6 +156,20 @@ const smartFixes = [
         critical: true
     },
     {
+        name: 'Catch sem variável error (console.error simples)',
+        pattern: /} catch \{\s*console\.error\('[^']*:', error\);\s*alert\('[^']*'\);\s*\}/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch com console.error simples',
+        critical: true
+    },
+    {
+        name: 'Catch sem variável error (padrão geral com error)',
+        pattern: /} catch \{\s*[^}]*\berror\b[^}]*\}/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch quando error é usado',
+        critical: true
+    },
+    {
         name: 'Variáveis não usadas em catch',
         pattern: /} catch \(error\) \{[^}]*console\.error[^}]*\}/g,
         replacement: (match) => match.replace(/} catch \(error\) \{/, '} catch {'),

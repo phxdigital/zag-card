@@ -38,7 +38,7 @@ export default function AdminPagesPage() {
 
             const data = await response.json();
             setPages(data.pages || []);
-        } catch {
+        } catch (error) {
             console.error('Erro ao carregar páginas:', error);
             alert('Erro ao carregar páginas. Verifique suas permissões.');
         } finally {

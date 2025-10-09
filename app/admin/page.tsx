@@ -226,7 +226,7 @@ export default function AdminPanel() {
             } else {
                 alert('PDF não disponível para esta notificação.');
             }
-            } catch {
+            } catch (error) {
                 console.error('Erro ao baixar PDF:', error);
                 alert('Erro ao baixar PDF. Tente novamente.');
         }
@@ -511,7 +511,7 @@ export default function AdminPanel() {
                                                             } else {
                                                                 alert('PDF não disponível');
                                                             }
-                                                        } catch {
+                                                        } catch (error) {
                                                             console.error('Erro ao visualizar PDF:', error);
                                                             alert('Erro ao visualizar PDF');
                                                         }
