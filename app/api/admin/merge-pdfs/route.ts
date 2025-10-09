@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, PDFEmbeddedPage } from 'pdf-lib';
 
 export async function POST(request: Request) {
     try {
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
             subdomain: string;
             pageNumber: number;
             type: string;
-            embeddedPage: any; // PDFEmbeddedPage type from pdf-lib
+            embeddedPage: PDFEmbeddedPage;
         }
         const allPages: EmbeddedPageInfo[] = [];
         
