@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
 // Carregar env manualmente
-require('../../../env-loader');
+import '../../../env-loader';
 
 export async function GET(request: NextRequest) {
     try {
