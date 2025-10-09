@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Package, Plus, Search, Edit, Trash2, Eye, EyeOff,
-  Star, Filter, MoreVertical, TrendingUp, AlertCircle
+  Star, TrendingUp, AlertCircle
 } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
@@ -34,6 +34,7 @@ export default function AdminProductsPage() {
   useEffect(() => {
     checkAdmin();
     loadProducts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkAdmin = async () => {

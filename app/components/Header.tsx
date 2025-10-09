@@ -32,7 +32,7 @@ export function Header() {
 
         {/* Botões - Visíveis em todas as resoluções */}
         <div className="header-buttons">
-          <a href="/login" className="btn-primary">Entrar</a>
+          <Link href="/login" className="btn-primary">Entrar</Link>
           <button className="btn-primary">Começar Agora</button>
         </div>
 

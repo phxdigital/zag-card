@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test-build": "node scripts/test-build.js",
+    "deploy-safe": "node scripts/deploy-safe.js",
     "test:connection": "node scripts/test-connection.js"
   },
   "dependencies": {

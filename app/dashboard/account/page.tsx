@@ -200,7 +200,8 @@ export default function AccountPage() {
       // Limpar mensagem após 5 segundos
       setTimeout(() => setSuccessMessage(''), 5000);
       
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao salvar perfil:', error);
       alert(error.message || 'Erro ao salvar perfil. Tente novamente.');
     } finally {

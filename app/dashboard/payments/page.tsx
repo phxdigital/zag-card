@@ -116,7 +116,7 @@ export default function PaymentsPage() {
     setTimeout(() => setRefreshing(false), 500);
   };
 
-  const handleBuyAgain = (planType: string) => {
+  const handleBuyAgain = () => {
     // Redirecionar para homepage com seção de preços
     window.location.href = `/#pricing`;
   };
