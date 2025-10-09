@@ -128,6 +128,20 @@ const smartFixes = [
         critical: true
     },
     {
+        name: 'Catch sem variável error (dentro de loops)',
+        pattern: /} catch \{\s*console\.error\([^,]*,\s*error\);\s*[^}]*\}/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch dentro de loops',
+        critical: true
+    },
+    {
+        name: 'Catch sem variável error (com contadores)',
+        pattern: /} catch \{\s*console\.error\([^,]*,\s*error\);\s*[^}]*\+\+[^}]*\}/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch com contadores',
+        critical: true
+    },
+    {
         name: 'Variáveis não usadas em catch',
         pattern: /} catch \(error\) \{[^}]*console\.error[^}]*\}/g,
         replacement: (match) => match.replace(/} catch \(error\) \{/, '} catch {'),

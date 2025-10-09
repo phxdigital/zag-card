@@ -115,7 +115,7 @@ export default function AdminPanel() {
                 } else {
                     errorCount++;
                 }
-            } catch {
+            } catch (error) {
                 console.error('Erro ao excluir notificação:', error);
                 errorCount++;
             }
