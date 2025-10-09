@@ -5,7 +5,7 @@ import {
   Package, Plus, Search, Edit, Trash2, Eye, EyeOff,
   Star, Filter, MoreVertical, TrendingUp, AlertCircle
 } from 'lucide-react';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 
 interface Product {
@@ -37,7 +37,7 @@ export default function AdminProductsPage() {
   }, []);
 
   const checkAdmin = async () => {
-    const supabase = createSupabaseClient();
+    const supabase = createClientComponentClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -59,7 +59,7 @@ export default function AdminProductsPage() {
 
   const loadProducts = async () => {
     try {
-      const supabase = createSupabaseClient();
+      const supabase = createClientComponentClient();
       const { data, error } = await supabase
         .from('products')
         .select('*')
