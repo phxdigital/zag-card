@@ -58,7 +58,7 @@ export default function AdminPanel() {
                     )
                 );
             }
-        } catch {
+        } catch (error) {
             console.error('Erro ao atualizar status:', error);
         }
     };
