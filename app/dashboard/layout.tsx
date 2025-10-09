@@ -78,8 +78,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-2">
               <Image 
-                src=&ldquo;/logo-zag.png&rdquo; 
-                alt="Zag NFC&ldquo; 
+                src="/logo-zag.png" 
+                alt="Zag NFC" 
                 width={64} 
                 height={64} 
                 className=&rdquo;h-12 w-auto"

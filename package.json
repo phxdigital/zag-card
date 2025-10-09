@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test-build": "node scripts/test-build.js",
     "deploy-safe": "node scripts/deploy-safe.js",
+    "deploy-smart": "node scripts/smart-deploy.js",
     "fix-errors": "node scripts/fix-common-errors.js",
     "test:connection": "node scripts/test-connection.js"
   },
