@@ -41,8 +41,16 @@ export async function GET() {
 
         // Para cada página, buscar informações básicas do usuário
         // Como não temos Service Role, vamos buscar os dados disponíveis
+        interface PageData {
+            id: string;
+            subdomain: string;
+            user_id: string;
+            created_at: string;
+            updated_at: string;
+        }
+        
         const formattedPages = await Promise.all(
-            (pagesData || []).map(async (page: any) => {
+            (pagesData || []).map(async (page: PageData) => {
                 // Tentar buscar informações do perfil do usuário (se existir tabela de perfis)
                 // Caso contrário, usaremos apenas o que temos
                 let userEmail = 'Usuário';

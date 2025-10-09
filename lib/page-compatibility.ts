@@ -37,15 +37,32 @@ export function ensureBackwardCompatibility(links: CustomLink[] | undefined): Cu
     }));
 }
 
+export type PageConfig = {
+    landingPageBgColor?: string;
+    landingPageBgImage?: string | null;
+    landingPageTitleText?: string;
+    landingPageSubtitleText?: string;
+    landingPageLogoShape?: 'circle' | 'square';
+    landingPageLogoSize?: number;
+    landingPageTitleColor?: string;
+    landingPageSubtitleColor?: string;
+    landingFont?: string;
+    removeLogoBackground?: boolean;
+    socialLinks?: Record<string, string>;
+    customLinks?: CustomLink[];
+    schemaVersion?: number;
+    [key: string]: unknown;
+};
+
 /**
  * Detecta se uma página foi criada antes da atualização
  * Útil para analytics e debugging
  */
-export function isLegacyPage(config: any): boolean {
+export function isLegacyPage(config: PageConfig): boolean {
     // Páginas antigas não têm a propriedade isSocial em nenhum link
     if (!config.customLinks || config.customLinks.length === 0) return false;
     
-    return config.customLinks.every((link: any) => 
+    return config.customLinks.every((link) => 
         link.isSocial === undefined || link.isSocial === null
     );
 }
@@ -53,7 +70,7 @@ export function isLegacyPage(config: any): boolean {
 /**
  * Garante que configurações de página tenham valores padrão
  */
-export function ensureConfigDefaults(config: any): any {
+export function ensureConfigDefaults(config: PageConfig): PageConfig {
     return {
         // Landing page defaults
         landingPageBgColor: config.landingPageBgColor || '#F8FAFC',
@@ -86,7 +103,7 @@ export const CURRENT_SCHEMA_VERSION = 2;
  * Migra config para versão atual (se necessário)
  * Esta função será útil para futuras atualizações
  */
-export function migrateConfigIfNeeded(config: any): any {
+export function migrateConfigIfNeeded(config: PageConfig): PageConfig {
     const version = config.schemaVersion || 1;
     
     if (version < CURRENT_SCHEMA_VERSION) {

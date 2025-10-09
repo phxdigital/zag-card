@@ -95,7 +95,13 @@ export async function POST(request: Request) {
         console.log(`📄 A4: ${A4_WIDTH}x${A4_HEIGHT} pts`);
         
         // Coletar todas as páginas de todos os PDFs
-        let allPages: any[] = [];
+        interface EmbeddedPageInfo {
+            subdomain: string;
+            pageNumber: number;
+            type: string;
+            embeddedPage: ReturnType<Awaited<ReturnType<typeof PDFDocument.prototype.embedPdf>>[number]>;
+        }
+        const allPages: EmbeddedPageInfo[] = [];
         
         for (const notification of notificationsWithPdf) {
             try {
@@ -126,8 +132,9 @@ export async function POST(request: Request) {
                 
                 console.log(`✅ ${notification.subdomain}: ${pageCount} páginas embedadas`);
                 
-            } catch (error: any) {
-                console.error(`❌ Erro ao processar PDF de ${notification.subdomain}:`, error.message);
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+                console.error(`❌ Erro ao processar PDF de ${notification.subdomain}:`, errorMessage);
             }
         }
 

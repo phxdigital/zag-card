@@ -192,9 +192,10 @@ export default function AdminPanel() {
 
             alert(`PDF A4 gerado com 5 frentes + 5 versos!\nPronto para enviar à gráfica.`);
             setSelectedIds(new Set());
-        } catch (error: any) {
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar PDFs';
             console.error('Erro ao mesclar PDFs:', error);
-            alert(`Erro: ${error.message || 'Erro ao mesclar PDFs'}`);
+            alert(`Erro: ${errorMessage}`);
         } finally {
             setMerging(false);
         }

@@ -39,7 +39,7 @@ export default function AccountPage() {
     confirm_password: ''
   });
 
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadProfile();
