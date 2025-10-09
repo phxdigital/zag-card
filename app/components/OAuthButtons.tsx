@@ -29,7 +29,7 @@ export default function OAuthButtons({
             if (error) {
                 onError?.(error.message);
             }
-        } catch (error) {
+        } catch {
             onError?.(`Erro ao fazer login com ${provider}`);
         }
     };
@@ -100,7 +100,7 @@ export function OAuthButtonsGrid({
             if (error) {
                 onError?.(error.message);
             }
-        } catch (error) {
+        } catch {
             onError?.(`Erro ao fazer login com ${provider}`);
         }
     };
