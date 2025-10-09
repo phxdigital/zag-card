@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const cookieStore = cookies();
@@ -17,10 +17,11 @@ export async function GET(
         }
 
         // Buscar APENAS o PDF desta notificação
+        const { id: notificationId } = await params;
         const { data: notification, error } = await supabase
             .from('admin_notifications')
             .select('pdf_data')
-            .eq('id', params.id)
+            .eq('id', notificationId)
             .single();
 
         if (error || !notification) {
