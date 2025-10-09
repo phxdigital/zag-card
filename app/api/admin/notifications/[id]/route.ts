@@ -52,10 +52,11 @@ export async function PATCH(request: Request) {
             notification 
         });
 
-    } catch {
-        console.error('Erro ao atualizar notificação:', error);
+    } catch (error) {
+console.error('Erro ao atualizar notificação:', error);
         return NextResponse.json(
-            { success: false, error: 'Erro interno do servidor' },
+            { success: false, error: 'Erro interno do servidor' 
+},
             { status: 500 }
         );
     }
@@ -97,10 +98,11 @@ export async function DELETE(request: Request) {
             message: 'Notificação excluída com sucesso' 
         });
 
-    } catch {
-        console.error('Erro ao excluir notificação:', error);
+    } catch (error) {
+console.error('Erro ao excluir notificação:', error);
         return NextResponse.json(
-            { success: false, error: 'Erro interno do servidor' },
+            { success: false, error: 'Erro interno do servidor' 
+},
             { status: 500 }
         );
     }

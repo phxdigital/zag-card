@@ -28,12 +28,13 @@ export async function GET() {
             notifications: notifications || []
         });
 
-    } catch {
-        console.error('Erro no teste:', error);
+    } catch (error) {
+console.error('Erro no teste:', error);
         return NextResponse.json({
             success: false,
             error: 'Erro interno do servidor'
-        });
+        
+});
     }
 }
 
@@ -69,11 +70,12 @@ export async function POST() {
             notification
         });
 
-    } catch {
-        console.error('Erro ao criar notificação de teste:', error);
+    } catch (error) {
+console.error('Erro ao criar notificação de teste:', error);
         return NextResponse.json({
             success: false,
             error: 'Erro interno do servidor'
-        });
+        
+});
     }
 }

@@ -23,11 +23,12 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       receivedData: body,
     });
-  } catch {
-    return NextResponse.json({
+  } catch (error) {
+return NextResponse.json({
       success: false,
       error: 'Erro ao processar POST',
-    });
+    
+});
   }
 }
 

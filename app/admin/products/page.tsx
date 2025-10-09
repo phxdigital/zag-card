@@ -86,10 +86,11 @@ export default function AdminProductsPage() {
       if (error) throw error;
       
       loadProducts();
-    } catch {
-      console.error('Erro ao atualizar status:', error);
+    } catch (error) {
+console.error('Erro ao atualizar status:', error);
       alert('Erro ao atualizar status do produto');
-    }
+    
+}
   };
 
   const toggleFeatured = async (productId: string, currentStatus: boolean) => {
@@ -103,10 +104,11 @@ export default function AdminProductsPage() {
       if (error) throw error;
       
       loadProducts();
-    } catch {
-      console.error('Erro ao atualizar destaque:', error);
+    } catch (error) {
+console.error('Erro ao atualizar destaque:', error);
       alert('Erro ao atualizar destaque do produto');
-    }
+    
+}
   };
 
   const deleteProduct = async (productId: string, productName: string) => {
@@ -123,10 +125,11 @@ export default function AdminProductsPage() {
       
       alert('Produto excluído com sucesso!');
       loadProducts();
-    } catch {
-      console.error('Erro ao excluir produto:', error);
+    } catch (error) {
+console.error('Erro ao excluir produto:', error);
       alert('Erro ao excluir produto');
-    }
+    
+}
   };
 
   const filteredProducts = products.filter(product => {

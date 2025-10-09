@@ -99,7 +99,7 @@ export async function POST(request: Request) {
             subdomain: string;
             pageNumber: number;
             type: string;
-            embeddedPage: ReturnType<Awaited<ReturnType<typeof PDFDocument.prototype.embedPdf>>[number]>;
+            embeddedPage: any; // PDFEmbeddedPage type
         }
         const allPages: EmbeddedPageInfo[] = [];
         
@@ -132,9 +132,10 @@ export async function POST(request: Request) {
                 
                 console.log(`✅ ${notification.subdomain}: ${pageCount} páginas embedadas`);
                 
-            } catch {
-                const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-                console.error(`❌ Erro ao processar PDF de ${notification.subdomain}:`, errorMessage);
+            } catch (error) {
+const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+                console.error(`❌ Erro ao processar PDF de ${notification.subdomain
+}:`, errorMessage);
             }
         }
 
@@ -202,10 +203,11 @@ export async function POST(request: Request) {
             },
         });
 
-    } catch {
-        console.error('Erro ao mesclar PDFs:', error);
+    } catch (error) {
+console.error('Erro ao mesclar PDFs:', error);
         return NextResponse.json(
-            { error: 'Erro interno do servidor' },
+            { error: 'Erro interno do servidor' 
+},
             { status: 500 }
         );
     }

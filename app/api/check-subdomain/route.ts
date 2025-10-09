@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
     const exists = !!data;
 
     return NextResponse.json({ exists });
-  } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error) {
+return NextResponse.json({ error: 'Internal server error' 
+}, { status: 500 });
   }
 }

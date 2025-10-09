@@ -1460,11 +1460,11 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             localStorage.removeItem('zag-dashboard-config');
 
-        } catch {
+        } catch (error) {
+console.error('Error clearing localStorage:', error);
 
-            console.error('Error clearing localStorage:', error);
-
-        }
+        
+}
 
         
 
@@ -1600,13 +1600,13 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             }
 
-        } catch {
-
-            console.error('Erro ao verificar subdomínio:', error);
+        } catch (error) {
+console.error('Erro ao verificar subdomínio:', error);
 
             setSubdomainAvailable(null);
 
-        } finally {
+        
+} finally {
 
             setCheckingSubdomain(false);
 
@@ -1878,13 +1878,13 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             setActiveStep(2);
 
-        } catch {
-
-            console.error('Erro ao processar layout:', error);
+        } catch (error) {
+console.error('Erro ao processar layout:', error);
 
             alert('Erro ao salvar o layout. Tente novamente.');
 
-        } finally {
+        
+} finally {
             setIsProcessing(false);
         }
 
@@ -2004,11 +2004,11 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             localStorage.removeItem('zag-dashboard-config');
 
-        } catch {
+        } catch (error) {
+console.error('Error clearing localStorage:', error);
 
-            console.error('Error clearing localStorage:', error);
-
-        }
+        
+}
 
         
 
@@ -2196,11 +2196,11 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                 }
 
-            } catch {
+            } catch (error) {
+console.error('Erro ao carregar dados do usuário:', error);
 
-                console.error('Erro ao carregar dados do usuário:', error);
-
-            }
+            
+}
 
         };
 
@@ -4521,15 +4521,15 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                                     errorMessage = errorData.error || errorMessage;
 
-                                                } catch {
-
-                                                    // Se não conseguir fazer parse do JSON, usar o status e texto da resposta
+                                                } catch (error) {
+// Se não conseguir fazer parse do JSON, usar o status e texto da resposta
 
                                                     const responseText = await response.text();
 
                                                     console.error('Response text:', responseText);
 
-                                                    errorMessage = `Erro ${response.status}: ${responseText.substring(0, 100)}`;
+                                                    errorMessage = `Erro ${response.status
+}: ${responseText.substring(0, 100)}`;
 
                                                 }
 
@@ -4549,13 +4549,13 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                                             router.push(`/success?subdomain=${subdomain}&pageId=${pageData.id}`);
 
-                                        } catch {
-
-                                            console.error('Erro ao salvar:', error);
+                                        } catch (error) {
+console.error('Erro ao salvar:', error);
 
                                             alert('Erro ao salvar: ' + (error as Error).message);
 
-                                        } finally {
+                                        
+} finally {
 
                                             setSaving(false);
 

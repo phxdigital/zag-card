@@ -88,10 +88,11 @@ export async function GET() {
             pages: formattedPages
         });
 
-    } catch {
-        console.error('❌ Erro ao buscar páginas:', error);
+    } catch (error) {
+console.error('❌ Erro ao buscar páginas:', error);
         return NextResponse.json(
-            { error: 'Erro interno do servidor: ' + (error instanceof Error ? error.message : 'Desconhecido') },
+            { error: 'Erro interno do servidor: ' + (error instanceof Error ? error.message : 'Desconhecido') 
+},
             { status: 500 }
         );
     }
@@ -138,10 +139,11 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
 
-    } catch {
-        console.error('❌ Erro ao deletar página:', error);
+    } catch (error) {
+console.error('❌ Erro ao deletar página:', error);
         return NextResponse.json(
-            { error: 'Erro interno do servidor: ' + (error instanceof Error ? error.message : 'Desconhecido') },
+            { error: 'Erro interno do servidor: ' + (error instanceof Error ? error.message : 'Desconhecido') 
+},
             { status: 500 }
         );
     }

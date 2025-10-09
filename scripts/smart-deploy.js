@@ -19,6 +19,15 @@ try {
     process.exit(1);
 }
 
+// Executar correção de catch blocks primeiro
+console.log('🔧 Executando correção de catch blocks...');
+try {
+    execSync('node scripts/fix-catch-blocks.js', { stdio: 'inherit' });
+    console.log('✅ Correção de catch blocks concluída!\n');
+} catch (error) {
+    console.log('⚠️ Erro na correção de catch blocks, continuando...\n');
+}
+
 // Verificar se há mudanças
 try {
     const status = execSync('git status --porcelain', { encoding: 'utf8' });
@@ -167,6 +176,27 @@ const smartFixes = [
         pattern: /} catch \{\s*[^}]*\berror\b[^}]*\}/g,
         replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
         description: 'Adiciona variável error em catch quando error é usado',
+        critical: true
+    },
+    {
+        name: 'Catch sem variável error (console.error simples)',
+        pattern: /} catch \{\s*console\.error\('[^']*:', error\);\s*\}/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch com console.error simples',
+        critical: true
+    },
+    {
+        name: 'Catch sem variável error (instanceof Error)',
+        pattern: /} catch \{\s*const errorMessage = error instanceof Error/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch com instanceof Error',
+        critical: true
+    },
+    {
+        name: 'Catch sem variável error (template literals)',
+        pattern: /} catch \{\s*[^}]*\$\{error[^}]*\}/g,
+        replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
+        description: 'Adiciona variável error em catch com template literals',
         critical: true
     },
     {

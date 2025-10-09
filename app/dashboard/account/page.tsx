@@ -91,10 +91,11 @@ export default function AccountPage() {
         confirm_password: ''
       });
       
-    } catch {
-      console.error('Erro ao carregar perfil:', error);
+    } catch (error) {
+console.error('Erro ao carregar perfil:', error);
       alert('Erro ao carregar perfil. Por favor, tente novamente.');
-    } finally {
+    
+} finally {
       setLoading(false);
     }
   };
@@ -200,11 +201,12 @@ export default function AccountPage() {
       // Limpar mensagem após 5 segundos
       setTimeout(() => setSuccessMessage(''), 5000);
       
-    } catch {
-      console.error('Erro ao salvar perfil:', error);
+    } catch (error) {
+console.error('Erro ao salvar perfil:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       alert(errorMessage);
-    } finally {
+    
+} finally {
       setSaving(false);
     }
   };

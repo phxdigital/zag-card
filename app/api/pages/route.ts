@@ -24,8 +24,9 @@ export async function GET() {
     }
 
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error) {
+return NextResponse.json({ error: 'Internal server error' 
+}, { status: 500 });
   }
 }
 
@@ -49,9 +50,10 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-    } catch {
-      console.error('JSON parse error:', error);
-      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    } catch (error) {
+console.error('JSON parse error:', error);
+      return NextResponse.json({ error: 'Invalid JSON in request body' 
+}, { status: 400 });
     }
     
     const { subdomain, config, logo_url, thumbnail_url } = body;
@@ -90,7 +92,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error) {
+return NextResponse.json({ error: 'Internal server error' 
+}, { status: 500 });
   }
 }
