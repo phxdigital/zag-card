@@ -68,7 +68,7 @@ export default function AdminProductsPage() {
 
       if (error) throw error;
       setProducts(data || []);
-    } catch {
+    } catch (error) {
       console.error('Erro ao carregar produtos:', error);
     } finally {
       setLoading(false);
