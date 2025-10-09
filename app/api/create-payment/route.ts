@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServer } from '@/lib/supabase';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { createOrUpdateCustomer, createPayment, getPixQrCode } from '@/lib/asaas';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createSupabaseServer();
+    const cookieStore = await cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Verificar autenticação
     const { data: { user }, error: authError } = await supabase.auth.getUser();
