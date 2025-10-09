@@ -76,7 +76,7 @@ export default function AdminProductsPage() {
 
   const toggleActive = async (productId: string, currentStatus: boolean) => {
     try {
-      const supabase = createSupabaseClient();
+      const supabase = createClientComponentClient();
       const { error } = await supabase
         .from('products')
         .update({ is_active: !currentStatus })
@@ -93,7 +93,7 @@ export default function AdminProductsPage() {
 
   const toggleFeatured = async (productId: string, currentStatus: boolean) => {
     try {
-      const supabase = createSupabaseClient();
+      const supabase = createClientComponentClient();
       const { error } = await supabase
         .from('products')
         .update({ is_featured: !currentStatus })
@@ -112,7 +112,7 @@ export default function AdminProductsPage() {
     if (!confirm(`Tem certeza que deseja excluir "${productName}"?`)) return;
 
     try {
-      const supabase = createSupabaseClient();
+      const supabase = createClientComponentClient();
       const { error } = await supabase
         .from('products')
         .delete()
