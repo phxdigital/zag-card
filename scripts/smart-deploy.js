@@ -109,10 +109,16 @@ const smartFixes = [
         critical: true
     },
     {
-        name: 'Any para unknown',
+        name: 'Any para unknown (exceto pdf-lib)',
         pattern: /: any\b/g,
-        replacement: ': unknown',
-        description: 'Substitui any por unknown',
+        replacement: (match, offset, string) => {
+            // Não substituir any em arquivos que lidam com pdf-lib
+            if (string.includes('pdf-lib') || string.includes('PDFEmbeddedPage')) {
+                return match;
+            }
+            return ': unknown';
+        },
+        description: 'Substitui any por unknown (exceto em bibliotecas externas)',
         critical: false
     },
     {

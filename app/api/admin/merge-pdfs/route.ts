@@ -99,7 +99,7 @@ export async function POST(request: Request) {
             subdomain: string;
             pageNumber: number;
             type: string;
-            embeddedPage: unknown; // PDFEmbeddedPage type
+            embeddedPage: any; // PDFEmbeddedPage type from pdf-lib
         }
         const allPages: EmbeddedPageInfo[] = [];
         
