@@ -49,6 +49,16 @@ function fixTypeCompatibility(filePath) {
             fixes.push(`Corrigido ${matches3.length} Uint8Array.buffer em NextResponse`);
         }
         
+        // Padrão 4: Uint8Array direto em NextResponse (converter para Blob)
+        const uint8ArrayDirectPattern = /new NextResponse\(([^,]+),\s*\{[\s\S]*?'Content-Type':\s*'application\/pdf'/g;
+        const matches4 = content.match(uint8ArrayDirectPattern);
+        if (matches4) {
+            content = content.replace(uint8ArrayDirectPattern, (match, varName) => {
+                return match.replace(`new NextResponse(${varName},`, `const pdfBlob = new Blob([${varName}], { type: 'application/pdf' });\n        return new NextResponse(pdfBlob,`);
+            });
+            fixes.push(`Corrigido ${matches4.length} Uint8Array direto em NextResponse para Blob`);
+        }
+        
         if (content !== originalContent) {
             fs.writeFileSync(filePath, content, 'utf8');
             console.log(`✅ ${path.relative(process.cwd(), filePath)}:`);
