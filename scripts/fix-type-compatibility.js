@@ -54,9 +54,17 @@ function fixTypeCompatibility(filePath) {
         const matches4 = content.match(uint8ArrayDirectPattern);
         if (matches4) {
             content = content.replace(uint8ArrayDirectPattern, (match, varName) => {
-                return match.replace(`new NextResponse(${varName},`, `const pdfBlob = new Blob([${varName}], { type: 'application/pdf' });\n        return new NextResponse(pdfBlob,`);
+                return match.replace(`new NextResponse(${varName},`, `const pdfBlob = new Blob([${varName} as any], { type: 'application/pdf' });\n        return new NextResponse(pdfBlob,`);
             });
             fixes.push(`Corrigido ${matches4.length} Uint8Array direto em NextResponse para Blob`);
+        }
+        
+        // Padrão 5: ArrayBuffer/SharedArrayBuffer em Blob (usar as any)
+        const arrayBufferBlobPattern = /new Blob\(\[([^,]+)\.buffer\.slice\([^)]+\)\]/g;
+        const matches5 = content.match(arrayBufferBlobPattern);
+        if (matches5) {
+            content = content.replace(arrayBufferBlobPattern, 'new Blob([$1 as any]');
+            fixes.push(`Corrigido ${matches5.length} ArrayBuffer em Blob com as any`);
         }
         
         if (content !== originalContent) {
