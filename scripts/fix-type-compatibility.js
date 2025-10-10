@@ -49,15 +49,16 @@ function fixTypeCompatibility(filePath) {
             fixes.push(`Corrigido ${matches3.length} Uint8Array.buffer em NextResponse`);
         }
         
-        // Padrão 4: Uint8Array direto em NextResponse (converter para Blob)
-        const uint8ArrayDirectPattern = /new NextResponse\(([^,]+),\s*\{[\s\S]*?'Content-Type':\s*'application\/pdf'/g;
-        const matches4 = content.match(uint8ArrayDirectPattern);
-        if (matches4) {
-            content = content.replace(uint8ArrayDirectPattern, (match, varName) => {
-                return match.replace(`new NextResponse(${varName},`, `const pdfBlob = new Blob([${varName} as BlobPart], { type: 'application/pdf' });\n        return new NextResponse(pdfBlob,`);
-            });
-            fixes.push(`Corrigido ${matches4.length} Uint8Array direto em NextResponse para Blob`);
-        }
+        // Padrão 4: Uint8Array direto em NextResponse (converter para Blob) - DESABILITADO
+        // Este padrão estava causando duplicação de código
+        // const uint8ArrayDirectPattern = /new NextResponse\(([^,]+),\s*\{[\s\S]*?'Content-Type':\s*'application\/pdf'/g;
+        // const matches4 = content.match(uint8ArrayDirectPattern);
+        // if (matches4) {
+        //     content = content.replace(uint8ArrayDirectPattern, (match, varName) => {
+        //         return match.replace(`new NextResponse(${varName},`, `const pdfBlob = new Blob([${varName} as BlobPart], { type: 'application/pdf' });\n        return new NextResponse(pdfBlob,`);
+        //     });
+        //     fixes.push(`Corrigido ${matches4.length} Uint8Array direto em NextResponse para Blob`);
+        // }
         
         // Padrão 5: ArrayBuffer/SharedArrayBuffer em Blob (usar BlobPart)
         const arrayBufferBlobPattern = /new Blob\(\[([^,]+)\.buffer\.slice\([^)]+\)\]/g;
