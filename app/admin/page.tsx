@@ -37,6 +37,7 @@ export default function AdminPanel() {
         } catch {
 console.error('Erro ao carregar notificações:', error);
         
+
 } finally {
             setLoading(false);
         }
@@ -62,6 +63,7 @@ console.error('Erro ao carregar notificações:', error);
         } catch {
 console.error('Erro ao atualizar status:', error);
         
+
 }
     };
 
@@ -90,6 +92,7 @@ console.error('Erro ao atualizar status:', error);
 console.error('Erro ao excluir notificação:', error);
             alert('Erro ao excluir notificação');
         
+
 }
     };
 
@@ -122,6 +125,7 @@ console.error('Erro ao excluir notificação:', error);
 console.error('Erro ao excluir notificação:', error);
                 errorCount++;
             
+
 }
         }
 
@@ -200,6 +204,7 @@ console.error('Erro ao excluir notificação:', error);
 const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar PDFs';
             console.error('Erro ao mesclar PDFs:', error);
             alert(`Erro: ${errorMessage
+
 }`);
         } finally {
             setMerging(false);
@@ -235,6 +240,7 @@ const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar P
 console.error('Erro ao baixar PDF:', error);
                 alert('Erro ao baixar PDF. Tente novamente.');
         
+
 }
     };
 
@@ -521,6 +527,7 @@ console.error('Erro ao baixar PDF:', error);
 console.error('Erro ao visualizar PDF:', error);
                                                             alert('Erro ao visualizar PDF');
                                                         
+
 }
                                                     }}
                                                     className="flex items-center space-x-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"

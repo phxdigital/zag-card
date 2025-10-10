@@ -93,6 +93,7 @@ console.error('❌ Erro ao buscar páginas:', error);
         return NextResponse.json(
             { error: 'Erro interno do servidor: ' + (error instanceof Error ? error.message : 'Desconhecido') 
 
+
 },
             { status: 500 }
         );
@@ -144,6 +145,7 @@ export async function DELETE(request: Request) {
 console.error('❌ Erro ao deletar página:', error);
         return NextResponse.json(
             { error: 'Erro interno do servidor: ' + (error instanceof Error ? error.message : 'Desconhecido') 
+
 
 },
             { status: 500 }

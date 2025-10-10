@@ -107,6 +107,7 @@ export default function PaymentsPage() {
 console.error('Erro ao carregar dados:', error);
     
 
+
 } finally {
       setLoading(false);
     }

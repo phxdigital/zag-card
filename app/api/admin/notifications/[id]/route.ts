@@ -57,6 +57,7 @@ console.error('Erro ao atualizar notificação:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
 
+
 },
             { status: 500 }
         );
@@ -103,6 +104,7 @@ export async function DELETE(request: Request) {
 console.error('Erro ao excluir notificação:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
+
 
 },
             { status: 500 }

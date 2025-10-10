@@ -71,6 +71,7 @@ export default function AdminProductsPage() {
     } catch {
 console.error('Erro ao carregar produtos:', error);
     
+
 } finally {
       setLoading(false);
     }
@@ -92,6 +93,7 @@ console.error('Erro ao atualizar status:', error);
       alert('Erro ao atualizar status do produto');
     
 
+
 }
   };
 
@@ -110,6 +112,7 @@ console.error('Erro ao atualizar status:', error);
 console.error('Erro ao atualizar destaque:', error);
       alert('Erro ao atualizar destaque do produto');
     
+
 
 }
   };
@@ -132,6 +135,7 @@ console.error('Erro ao atualizar destaque:', error);
 console.error('Erro ao excluir produto:', error);
       alert('Erro ao excluir produto');
     
+
 
 }
   };

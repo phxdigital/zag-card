@@ -1465,6 +1465,7 @@ console.error('Error clearing localStorage:', error);
 
         
 
+
 }
 
         
@@ -1607,6 +1608,7 @@ console.error('Erro ao verificar subdomínio:', error);
             setSubdomainAvailable(null);
 
         
+
 
 } finally {
 
@@ -1887,6 +1889,7 @@ console.error('Erro ao processar layout:', error);
 
         
 
+
 } finally {
             setIsProcessing(false);
         }
@@ -2011,6 +2014,7 @@ console.error('Erro ao processar layout:', error);
 console.error('Error clearing localStorage:', error);
 
         
+
 
 }
 
@@ -2204,6 +2208,7 @@ console.error('Error clearing localStorage:', error);
 console.error('Erro ao carregar dados do usuário:', error);
 
             
+
 
 }
 
@@ -4535,6 +4540,7 @@ console.error('Erro ao carregar dados do usuário:', error);
 
                                                     errorMessage = `Erro ${response.status
 
+
 }: ${responseText.substring(0, 100)}`;
 
                                                 }
@@ -4561,6 +4567,7 @@ console.error('Erro ao salvar:', error);
                                             alert('Erro ao salvar: ' + (error as Error).message);
 
                                         
+
 
 } finally {
 

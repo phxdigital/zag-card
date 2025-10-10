@@ -244,6 +244,7 @@ console.error('Erro ao carregar página:', error);
             alert('Erro ao carregar página');
         
 
+
 } finally {
             setLoading(false);
         }
@@ -625,6 +626,7 @@ console.error('Erro ao carregar página:', error);
                     console.error('Response text:', responseText);
                     errorMessage = `Erro ${response.status
 
+
 }: ${responseText.substring(0, 100)}`;
                 }
                 throw new Error(errorMessage);
@@ -633,6 +635,7 @@ console.error('Erro ao carregar página:', error);
 console.error('Erro ao salvar:', error);
             alert('Erro ao salvar: ' + (error as Error).message);
         
+
 
 } finally {
             setSaving(false);
@@ -823,6 +826,7 @@ console.error('Erro ao salvar:', error);
 console.error('Erro ao processar imagem:', error);
                                                             alert('Erro ao processar a imagem. Tente novamente.');
                                                         
+
 
 }
                                                     }

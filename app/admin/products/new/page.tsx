@@ -127,6 +127,7 @@ export default function NewProductPage() {
 const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao criar produto:', error);
       alert(`Erro ao criar produto: ${errorMessage
+
 }`);
     } finally {
       setLoading(false);

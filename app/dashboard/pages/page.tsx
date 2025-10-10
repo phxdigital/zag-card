@@ -46,6 +46,7 @@ export default function MyPagesPage() {
 console.error('Erro ao carregar páginas:', error);
     
 
+
 } finally {
       setLoading(false);
     }
@@ -94,6 +95,7 @@ console.error('Erro ao carregar páginas:', error);
 console.error('❌ Erro na requisição:', error);
       console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
       alert(`Erro ao deletar página: ${error instanceof Error ? error.message : 'Verifique sua conexão e tente novamente'
+
 
 }`);
       console.log('=== DELETE FALHOU COM EXCEÇÃO ===');

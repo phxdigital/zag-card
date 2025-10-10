@@ -117,6 +117,7 @@ console.error('Erro ao selecionar plano:', error);
       alert('Erro ao processar pagamento. Por favor, faça login e tente novamente.');
     
 
+
 } finally {
       setLoading(null);
     }

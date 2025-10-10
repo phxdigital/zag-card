@@ -40,6 +40,7 @@ console.error('Erro ao buscar PDF:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
 
+
 },
             { status: 500 }
         );

@@ -102,6 +102,7 @@ console.error('Erro ao processar webhook:', error);
     return NextResponse.json(
       { error: 'Erro ao processar webhook' 
 
+
 },
       { status: 500 }
     );

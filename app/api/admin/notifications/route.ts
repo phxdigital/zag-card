@@ -36,6 +36,7 @@ console.error('Erro ao buscar notificações:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
 
+
 },
             { status: 500 }
         );
@@ -87,6 +88,7 @@ export async function POST(request: Request) {
 console.error('Erro ao criar notificação:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
+
 
 },
             { status: 500 }

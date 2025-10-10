@@ -42,6 +42,7 @@ export default function AdminPagesPage() {
 console.error('Erro ao carregar páginas:', error);
             alert('Erro ao carregar páginas. Verifique suas permissões.');
         
+
 } finally {
             setLoading(false);
         }
@@ -69,6 +70,7 @@ console.error('Erro ao carregar páginas:', error);
 console.error('Erro ao remover página:', error);
             alert('Erro ao remover página. Tente novamente.');
         
+
 }
     };
 

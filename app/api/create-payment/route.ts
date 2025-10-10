@@ -103,6 +103,7 @@ console.error('Erro ao criar cobrança:', error);
         details: error instanceof Error ? error.message : 'Erro desconhecido' 
       
 
+
 },
       { status: 500 }
     );

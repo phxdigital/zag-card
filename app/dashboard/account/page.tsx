@@ -96,6 +96,7 @@ console.error('Erro ao carregar perfil:', error);
       alert('Erro ao carregar perfil. Por favor, tente novamente.');
     
 
+
 } finally {
       setLoading(false);
     }
@@ -207,6 +208,7 @@ console.error('Erro ao salvar perfil:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       alert(errorMessage);
     
+
 
 } finally {
       setSaving(false);

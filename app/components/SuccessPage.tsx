@@ -71,6 +71,7 @@ console.error('Erro ao gerar QR Code:', error);
             alert('Erro ao gerar QR Code. Tente novamente.');
         
 
+
 }
     };
 
