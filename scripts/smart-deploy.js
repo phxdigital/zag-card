@@ -28,6 +28,15 @@ try {
     console.log('⚠️ Erro na correção de catch blocks, continuando...\n');
 }
 
+// Executar correção de compatibilidade de tipos
+console.log('🔧 Executando correção de compatibilidade de tipos...');
+try {
+    execSync('node scripts/fix-type-compatibility.js', { stdio: 'inherit' });
+    console.log('✅ Correção de tipos concluída!\n');
+} catch (error) {
+    console.log('⚠️ Erro na correção de tipos, continuando...\n');
+}
+
 // Verificar se há mudanças
 try {
     const status = execSync('git status --porcelain', { encoding: 'utf8' });
@@ -203,6 +212,27 @@ const smartFixes = [
         pattern: /} catch \{\s*[^}]*\$\{error[^}]*\}/g,
         replacement: (match) => match.replace(/} catch \{/, '} catch (error) {'),
         description: 'Adiciona variável error em catch com template literals',
+        critical: true
+    },
+    {
+        name: 'NextResponse com Uint8Array.buffer',
+        pattern: /new NextResponse\(([^,]+)\.buffer,/g,
+        replacement: 'new NextResponse(new Uint8Array($1),',
+        description: 'Corrige compatibilidade de tipos NextResponse com Uint8Array',
+        critical: true
+    },
+    {
+        name: 'ArrayBufferLike para Uint8Array',
+        pattern: /\.buffer(?!\s*[,}])/g,
+        replacement: (match, offset, string) => {
+            // Só substituir se estiver em contexto de NextResponse
+            const beforeMatch = string.substring(Math.max(0, offset - 100), offset);
+            if (beforeMatch.includes('NextResponse(')) {
+                return '';
+            }
+            return match;
+        },
+        description: 'Remove .buffer em contextos NextResponse',
         critical: true
     },
     {

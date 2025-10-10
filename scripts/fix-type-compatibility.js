@@ -1,0 +1,78 @@
+const fs = require('fs');
+const path = require('path');
+
+function findFiles(dir) {
+    let files = [];
+    const items = fs.readdirSync(dir);
+    
+    for (const item of items) {
+        const fullPath = path.join(dir, item);
+        const stat = fs.statSync(fullPath);
+        
+        if (stat.isDirectory()) {
+            files = files.concat(findFiles(fullPath));
+        } else if (item.endsWith('.tsx') || item.endsWith('.ts')) {
+            files.push(fullPath);
+        }
+    }
+    
+    return files;
+}
+
+function fixTypeCompatibility(filePath) {
+    try {
+        let content = fs.readFileSync(filePath, 'utf8');
+        const originalContent = content;
+        let fixes = [];
+        
+        // Padrão 1: NextResponse com .buffer
+        const nextResponseBufferPattern = /new NextResponse\(([^,]+)\.buffer,/g;
+        const matches1 = content.match(nextResponseBufferPattern);
+        if (matches1) {
+            content = content.replace(nextResponseBufferPattern, 'new NextResponse(new Uint8Array($1),');
+            fixes.push(`Corrigido ${matches1.length} NextResponse com .buffer`);
+        }
+        
+        // Padrão 2: ArrayBufferLike em NextResponse
+        const arrayBufferPattern = /new NextResponse\(([^,]+)\.buffer\s*,/g;
+        const matches2 = content.match(arrayBufferPattern);
+        if (matches2) {
+            content = content.replace(arrayBufferPattern, 'new NextResponse(new Uint8Array($1),');
+            fixes.push(`Corrigido ${matches2.length} ArrayBufferLike em NextResponse`);
+        }
+        
+        // Padrão 3: Uint8Array.buffer em NextResponse
+        const uint8ArrayBufferPattern = /new NextResponse\(([^,]+)\.buffer\s*,/g;
+        const matches3 = content.match(uint8ArrayBufferPattern);
+        if (matches3) {
+            content = content.replace(uint8ArrayBufferPattern, 'new NextResponse(new Uint8Array($1),');
+            fixes.push(`Corrigido ${matches3.length} Uint8Array.buffer em NextResponse`);
+        }
+        
+        if (content !== originalContent) {
+            fs.writeFileSync(filePath, content, 'utf8');
+            console.log(`✅ ${path.relative(process.cwd(), filePath)}:`);
+            fixes.forEach(fix => console.log(`  🔧 ${fix}`));
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.log(`❌ Erro ao processar ${filePath}: ${error.message}`);
+        return false;
+    }
+}
+
+console.log('🔧 Corrigindo problemas de compatibilidade de tipos...\n');
+
+const appDir = path.join(process.cwd(), 'app');
+const files = findFiles(appDir);
+
+let fixedCount = 0;
+files.forEach(file => {
+    if (fixTypeCompatibility(file)) {
+        fixedCount++;
+    }
+});
+
+console.log(`\n✅ ${fixedCount} arquivos corrigidos!`);

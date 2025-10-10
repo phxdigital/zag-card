@@ -12,6 +12,7 @@
     "deploy-smart": "node scripts/smart-deploy.js",
     "fix-errors": "node scripts/fix-common-errors.js",
     "fix-catch": "node scripts/fix-catch-blocks.js",
+    "fix-types": "node scripts/fix-type-compatibility.js",
     "test:connection": "node scripts/test-connection.js"
   },
   "dependencies": {
