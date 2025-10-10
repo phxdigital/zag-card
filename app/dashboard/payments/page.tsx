@@ -483,7 +483,7 @@ console.error('Erro ao carregar dados:', error);
 
                         {payment.status === 'CONFIRMED' && (
                           <button
-                            onClick={() => handleBuyAgain(payment.plan_type)}
+                            onClick={() => handleBuyAgain()}
                             className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
                           >
                             <RefreshCw className="h-4 w-4 mr-1" />

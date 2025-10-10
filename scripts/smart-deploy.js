@@ -236,6 +236,19 @@ const smartFixes = [
         critical: true
     },
     {
+        name: 'Função chamada com argumentos incorretos',
+        pattern: /onClick=\{\(\) => (\w+)\(([^)]+)\)\}/g,
+        replacement: (match, funcName, args) => {
+            // Se a função não aceita argumentos, remover os argumentos
+            if (funcName === 'handleBuyAgain' && args.trim()) {
+                return `onClick={() => ${funcName}()}`;
+            }
+            return match;
+        },
+        description: 'Corrige chamadas de função com argumentos incorretos',
+        critical: true
+    },
+    {
         name: 'Variáveis não usadas em catch',
         pattern: /} catch \(error\) \{[^}]*console\.error[^}]*\}/g,
         replacement: (match) => match.replace(/} catch \(error\) \{/, '} catch {'),
