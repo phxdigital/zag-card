@@ -249,6 +249,16 @@ const smartFixes = [
         critical: true
     },
     {
+        name: 'Propriedades inexistentes em objetos',
+        pattern: /setResult\(\{\s*success:\s*(true|false),\s*error:\s*'[^']*',\s*details:\s*[^}]*\}/g,
+        replacement: (match) => {
+            // Remove a propriedade details que não existe no tipo
+            return match.replace(/,\s*details:\s*[^}]*/, '');
+        },
+        description: 'Remove propriedades inexistentes em objetos de estado',
+        critical: true
+    },
+    {
         name: 'Variáveis não usadas em catch',
         pattern: /} catch \(error\) \{[^}]*console\.error[^}]*\}/g,
         replacement: (match) => match.replace(/} catch \(error\) \{/, '} catch {'),

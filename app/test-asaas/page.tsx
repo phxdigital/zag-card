@@ -24,8 +24,7 @@ export default function TestAsaasPage() {
         } catch (error) {
             setResult({
                 success: false,
-                error: 'Erro ao executar teste',
-                details: error instanceof Error ? error.message : 'Erro desconhecido'
+                error: error instanceof Error ? error.message : 'Erro desconhecido'
             });
         } finally {
             setLoading(false);
