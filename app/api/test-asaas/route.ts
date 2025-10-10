@@ -86,13 +86,15 @@ export async function GET(request: NextRequest) {
             }
         });
 
-    } catch {
+    } catch (error) {
 console.error('Erro ao testar Asaas:', error);
         return NextResponse.json({
             success: false,
             error: 'Erro interno ao testar integração',
             details: error instanceof Error ? error.message : 'Erro desconhecido'
         
+
+
 
 
 }, { status: 500 });

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { User, Mail, Lock, Save, Eye, EyeOff, Shield, CheckCircle } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,7 +16,7 @@ interface UserProfile {
   last_sign_in?: string;
 }
 
-export default function AccountPage() {
+function AccountPageContent() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -91,10 +91,12 @@ export default function AccountPage() {
         confirm_password: ''
       });
       
-    } catch {
+    } catch (error) {
 console.error('Erro ao carregar perfil:', error);
       alert('Erro ao carregar perfil. Por favor, tente novamente.');
     
+
+
 
 
 } finally {
@@ -203,11 +205,13 @@ console.error('Erro ao carregar perfil:', error);
       // Limpar mensagem após 5 segundos
       setTimeout(() => setSuccessMessage(''), 5000);
       
-    } catch {
+    } catch (error) {
 console.error('Erro ao salvar perfil:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       alert(errorMessage);
     
+
+
 
 
 } finally {
@@ -545,5 +549,13 @@ console.error('Erro ao salvar perfil:', error);
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <AccountPageContent />
+    </Suspense>
   );
 }

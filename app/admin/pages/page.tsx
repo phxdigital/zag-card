@@ -38,10 +38,12 @@ export default function AdminPagesPage() {
 
             const data = await response.json();
             setPages(data.pages || []);
-        } catch {
+        } catch (error) {
 console.error('Erro ao carregar páginas:', error);
             alert('Erro ao carregar páginas. Verifique suas permissões.');
         
+
+
 
 } finally {
             setLoading(false);
@@ -66,10 +68,12 @@ console.error('Erro ao carregar páginas:', error);
 
             alert('Página removida com sucesso!');
             setPages(prev => prev.filter(p => p.id !== id));
-        } catch {
+        } catch (error) {
 console.error('Erro ao remover página:', error);
             alert('Erro ao remover página. Tente novamente.');
         
+
+
 
 }
     };

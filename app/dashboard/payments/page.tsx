@@ -103,9 +103,11 @@ export default function PaymentsPage() {
         .order('created_at', { ascending: false });
 
       setPayments(paymentsData || []);
-    } catch {
+    } catch (error) {
 console.error('Erro ao carregar dados:', error);
     
+
+
 
 
 } finally {

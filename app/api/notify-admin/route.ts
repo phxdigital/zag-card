@@ -49,10 +49,12 @@ export async function POST(request: NextRequest) {
             notification 
         });
 
-    } catch {
+    } catch (error) {
 console.error('Erro ao enviar notificação para admin:', error);
         return NextResponse.json(
             { success: false, message: 'Erro ao enviar notificação.' 
+
+
 
 
 },

@@ -34,12 +34,14 @@ export async function GET() {
             })) || []
         });
 
-    } catch {
+    } catch (error) {
 console.error('Erro no teste PDF:', error);
         return NextResponse.json({
             success: false,
             error: 'Erro interno do servidor'
         
+
+
 
 
 });

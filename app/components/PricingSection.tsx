@@ -112,10 +112,12 @@ export function PricingSection() {
         window.location.href = data.payment.invoiceUrl;
       }
 
-    } catch {
+    } catch (error) {
 console.error('Erro ao selecionar plano:', error);
       alert('Erro ao processar pagamento. Por favor, faça login e tente novamente.');
     
+
+
 
 
 } finally {

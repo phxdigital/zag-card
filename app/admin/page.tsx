@@ -34,9 +34,10 @@ export default function AdminPanel() {
                 const data = await response.json();
                 setNotifications(data.notifications || []);
             }
-        } catch {
-console.error('Erro ao carregar notificações:', error);
+        } catch (error) {
+            console.error('Erro ao carregar notificações:', error);
         
+
 
 } finally {
             setLoading(false);
@@ -60,9 +61,11 @@ console.error('Erro ao carregar notificações:', error);
                     )
                 );
             }
-        } catch {
+        } catch (error) {
 console.error('Erro ao atualizar status:', error);
         
+
+
 
 }
     };
@@ -88,10 +91,12 @@ console.error('Erro ao atualizar status:', error);
             } else {
                 alert('Erro ao excluir notificação');
             }
-        } catch {
+        } catch (error) {
 console.error('Erro ao excluir notificação:', error);
             alert('Erro ao excluir notificação');
         
+
+
 
 }
     };
@@ -121,10 +126,12 @@ console.error('Erro ao excluir notificação:', error);
                 } else {
                     errorCount++;
                 }
-            } catch {
+            } catch (error) {
 console.error('Erro ao excluir notificação:', error);
                 errorCount++;
             
+
+
 
 }
         }
@@ -200,10 +207,12 @@ console.error('Erro ao excluir notificação:', error);
 
             alert(`PDF A4 gerado com 5 frentes + 5 versos!\nPronto para enviar à gráfica.`);
             setSelectedIds(new Set());
-        } catch {
+        } catch (error) {
 const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar PDFs';
             console.error('Erro ao mesclar PDFs:', error);
             alert(`Erro: ${errorMessage
+
+
 
 }`);
         } finally {
@@ -236,10 +245,12 @@ const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar P
             } else {
                 alert('PDF não disponível para esta notificação.');
             }
-            } catch {
+            } catch (error) {
 console.error('Erro ao baixar PDF:', error);
                 alert('Erro ao baixar PDF. Tente novamente.');
         
+
+
 
 }
     };
@@ -523,10 +534,12 @@ console.error('Erro ao baixar PDF:', error);
                                                             } else {
                                                                 alert('PDF não disponível');
                                                             }
-                                                        } catch {
+                                                        } catch (error) {
 console.error('Erro ao visualizar PDF:', error);
                                                             alert('Erro ao visualizar PDF');
                                                         
+
+
 
 }
                                                     }}

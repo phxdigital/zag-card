@@ -95,13 +95,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch {
+  } catch (error) {
 console.error('Erro ao criar cobrança:', error);
     return NextResponse.json(
       { 
         error: 'Erro ao processar pagamento', 
         details: error instanceof Error ? error.message : 'Erro desconhecido' 
       
+
+
 
 
 },

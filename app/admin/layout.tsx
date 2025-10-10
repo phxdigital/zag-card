@@ -39,10 +39,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 setIsAdmin(true);
                 setUser(session.user);
-            } catch {
-console.error('Erro ao verificar usuário:', error);
+            } catch (error) {
+                console.error('Erro ao verificar usuário:', error);
                 router.push('/login');
             
+
 } finally {
                 setLoading(false);
             }

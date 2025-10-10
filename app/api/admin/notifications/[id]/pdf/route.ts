@@ -35,10 +35,12 @@ export async function GET(
             success: true, 
             pdf_data: notification.pdf_data 
         });
-    } catch {
+    } catch (error) {
 console.error('Erro ao buscar PDF:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
+
+
 
 
 },

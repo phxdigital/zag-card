@@ -8,6 +8,19 @@ interface TestResult {
     error?: string;
     data?: unknown;
     message?: string;
+    environment?: string;
+    checks?: Record<string, unknown>;
+    account?: {
+        name: string;
+        email: string;
+        apiVersion: string;
+    };
+    info?: {
+        totalCustomers: number;
+        apiUrl: string;
+        webhookConfigured: boolean;
+        directLinksConfigured: boolean;
+    };
 }
 
 export default function TestAsaasPage() {

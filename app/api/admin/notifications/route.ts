@@ -31,10 +31,12 @@ export async function GET() {
             success: true, 
             notifications: notifications || []
         });
-    } catch {
+    } catch (error) {
 console.error('Erro ao buscar notificações:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
+
+
 
 
 },
@@ -84,10 +86,12 @@ export async function POST(request: Request) {
             notification 
         });
 
-    } catch {
+    } catch (error) {
 console.error('Erro ao criar notificação:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
+
+
 
 
 },
