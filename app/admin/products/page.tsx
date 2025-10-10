@@ -68,9 +68,10 @@ export default function AdminProductsPage() {
 
       if (error) throw error;
       setProducts(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar produtos:', error);
-    } finally {
+    } catch {
+console.error('Erro ao carregar produtos:', error);
+    
+} finally {
       setLoading(false);
     }
   };
@@ -86,10 +87,11 @@ export default function AdminProductsPage() {
       if (error) throw error;
       
       loadProducts();
-    } catch (error) {
+    } catch {
 console.error('Erro ao atualizar status:', error);
       alert('Erro ao atualizar status do produto');
     
+
 }
   };
 
@@ -104,10 +106,11 @@ console.error('Erro ao atualizar status:', error);
       if (error) throw error;
       
       loadProducts();
-    } catch (error) {
+    } catch {
 console.error('Erro ao atualizar destaque:', error);
       alert('Erro ao atualizar destaque do produto');
     
+
 }
   };
 
@@ -125,10 +128,11 @@ console.error('Erro ao atualizar destaque:', error);
       
       alert('Produto excluído com sucesso!');
       loadProducts();
-    } catch (error) {
+    } catch {
 console.error('Erro ao excluir produto:', error);
       alert('Erro ao excluir produto');
     
+
 }
   };
 

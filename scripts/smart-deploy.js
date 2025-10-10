@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * 🧠 Deploy Inteligente - Versão 2.0
- * Sistema realmente inteligente que detecta e corrige erros automaticamente
+ * 🧠 Deploy Inteligente - Versão 2.1
+ * Sistema completo que detecta e corrige erros automaticamente
+ * Inclui: catch blocks, tipos, aspas JSX e correções inteligentes
  */
 
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('\n🧠 DEPLOY INTELIGENTE v2.0 - Zag NFC\n');
+console.log('\n🧠 DEPLOY INTELIGENTE v2.1 - Zag NFC\n');
 
 // Verificar se estamos no git
 try {
@@ -35,6 +36,15 @@ try {
     console.log('✅ Correção de tipos concluída!\n');
 } catch (error) {
     console.log('⚠️ Erro na correção de tipos, continuando...\n');
+}
+
+// Executar correção de aspas em JSX
+console.log('🔧 Executando correção de aspas em JSX...');
+try {
+    execSync('node scripts/fix-quotes.js', { stdio: 'inherit' });
+    console.log('✅ Correção de aspas concluída!\n');
+} catch (error) {
+    console.log('⚠️ Erro na correção de aspas, continuando...\n');
 }
 
 // Verificar se há mudanças
@@ -89,13 +99,14 @@ const smartFixes = [
         description: 'Corrige aspas escapadas em strings',
         critical: true
     },
-    {
-        name: 'Aspas não escapadas em texto',
-        pattern: /"([^"]*)"([^>]*>)/g,
-        replacement: '&quot;$1&quot;$2',
-        description: 'Escapa aspas em texto JSX',
-        critical: true
-    },
+    // DESABILITADO: Conflito com fix-quotes.js
+    // {
+    //     name: 'Aspas não escapadas em texto',
+    //     pattern: /"([^"]*)"([^>]*>)/g,
+    //     replacement: '&quot;$1&quot;$2',
+    //     description: 'Escapa aspas em texto JSX',
+    //     critical: true
+    // },
     {
         name: 'Next.js 15 params Promise',
         pattern: /{ params }: { params: { ([^}]+) } }/g,

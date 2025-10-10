@@ -38,10 +38,11 @@ export default function AdminPagesPage() {
 
             const data = await response.json();
             setPages(data.pages || []);
-        } catch (error) {
-            console.error('Erro ao carregar páginas:', error);
+        } catch {
+console.error('Erro ao carregar páginas:', error);
             alert('Erro ao carregar páginas. Verifique suas permissões.');
-        } finally {
+        
+} finally {
             setLoading(false);
         }
     };
@@ -64,10 +65,11 @@ export default function AdminPagesPage() {
 
             alert('Página removida com sucesso!');
             setPages(prev => prev.filter(p => p.id !== id));
-        } catch (error) {
-            console.error('Erro ao remover página:', error);
+        } catch {
+console.error('Erro ao remover página:', error);
             alert('Erro ao remover página. Tente novamente.');
-        }
+        
+}
     };
 
     const filteredPages = pages.filter(page =>

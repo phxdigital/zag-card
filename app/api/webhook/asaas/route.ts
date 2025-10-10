@@ -97,10 +97,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
 
-  } catch (error) {
+  } catch {
 console.error('Erro ao processar webhook:', error);
     return NextResponse.json(
       { error: 'Erro ao processar webhook' 
+
 },
       { status: 500 }
     );

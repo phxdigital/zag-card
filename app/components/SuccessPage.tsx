@@ -66,10 +66,11 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
             
             // Limpar o URL do objeto
             URL.revokeObjectURL(link.href);
-        } catch (error) {
+        } catch {
 console.error('Erro ao gerar QR Code:', error);
             alert('Erro ao gerar QR Code. Tente novamente.');
         
+
 }
     };
 
@@ -177,7 +178,7 @@ console.error('Erro ao gerar QR Code:', error);
                                 Informação Importante
                             </h3>
                             <p className="text-amber-800">
-                                <strong>O subdomínio &quot;{subdomain}&quot; não pode ser alterado após a criação.</strong> 
+                                <strong>O subdomínio "{subdomain}" não pode ser alterado após a criação.</strong> 
                                 Se precisar de um subdomínio diferente, você terá que criar uma nova página. 
                                 Você pode editar todos os outros aspectos da sua página (design, conteúdo, links) 
                                 a qualquer momento no seu dashboard.

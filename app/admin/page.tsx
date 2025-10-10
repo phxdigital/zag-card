@@ -34,9 +34,10 @@ export default function AdminPanel() {
                 const data = await response.json();
                 setNotifications(data.notifications || []);
             }
-        } catch (error) {
-            console.error('Erro ao carregar notificações:', error);
-        } finally {
+        } catch {
+console.error('Erro ao carregar notificações:', error);
+        
+} finally {
             setLoading(false);
         }
     };
@@ -58,9 +59,10 @@ export default function AdminPanel() {
                     )
                 );
             }
-        } catch (error) {
-            console.error('Erro ao atualizar status:', error);
-        }
+        } catch {
+console.error('Erro ao atualizar status:', error);
+        
+}
     };
 
     const deleteNotification = async (id: string, subdomain: string) => {
@@ -84,10 +86,11 @@ export default function AdminPanel() {
             } else {
                 alert('Erro ao excluir notificação');
             }
-        } catch (error) {
-            console.error('Erro ao excluir notificação:', error);
+        } catch {
+console.error('Erro ao excluir notificação:', error);
             alert('Erro ao excluir notificação');
-        }
+        
+}
     };
 
     const deleteSelected = async () => {
@@ -115,10 +118,11 @@ export default function AdminPanel() {
                 } else {
                     errorCount++;
                 }
-            } catch (error) {
-                console.error('Erro ao excluir notificação:', error);
+            } catch {
+console.error('Erro ao excluir notificação:', error);
                 errorCount++;
-            }
+            
+}
         }
 
         // Atualizar lista
@@ -192,10 +196,11 @@ export default function AdminPanel() {
 
             alert(`PDF A4 gerado com 5 frentes + 5 versos!\nPronto para enviar à gráfica.`);
             setSelectedIds(new Set());
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar PDFs';
+        } catch {
+const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar PDFs';
             console.error('Erro ao mesclar PDFs:', error);
-            alert(`Erro: ${errorMessage}`);
+            alert(`Erro: ${errorMessage
+}`);
         } finally {
             setMerging(false);
         }
@@ -226,10 +231,11 @@ export default function AdminPanel() {
             } else {
                 alert('PDF não disponível para esta notificação.');
             }
-            } catch (error) {
-                console.error('Erro ao baixar PDF:', error);
+            } catch {
+console.error('Erro ao baixar PDF:', error);
                 alert('Erro ao baixar PDF. Tente novamente.');
-        }
+        
+}
     };
 
     // Filtrar por status e busca
@@ -511,10 +517,11 @@ export default function AdminPanel() {
                                                             } else {
                                                                 alert('PDF não disponível');
                                                             }
-                                                        } catch (error) {
-                                                            console.error('Erro ao visualizar PDF:', error);
+                                                        } catch {
+console.error('Erro ao visualizar PDF:', error);
                                                             alert('Erro ao visualizar PDF');
-                                                        }
+                                                        
+}
                                                     }}
                                                     className="flex items-center space-x-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"
                                                     title="Visualizar PDF"

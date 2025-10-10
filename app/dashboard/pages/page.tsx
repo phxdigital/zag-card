@@ -42,9 +42,10 @@ export default function MyPagesPage() {
         const data = await response.json();
         setPages(data);
       }
-    } catch (error) {
+    } catch {
 console.error('Erro ao carregar páginas:', error);
     
+
 } finally {
       setLoading(false);
     }
@@ -89,10 +90,11 @@ console.error('Erro ao carregar páginas:', error);
         alert(`Erro ao deletar página: ${errorData.error || 'Erro desconhecido'}`);
         console.log('=== DELETE FALHOU ===');
       }
-    } catch (error) {
+    } catch {
 console.error('❌ Erro na requisição:', error);
       console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
       alert(`Erro ao deletar página: ${error instanceof Error ? error.message : 'Verifique sua conexão e tente novamente'
+
 }`);
       console.log('=== DELETE FALHOU COM EXCEÇÃO ===');
     }

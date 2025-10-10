@@ -13,6 +13,7 @@
     "fix-errors": "node scripts/fix-common-errors.js",
     "fix-catch": "node scripts/fix-catch-blocks.js",
     "fix-types": "node scripts/fix-type-compatibility.js",
+    "fix-quotes": "node scripts/fix-quotes.js",
     "test:connection": "node scripts/test-connection.js"
   },
   "dependencies": {
