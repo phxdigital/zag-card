@@ -195,7 +195,7 @@ const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido
         console.log(`   • Tamanho: ${(mergedPdfBytes.length / 1024).toFixed(1)} KB`);
 
         // Retornar PDF como blob
-        return new NextResponse(mergedPdfBytes, {
+        return new NextResponse(mergedPdfBytes.buffer, {
             status: 200,
             headers: {
                 'Content-Type': 'application/pdf',
