@@ -108,7 +108,9 @@ console.error('❌ Erro na requisição:', error);
 
   const getPageUrl = (subdomain: string) => {
     if (typeof window !== 'undefined') {
-      return `${window.location.protocol}//${subdomain}.${window.location.hostname === 'localhost' ? 'localhost:3000' : 'zagnfc.com.br'}`;
+      const protocol = window.location.protocol || 'https:';
+      const hostname = window.location.hostname === 'localhost' ? 'localhost:3000' : 'zagnfc.com.br';
+      return `${protocol}//${subdomain}.${hostname}`;
     }
     return `https://${subdomain}.zagnfc.com.br`;
   };

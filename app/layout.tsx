@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://zagnfc.com.br'),
   title: "Zag NFC - Cartão de Visita Digital Inteligente",
   description:
     "Transforme conexões em oportunidades com o cartão de visita digital NFC. Compartilhe suas informações profissionais com um simples toque.",
