@@ -15,6 +15,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image as ImageIcon, MessageCircle, Instagram, Facebook, Globe, MapPin, Phone, Mail, ShoppingCart, Link as LinkIcon, Youtube, Twitter, Heart, Star, Camera, Music, Video, Calendar, Clock, User, Users, Home, Building, Car, Plane, Coffee, Gift, Book, Gamepad2, Headphones, Mic, Search, Settings, Download, Upload, Share, Share2, Copy, Check, X, Plus, Minus, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Zap, Target, Award, Trophy, Shield, Lock, Unlock, Eye, EyeOff, Bell, BellOff, Volume2, VolumeX, Wifi, WifiOff, Battery, BatteryLow, Signal, SignalZero, SignalLow, SignalMedium, SignalHigh, Linkedin, UserPlus } from 'lucide-react';
 
 import PixIconCustom from '@/app/components/PixIcon';
+import BackgroundRemovalButton from '@/app/components/BackgroundRemovalButton';
 
 import { canCreatePages } from '@/lib/config';
 
@@ -2905,26 +2906,11 @@ console.error('Erro ao carregar dados do usuário:', error);
                                             <div>
 
                                                 <label className="block text-xs font-medium text-slate-700 mb-1">Remover Fundo</label>
-                                                <a 
-
-                                                    href="https://www.remove.bg/" 
-
-                                                    target="_blank" 
-
-                                                    rel="noopener noreferrer"
-
-                                                    className="inline-flex items-center justify-center w-full h-6 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                                                >
-
-                                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-
-                                                    </svg>
-
-                                                    Online
-
-                                                </a>
+                                                <BackgroundRemovalButton 
+                                                    onImageProcessed={(url) => {
+                                                        setLogoDataUrl(url);
+                                                    }}
+                                                />
 
                                         </div>
 
