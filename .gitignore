@@ -36,6 +36,7 @@ yarn-error.log*
 # Scripts temporários de teste (NÃO COMMITAR)
 fix-env.js
 test-dotenv.js
+env-loader.js
 
 # vercel
 .vercel
