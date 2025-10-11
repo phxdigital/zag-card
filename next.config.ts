@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 import path from 'path';
 
-// Carregar .env.local manualmente ANTES de tudo
-require('./env-loader');
 
 const nextConfig: NextConfig = {
   images: {
