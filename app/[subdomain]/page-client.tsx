@@ -31,6 +31,8 @@ export type PageConfig = {
     landingPageSubtitleText?: string;
     landingPageLogoShape?: 'circle' | 'square';
     landingPageLogoSize?: number;
+    landingPageLogoUrl?: string | null;
+    landingPageBannerUrl?: string | null;
     landingPageTitleColor?: string;
     landingPageSubtitleColor?: string;
     removeLogoBackground?: boolean;
@@ -230,132 +232,164 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                 backgroundPosition: 'center'
             }}
         >
-            <div className="w-full max-w-md mx-auto text-center">
-                <Image 
-                    src={logoUrl} 
-                    alt="Logo"
-                    width={config.landingPageLogoSize || 96}
-                    height={config.landingPageLogoSize || 96}
-                    className={`object-cover mx-auto mb-4 shadow-md ${
-                        config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'
-                    }`} 
-                    priority
-                />
-
-                <h1 
-                    className="text-3xl font-bold break-words"
+            <div className="w-full max-w-md mx-auto text-center relative">
+                {/* Banner do Topo (atrás da logo) */}
+                {config.landingPageBannerUrl && (
+                    <div 
+                        className="absolute top-0 left-0 right-0 z-0" 
+                        style={{ height: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px)` }}
+                    >
+                        <img 
+                            src={config.landingPageBannerUrl} 
+                            alt="Banner" 
+                            className="w-full h-full object-cover" 
+                        />
+                    </div>
+                )}
+                
+                {/* Logo posicionada absolutamente sobrepondo a metade do banner */}
+                <div 
+                    className="absolute left-1/2 transform -translate-x-1/2"
                     style={{ 
-                        color: config.landingPageTitleColor || '#1e293b',
-                        fontFamily: config.landingFont ? `var(--font-${config.landingFont.toLowerCase().replace(' ', '-')})` : undefined
+                        top: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px - ${(config.landingPageLogoSize || 96) / 2}px)`,
+                        zIndex: 20
                     }}
                 >
-                    {config.landingPageTitleText || 'Bem-vindo(a)!'}
-                </h1>
-                
-                {config.landingPageSubtitleText && (
-                    <p 
-                        className="mt-2 px-4 break-words"
+                    <Image 
+                        src={logoUrl} 
+                        alt="Logo"
+                        width={config.landingPageLogoSize || 96}
+                        height={config.landingPageLogoSize || 96}
+                        className={`object-cover shadow-md ${
+                            config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'
+                        }`} 
+                        priority
+                    />
+                </div>
+
+                {/* Conteúdo com espaçamento ajustado para compensar o posicionamento absoluto da logo */}
+                <div 
+                    className="flex flex-col items-center text-center"
+                    style={{ 
+                        marginTop: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px + ${(config.landingPageLogoSize || 96) / 2}px)`,
+                        zIndex: 5
+                    }}
+                >
+                    <h1 
+                        className="text-3xl font-bold break-words mt-4 mb-1"
                         style={{ 
-                            color: config.landingPageSubtitleColor || '#64748b',
+                            color: config.landingPageTitleColor || '#1e293b',
                             fontFamily: config.landingFont ? `var(--font-${config.landingFont.toLowerCase().replace(' ', '-')})` : undefined
                         }}
                     >
-                        {config.landingPageSubtitleText}
-                    </p>
-                )}
+                        {config.landingPageTitleText || 'Bem-vindo(a)!'}
+                    </h1>
+                
+                    {config.landingPageSubtitleText && (
+                        <p 
+                            className="mt-2 px-4 break-words mb-4"
+                            style={{ 
+                                color: config.landingPageSubtitleColor || '#64748b',
+                                fontFamily: config.landingFont ? `var(--font-${config.landingFont.toLowerCase().replace(' ', '-')})` : undefined
+                            }}
+                        >
+                            {config.landingPageSubtitleText}
+                        </p>
+                    )}
 
-                {/* Social Links */}
-                <div className="w-full mt-8 flex justify-center items-center space-x-4">
-                    {Object.entries(config.socialLinks || {}).map(([key, value]) => {
-                        const socialInfo = socialMediaConfig[key];
-                        if (!value || !socialInfo) return null;
-                        
-                        return (
-                            <a 
-                                key={key} 
-                                href={socialInfo.baseUrl + value} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="w-12 h-12 bg-slate-800 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200"
-                                aria-label={`Link para ${key}`}
-                            >
-                                <LucideIcon name={socialInfo.icon} size={20} />
-                            </a>
-                        );
-                    })}
-                </div>
-
-                {/* Botões Sociais - Duas linhas */}
-                <div className="w-full mt-6 mb-4">
-                    {/* Linha 1: Salvar Contato (pill) e Compartilhar (redondo) */}
-                    <div className="flex flex-wrap justify-center items-center gap-3 mb-3">
-                        {safeCustomLinks?.filter(link => link.isSocial && (link.icon === 'user-plus' || link.icon === 'share')).map((link) => {
-                            const isPillButton = link.icon === 'user-plus';
+                    {/* Social Links */}
+                    <div className="w-full mt-8 flex justify-center items-center space-x-4">
+                        {Object.entries(config.socialLinks || {}).map(([key, value]) => {
+                            const socialInfo = socialMediaConfig[key];
+                            if (!value || !socialInfo) return null;
                             
                             return (
-                                <button
-                                    key={link.id}
-                                    onClick={() => handleLinkClickWrapper(link.url)}
-                                    style={{
-                                        background: link.styleType === 'gradient' 
-                                            ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
-                                            : link.bgColor1
-                                    }}
-                                    className={`${
-                                        isPillButton 
-                                            ? 'h-10 px-4 rounded-full gap-2 font-medium' 
-                                            : 'w-10 h-10 rounded-full'
-                                    } flex items-center justify-center text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-                                    aria-label={link.text}
+                                <a 
+                                    key={key} 
+                                    href={socialInfo.baseUrl + value} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="w-12 h-12 bg-slate-800 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200"
+                                    aria-label={`Link para ${key}`}
                                 >
-                                    {link.icon && <LucideIcon name={link.icon as IconName} size={isPillButton ? 16 : 18} />}
-                                    {isPillButton && <span className="text-xs whitespace-nowrap">{link.text}</span>}
-                                </button>
+                                    <LucideIcon name={socialInfo.icon} size={20} />
+                                </a>
                             );
                         })}
                     </div>
 
-                    {/* Linha 2: Botões de redes sociais pequenos (exceto salvar-contato e compartilhar) */}
-                    <div className="flex flex-wrap justify-center items-center gap-3">
-                        {safeCustomLinks?.filter(link => link.isSocial && link.icon !== 'user-plus' && link.icon !== 'share').map((link) => {
-                            return (
-                                <button
-                                    key={link.id}
-                                    onClick={() => handleLinkClickWrapper(link.url)}
-                                    style={{
-                                        background: link.styleType === 'gradient' 
-                                            ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
-                                            : link.bgColor1
-                                    }}
-                                    className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                    aria-label={link.text}
-                                >
-                                    {link.icon && <LucideIcon name={link.icon as IconName} size={20} />}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
+                    {/* Botões Sociais - Duas linhas */}
+                    <div className="w-full mt-6 mb-4">
+                        {/* Linha 1: Salvar Contato (pill) e Compartilhar (redondo) */}
+                        <div className="flex flex-wrap justify-center items-center gap-3 mb-3">
+                            {safeCustomLinks?.filter(link => link.isSocial && (link.icon === 'user-plus' || link.icon === 'share')).map((link) => {
+                                const isPillButton = link.icon === 'user-plus';
+                                
+                                return (
+                                    <button
+                                        key={link.id}
+                                        onClick={() => handleLinkClickWrapper(link.url)}
+                                        style={{
+                                            background: link.styleType === 'gradient' 
+                                                ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
+                                                : link.bgColor1
+                                        }}
+                                        className={`${
+                                            isPillButton 
+                                                ? 'h-10 px-4 rounded-full gap-2 font-medium' 
+                                                : 'w-10 h-10 rounded-full'
+                                        } flex items-center justify-center text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                                        aria-label={link.text}
+                                    >
+                                        {link.icon && <LucideIcon name={link.icon as IconName} size={isPillButton ? 16 : 18} />}
+                                        {isPillButton && <span className="text-xs whitespace-nowrap">{link.text}</span>}
+                                    </button>
+                                );
+                            })}
+                        </div>
 
-                {/* Botões Personalizados (Retangulares) */}
-                <div className="w-full flex flex-col items-center gap-2">
-                    {safeCustomLinks?.filter(link => !link.isSocial).map(link => (
-                        <button 
-                            key={link.id} 
-                            onClick={() => handleLinkClickWrapper(link.url)}
-                            style={{
-                                color: link.textColor, 
-                                background: link.styleType === 'gradient' 
-                                    ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
-                                    : link.bgColor1
-                            }} 
-                            className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md gap-2 transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            aria-label={link.text}
-                        >
-                            {link.icon && <LucideIcon name={link.icon as IconName} size={16} />}
-                            <span className="text-sm font-medium">{link.text}</span>
-                        </button>
-                    ))}
+                        {/* Linha 2: Botões de redes sociais pequenos (exceto salvar-contato e compartilhar) */}
+                        <div className="flex flex-wrap justify-center items-center gap-3">
+                            {safeCustomLinks?.filter(link => link.isSocial && link.icon !== 'user-plus' && link.icon !== 'share').map((link) => {
+                                return (
+                                    <button
+                                        key={link.id}
+                                        onClick={() => handleLinkClickWrapper(link.url)}
+                                        style={{
+                                            background: link.styleType === 'gradient' 
+                                                ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
+                                                : link.bgColor1
+                                        }}
+                                        className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                        aria-label={link.text}
+                                    >
+                                        {link.icon && <LucideIcon name={link.icon as IconName} size={20} />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Botões Personalizados (Retangulares) */}
+                    <div className="w-full flex flex-col items-center gap-2">
+                        {safeCustomLinks?.filter(link => !link.isSocial).map(link => (
+                            <button 
+                                key={link.id} 
+                                onClick={() => handleLinkClickWrapper(link.url)}
+                                style={{
+                                    color: link.textColor, 
+                                    background: link.styleType === 'gradient' 
+                                        ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
+                                        : link.bgColor1
+                                }} 
+                                className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md gap-2 transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                aria-label={link.text}
+                            >
+                                {link.icon && <LucideIcon name={link.icon as IconName} size={16} />}
+                                <span className="text-sm font-medium">{link.text}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
