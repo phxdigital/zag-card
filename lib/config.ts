@@ -1,3 +1,5 @@
+import { isAdminEmail } from './auth-config';
+
 // Configurações do sistema
 export const config = {
   // Modo de desenvolvimento - permite criar páginas sem pagamento
@@ -30,5 +32,16 @@ export const isPaymentRequired = () => {
 
 // Função para verificar se o usuário pode criar páginas
 export const canCreatePages = () => {
+  return config.developmentMode || !config.payment.required;
+};
+
+// Função para verificar se o usuário pode criar páginas (com verificação de admin)
+export const canCreatePagesWithAdmin = (userEmail?: string | null) => {
+  // Se for admin, sempre pode criar páginas
+  if (userEmail && isAdminEmail(userEmail)) {
+    return true;
+  }
+  
+  // Caso contrário, usar a lógica normal
   return config.developmentMode || !config.payment.required;
 };

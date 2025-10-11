@@ -17,7 +17,7 @@ import { CreditCard, Smartphone, PlusCircle, Edit, Trash2, Circle, Square, Image
 import PixIconCustom from '@/app/components/PixIcon';
 import BackgroundRemovalButton from '@/app/components/BackgroundRemovalButton';
 
-import { canCreatePages } from '@/lib/config';
+import { canCreatePagesWithAdmin } from '@/lib/config';
 
 import { jsPDF } from 'jspdf';
 
@@ -298,11 +298,11 @@ export default function DashboardPage() {
 
     const router = useRouter();
 
-    const [hasActiveSubscription] = useState(canCreatePages());
-
     const [userName, setUserName] = useState<string>('');
 
     const [userEmail, setUserEmail] = useState<string>('');
+
+    const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
     const [config, setConfig] = useState<PageConfig>({
 
@@ -2210,6 +2210,11 @@ console.error('Error clearing localStorage:', error);
                     setUserName(name);
 
                     setUserEmail(user.email || '');
+
+                    
+                    // Verificar se pode criar páginas (incluindo verificação de admin)
+                    const canCreate = canCreatePagesWithAdmin(user.email);
+                    setHasActiveSubscription(canCreate);
 
                 }
 
