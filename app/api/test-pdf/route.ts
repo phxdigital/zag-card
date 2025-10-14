@@ -34,8 +34,8 @@ export async function GET() {
             })) || []
         });
 
-    } catch {
-console.error('Erro no teste PDF:', error);
+    } catch (err) {
+console.error('Erro no teste PDF:', err);
         return NextResponse.json({
             success: false,
             error: 'Erro interno do servidor'
