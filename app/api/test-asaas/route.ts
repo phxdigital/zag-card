@@ -84,12 +84,12 @@ export async function GET(request: NextRequest) {
             }
         });
 
-    } catch {
-console.error('Erro ao testar Asaas:', error);
+    } catch (err) {
+console.error('Erro ao testar Asaas:', err);
         return NextResponse.json({
             success: false,
             error: 'Erro interno ao testar integração',
-            details: error instanceof Error ? error.message : 'Erro desconhecido'
+            details: err instanceof Error ? err.message : 'Erro desconhecido'
         
 
 
