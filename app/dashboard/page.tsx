@@ -1607,7 +1607,7 @@ console.error('Error clearing localStorage:', err);
             }
 
         } catch {
-console.error('Erro ao verificar subdomínio:', error);
+console.error('Erro ao verificar subdomínio:', err);
 
             setSubdomainAvailable(null);
 
@@ -1918,7 +1918,7 @@ console.error('Erro ao verificar subdomínio:', error);
             setActiveStep(2);
 
         } catch {
-console.error('Erro ao processar layout:', error);
+console.error('Erro ao processar layout:', err);
 
             alert('Erro ao salvar o layout. Tente novamente.');
 
@@ -2249,7 +2249,7 @@ console.error('Error clearing localStorage:', err);
                 }
 
             } catch {
-console.error('Erro ao carregar dados do usuário:', error);
+console.error('Erro ao carregar dados do usuário:', err);
 
             
 
@@ -4595,7 +4595,7 @@ console.error('Erro ao carregar dados do usuário:', error);
                                             router.push(`/success?subdomain=${subdomain}&pageId=${pageData.id}`);
 
                                         } catch {
-console.error('Erro ao salvar:', error);
+console.error('Erro ao salvar:', err);
 
                                             alert('Erro ao salvar: ' + (error as Error).message);
 
