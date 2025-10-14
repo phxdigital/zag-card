@@ -35,8 +35,8 @@ export async function GET(
             success: true, 
             pdf_data: notification.pdf_data 
         });
-    } catch {
-console.error('Erro ao buscar PDF:', error);
+    } catch (err) {
+console.error('Erro ao buscar PDF:', err);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
 
