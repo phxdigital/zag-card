@@ -1462,8 +1462,8 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             localStorage.removeItem('zag-dashboard-config');
 
-        } catch {
-console.error('Error clearing localStorage:', error);
+        } catch (err) {
+console.error('Error clearing localStorage:', err);
 
         
 
@@ -2047,8 +2047,8 @@ console.error('Erro ao processar layout:', error);
 
             localStorage.removeItem('zag-dashboard-config');
 
-        } catch {
-console.error('Error clearing localStorage:', error);
+        } catch (err) {
+console.error('Error clearing localStorage:', err);
 
         
 
