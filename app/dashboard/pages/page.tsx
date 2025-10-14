@@ -42,8 +42,8 @@ export default function MyPagesPage() {
         const data = await response.json();
         setPages(data);
       }
-    } catch {
-console.error('Erro ao carregar páginas:', error);
+    } catch (err) {
+console.error('Erro ao carregar páginas:', err);
     
 
 
@@ -93,10 +93,10 @@ console.error('Erro ao carregar páginas:', error);
         alert(`Erro ao deletar página: ${errorData.error || 'Erro desconhecido'}`);
         console.log('=== DELETE FALHOU ===');
       }
-    } catch {
-console.error('❌ Erro na requisição:', error);
-      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
-      alert(`Erro ao deletar página: ${error instanceof Error ? error.message : 'Verifique sua conexão e tente novamente'
+    } catch (err) {
+console.error('❌ Erro na requisição:', err);
+      console.error('Stack trace:', err instanceof Error ? err.stack : 'No stack trace available');
+      alert(`Erro ao deletar página: ${err instanceof Error ? err.message : 'Verifique sua conexão e tente novamente'
 
 
 
