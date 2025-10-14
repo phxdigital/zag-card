@@ -31,8 +31,8 @@ export async function GET() {
             success: true, 
             notifications: notifications || []
         });
-    } catch {
-console.error('Erro ao buscar notificações:', error);
+    } catch (err) {
+console.error('Erro ao buscar notificações:', err);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
 
@@ -86,8 +86,8 @@ export async function POST(request: Request) {
             notification 
         });
 
-    } catch {
-console.error('Erro ao criar notificação:', error);
+    } catch (err) {
+console.error('Erro ao criar notificação:', err);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
 
