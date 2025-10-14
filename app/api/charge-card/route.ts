@@ -96,9 +96,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, payment });
-  } catch {
-    console.error('Erro ao processar pagamento com cartão:', error);
-    const errMsg: string = error instanceof Error ? error.message : 'Erro desconhecido';
+  } catch (err) {
+    console.error('Erro ao processar pagamento com cartão:', err);
+    const errMsg: string = err instanceof Error ? err.message : 'Erro desconhecido';
     // Tentar extrair um payload conhecido do Asaas
     let parsed: unknown = null;
     try {
