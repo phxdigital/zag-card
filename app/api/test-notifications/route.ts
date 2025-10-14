@@ -28,8 +28,8 @@ export async function GET() {
             notifications: notifications || []
         });
 
-    } catch {
-console.error('Erro no teste:', error);
+    } catch (err) {
+console.error('Erro no teste:', err);
         return NextResponse.json({
             success: false,
             error: 'Erro interno do servidor'
@@ -74,8 +74,8 @@ export async function POST() {
             notification
         });
 
-    } catch {
-console.error('Erro ao criar notificação de teste:', error);
+    } catch (err) {
+console.error('Erro ao criar notificação de teste:', err);
         return NextResponse.json({
             success: false,
             error: 'Erro interno do servidor'
