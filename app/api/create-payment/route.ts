@@ -6,7 +6,7 @@ import { createOrUpdateCustomer, createPayment, getPixQrCode } from '@/lib/asaas
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies });
     
     // Verificar autenticação (temporariamente desabilitado para teste)
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -90,20 +90,37 @@ export async function POST(request: NextRequest) {
 
     // Salvar cobrança no banco de dados (apenas se usuário real)
     if (user) {
-      await supabase.from('payments').insert({
+      console.log('💰 Salvando pagamento PIX no banco:', {
         user_id: user.id,
-      asaas_payment_id: payment.id,
-      asaas_customer_id: customer.id,
-      plan_type: planType,
-      amount: value,
-      status: payment.status,
-      billing_type: 'PIX',
-      due_date: dueDateStr,
-      description: description,
-      pix_qr_code: pixQrCode.payload,
-      pix_qr_code_image: pixQrCode.encodedImage,
-      pix_expiration: pixQrCode.expirationDate,
+        asaas_payment_id: payment.id,
+        plan_type: planType,
+        amount: value,
+        status: payment.status
       });
+      
+      const { data: insertedPayment, error: insertError } = await supabase.from('payments').insert({
+        user_id: user.id,
+        asaas_payment_id: payment.id,
+        asaas_customer_id: customer.id,
+        plan_type: planType,
+        amount: value,
+        status: payment.status,
+        billing_type: 'PIX',
+        due_date: dueDateStr,
+        description: description,
+        pix_qr_code: pixQrCode.payload,
+        pix_qr_code_image: pixQrCode.encodedImage,
+        pix_expiration: pixQrCode.expirationDate,
+      }).select();
+
+      if (insertError) {
+        console.error('❌ Erro ao salvar pagamento PIX no banco:', insertError);
+        throw new Error(`Erro ao salvar pagamento: ${insertError.message}`);
+      }
+
+      console.log('✅ Pagamento PIX salvo no banco:', insertedPayment);
+    } else {
+      console.log('⚠️ Usuário não autenticado, pagamento PIX não será salvo no banco');
     }
 
     return NextResponse.json({

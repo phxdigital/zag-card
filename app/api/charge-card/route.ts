@@ -6,7 +6,7 @@ import { createCreditCardPayment, createOrUpdateCustomer } from '@/lib/asaas';
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies });
 
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -81,7 +81,15 @@ export async function POST(request: NextRequest) {
 
     // Persistir pagamento se autenticado
     if (user) {
-      await supabase.from('payments').insert({
+      console.log('💳 Salvando pagamento no banco:', {
+        user_id: user.id,
+        asaas_payment_id: payment.id,
+        plan_type: planType,
+        amount: value,
+        status: payment.status
+      });
+      
+      const { data: insertedPayment, error: insertError } = await supabase.from('payments').insert({
         user_id: user.id,
         asaas_payment_id: payment.id,
         asaas_customer_id: asaasCustomer.id,
@@ -92,7 +100,16 @@ export async function POST(request: NextRequest) {
         description,
         invoice_url: payment.invoiceUrl,
         transaction_receipt_url: payment.transactionReceiptUrl,
-      });
+      }).select();
+
+      if (insertError) {
+        console.error('❌ Erro ao salvar pagamento no banco:', insertError);
+        throw new Error(`Erro ao salvar pagamento: ${insertError.message}`);
+      }
+
+      console.log('✅ Pagamento salvo no banco:', insertedPayment);
+    } else {
+      console.log('⚠️ Usuário não autenticado, pagamento não será salvo no banco');
     }
 
     return NextResponse.json({ success: true, payment });
