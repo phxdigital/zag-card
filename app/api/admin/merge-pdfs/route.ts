@@ -132,14 +132,9 @@ export async function POST(request: Request) {
                 
                 console.log(`✅ ${notification.subdomain}: ${pageCount} páginas embedadas`);
                 
-            } catch {
-const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-                console.error(`❌ Erro ao processar PDF de ${notification.subdomain
-
-
-
-
-}:`, errorMessage);
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+                console.error(`❌ Erro ao processar PDF de ${notification.subdomain}:`, errorMessage);
             }
         }
 
@@ -208,15 +203,10 @@ const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido
             },
         });
 
-    } catch {
-console.error('Erro ao mesclar PDFs:', error);
+    } catch (err) {
+        console.error('Erro ao mesclar PDFs:', err);
         return NextResponse.json(
-            { error: 'Erro interno do servidor' 
-
-
-
-
-},
+            { error: 'Erro interno do servidor' },
             { status: 500 }
         );
     }
