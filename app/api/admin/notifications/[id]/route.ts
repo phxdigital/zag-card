@@ -52,8 +52,8 @@ export async function PATCH(request: Request) {
             notification 
         });
 
-    } catch {
-console.error('Erro ao atualizar notificação:', error);
+    } catch (err) {
+console.error('Erro ao atualizar notificação:', err);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
 
@@ -102,8 +102,8 @@ export async function DELETE(request: Request) {
             message: 'Notificação excluída com sucesso' 
         });
 
-    } catch {
-console.error('Erro ao excluir notificação:', error);
+    } catch (err) {
+console.error('Erro ao excluir notificação:', err);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' 
 
