@@ -24,7 +24,7 @@ export async function GET() {
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (err) {
 return NextResponse.json({ error: 'Internal server error' 
 }, { status: 500 });
   }
@@ -50,8 +50,8 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-    } catch {
-console.error('JSON parse error:', error);
+    } catch (err) {
+console.error('JSON parse error:', err);
       return NextResponse.json({ error: 'Invalid JSON in request body' 
 
 
@@ -96,7 +96,7 @@ console.error('JSON parse error:', error);
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (err) {
 return NextResponse.json({ error: 'Internal server error' 
 }, { status: 500 });
   }
