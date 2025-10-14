@@ -34,12 +34,9 @@ export default function AdminPanel() {
                 const data = await response.json();
                 setNotifications(data.notifications || []);
             }
-        } catch {
-            console.error('Erro ao carregar notificações:', error);
-        
-
-
-} finally {
+        } catch (err) {
+            console.error('Erro ao carregar notificações:', err);
+        } finally {
             setLoading(false);
         }
     };
@@ -61,13 +58,9 @@ export default function AdminPanel() {
                     )
                 );
             }
-        } catch {
-console.error('Erro ao atualizar status:', error);
-        
-
-
-
-}
+        } catch (err) {
+            console.error('Erro ao atualizar status:', err);
+        }
     };
 
     const deleteNotification = async (id: string, subdomain: string) => {
@@ -91,14 +84,10 @@ console.error('Erro ao atualizar status:', error);
             } else {
                 alert('Erro ao excluir notificação');
             }
-        } catch {
-console.error('Erro ao excluir notificação:', error);
+        } catch (err) {
+            console.error('Erro ao excluir notificação:', err);
             alert('Erro ao excluir notificação');
-        
-
-
-
-}
+        }
     };
 
     const deleteSelected = async () => {
@@ -126,14 +115,10 @@ console.error('Erro ao excluir notificação:', error);
                 } else {
                     errorCount++;
                 }
-            } catch {
-console.error('Erro ao excluir notificação:', error);
+            } catch (err) {
+                console.error('Erro ao excluir notificação:', err);
                 errorCount++;
-            
-
-
-
-}
+            }
         }
 
         // Atualizar lista
@@ -207,14 +192,10 @@ console.error('Erro ao excluir notificação:', error);
 
             alert(`PDF A4 gerado com 5 frentes + 5 versos!\nPronto para enviar à gráfica.`);
             setSelectedIds(new Set());
-        } catch {
-const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar PDFs';
-            console.error('Erro ao mesclar PDFs:', error);
-            alert(`Erro: ${errorMessage
-
-
-
-}`);
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Erro ao mesclar PDFs';
+            console.error('Erro ao mesclar PDFs:', err);
+            alert(`Erro: ${errorMessage}`);
         } finally {
             setMerging(false);
         }
@@ -245,14 +226,10 @@ const errorMessage = error instanceof Error ? error.message : 'Erro ao mesclar P
             } else {
                 alert('PDF não disponível para esta notificação.');
             }
-            } catch {
-console.error('Erro ao baixar PDF:', error);
+            } catch (err) {
+                console.error('Erro ao baixar PDF:', err);
                 alert('Erro ao baixar PDF. Tente novamente.');
-        
-
-
-
-}
+            }
     };
 
     // Filtrar por status e busca
@@ -534,14 +511,10 @@ console.error('Erro ao baixar PDF:', error);
                                                             } else {
                                                                 alert('PDF não disponível');
                                                             }
-                                                        } catch {
-console.error('Erro ao visualizar PDF:', error);
+                                                        } catch (err) {
+                                                            console.error('Erro ao visualizar PDF:', err);
                                                             alert('Erro ao visualizar PDF');
-                                                        
-
-
-
-}
+                                                        }
                                                     }}
                                                     className="flex items-center space-x-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"
                                                     title="Visualizar PDF"
