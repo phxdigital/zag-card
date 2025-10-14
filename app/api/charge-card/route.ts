@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
         amount: value,
         status: payment.status,
         billing_type: 'CREDIT_CARD',
+        due_date: dueDateStr,
         description,
         invoice_url: payment.invoiceUrl,
       }).select();
