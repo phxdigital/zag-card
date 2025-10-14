@@ -255,7 +255,7 @@ const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="129.00"
               />
-              <p className="mt-1 text-xs text-gray-500">Preço "de" para mostrar desconto</p>
+              <p className="mt-1 text-xs text-gray-500">Preço &quot;de&quot; para mostrar desconto</p>
             </div>
 
             <div>
