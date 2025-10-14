@@ -99,7 +99,6 @@ export async function POST(request: NextRequest) {
         billing_type: 'CREDIT_CARD',
         description,
         invoice_url: payment.invoiceUrl,
-        transaction_receipt_url: payment.transactionReceiptUrl,
       }).select();
 
       if (insertError) {
