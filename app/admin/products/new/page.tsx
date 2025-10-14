@@ -123,14 +123,10 @@ export default function NewProductPage() {
 
       alert('Produto criado com sucesso!');
       router.push('/admin/products');
-    } catch {
-const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      console.error('Erro ao criar produto:', error);
-      alert(`Erro ao criar produto: ${errorMessage
-
-
-
-}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      console.error('Erro ao criar produto:', err);
+      alert(`Erro ao criar produto: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
