@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
             notification 
         });
 
-    } catch {
-console.error('Erro ao enviar notificação para admin:', error);
+    } catch (err) {
+console.error('Erro ao enviar notificação para admin:', err);
         return NextResponse.json(
             { success: false, message: 'Erro ao enviar notificação.' 
 
