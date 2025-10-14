@@ -93,7 +93,7 @@ export default function LoginPage() {
                     router.push('/dashboard');
                 }
             }
-        } catch (error) {
+        } catch {
             setError('Erro de conexão. Tente novamente.');
         } finally {
             setLoading(false);
@@ -112,7 +112,7 @@ export default function LoginPage() {
             if (error) {
                 setError(error.message);
             }
-        } catch (error) {
+        } catch {
             setError('Erro ao fazer login com Google');
         }
     };
@@ -139,7 +139,7 @@ export default function LoginPage() {
                     setSuccessMessage('');
                 }, 5000);
             }
-        } catch (error) {
+        } catch {
             setError('Erro ao enviar email de recuperação. Tente novamente.');
         } finally {
             setLoading(false);

@@ -239,15 +239,10 @@ export default function EditPage() {
                 alert('Página não encontrada');
                 router.push('/dashboard/pages');
             }
-        } catch {
-console.error('Erro ao carregar página:', error);
+        } catch (err) {
+console.error('Erro ao carregar página:', err);
             alert('Erro ao carregar página');
-        
-
-
-
-
-} finally {
+        } finally {
             setLoading(false);
         }
     }, [pageId, router]);
@@ -635,15 +630,10 @@ console.error('Erro ao carregar página:', error);
                 }
                 throw new Error(errorMessage);
             }
-        } catch {
-console.error('Erro ao salvar:', error);
-            alert('Erro ao salvar: ' + (error as Error).message);
-        
-
-
-
-
-} finally {
+        } catch (err) {
+console.error('Erro ao salvar:', err);
+            alert('Erro ao salvar: ' + (err as Error).message);
+        } finally {
             setSaving(false);
             setSavingMessage('');
         }
@@ -828,15 +818,10 @@ console.error('Erro ao salvar:', error);
                                                             // Redimensionar imagem para caber no cartão (máximo 200x120px)
                                                             const resizedImage = await resizeImageToFit(file, 200, 120);
                                                             setLogoDataUrl(resizedImage);
-                                                        } catch {
-console.error('Erro ao processar imagem:', error);
+                                                        } catch (err) {
+console.error('Erro ao processar imagem:', err);
                                                             alert('Erro ao processar a imagem. Tente novamente.');
-                                                        
-
-
-
-
-}
+                                                        }
                                                     }
                                                 };
                                                 input.click();
