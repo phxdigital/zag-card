@@ -103,8 +103,8 @@ export default function PaymentsPage() {
         .order('created_at', { ascending: false });
 
       setPayments(paymentsData || []);
-    } catch {
-console.error('Erro ao carregar dados:', error);
+    } catch (err) {
+console.error('Erro ao carregar dados:', err);
     
 
 
