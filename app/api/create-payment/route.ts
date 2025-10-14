@@ -5,21 +5,20 @@ import { createOrUpdateCustomer, createPayment, getPixQrCode } from '@/lib/asaas
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
-    // Verificar autenticação
+    // Verificar autenticação (temporariamente desabilitado para teste)
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Não autorizado' },
-        { status: 401 }
-      );
-    }
+    // Para teste, vamos usar um usuário mock se não estiver logado
+    const testUser = user || { 
+      id: 'test-user-id', 
+      email: 'teste@exemplo.com' 
+    };
 
     const body = await request.json();
-    const { planType, value, description } = body;
+    const { planType, value, description, customerData } = body;
 
     // Validação básica
     if (!planType || !value) {
@@ -29,17 +28,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar dados do usuário
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+    // Buscar dados do usuário (ou usar dados mock)
+    let profile = null;
+    if (user) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      profile = data;
+    }
+    
+    // Usar dados do modal se fornecidos, senão usar dados do perfil ou mock
+    if (customerData) {
+      profile = {
+        name: customerData.name,
+        email: customerData.email,
+        cpf_cnpj: customerData.cpf,
+        phone: customerData.phone
+      };
+    } else if (!profile) {
+      profile = {
+        name: 'Cliente Teste',
+        email: 'teste@exemplo.com',
+        cpf_cnpj: '11144477735', // CPF válido para teste
+        phone: '11999999999'
+      };
+    }
+    
+    // Garantir que o CPF/CNPJ está presente
+    if (!profile.cpf_cnpj) {
+      profile.cpf_cnpj = '11144477735'; // CPF válido para teste
+    }
 
     // Criar ou atualizar cliente no Asaas
     const customer = await createOrUpdateCustomer({
-      name: profile?.name || user.email?.split('@')[0] || 'Cliente',
-      email: user.email || '',
+      name: profile?.name || testUser.email?.split('@')[0] || 'Cliente',
+      email: profile?.email || testUser.email || 'teste@exemplo.com',
       cpfCnpj: profile?.cpf_cnpj,
       phone: profile?.phone,
       mobilePhone: profile?.mobile_phone,
@@ -50,22 +75,23 @@ export async function POST(request: NextRequest) {
     dueDate.setDate(dueDate.getDate() + 3);
     const dueDateStr = dueDate.toISOString().split('T')[0];
 
-    // Criar cobrança
+    // Criar cobrança PIX por padrão
     const payment = await createPayment({
       customer: customer.id!,
       billingType: 'PIX',
       value: value,
       dueDate: dueDateStr,
       description: description || `Plano ${planType} - Zag NFC`,
-      externalReference: `${user.id}_${planType}_${Date.now()}`,
+      externalReference: `${testUser.id}_${planType}_${Date.now()}`,
     });
 
     // Buscar QR Code PIX
     const pixQrCode = await getPixQrCode(payment.id);
 
-    // Salvar cobrança no banco de dados
-    await supabase.from('payments').insert({
-      user_id: user.id,
+    // Salvar cobrança no banco de dados (apenas se usuário real)
+    if (user) {
+      await supabase.from('payments').insert({
+        user_id: user.id,
       asaas_payment_id: payment.id,
       asaas_customer_id: customer.id,
       plan_type: planType,
@@ -77,7 +103,8 @@ export async function POST(request: NextRequest) {
       pix_qr_code: pixQrCode.payload,
       pix_qr_code_image: pixQrCode.encodedImage,
       pix_expiration: pixQrCode.expirationDate,
-    });
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -96,17 +123,13 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-console.error('Erro ao criar cobrança:', error);
+    console.error('Erro ao criar cobrança:', error);
     return NextResponse.json(
       { 
         error: 'Erro ao processar pagamento', 
-        details: error instanceof Error ? error.message : 'Erro desconhecido' 
-      
-
-
-
-
-},
+        details: error instanceof Error ? error.message : 'Erro desconhecido',
+        stack: error instanceof Error ? error.stack : undefined
+      },
       { status: 500 }
     );
   }

@@ -298,6 +298,7 @@ export default function DashboardPage() {
 
     const router = useRouter();
 
+
     const [userName, setUserName] = useState<string>('');
 
     const [userEmail, setUserEmail] = useState<string>('');
@@ -1749,7 +1750,7 @@ console.error('Erro ao verificar subdomínio:', error);
 
 
 
-    const handleNextStep = () => {
+    const handleNextStep = async () => {
         if (!logoDataUrl) {
 
             alert('É necessário fazer o upload de uma logo.');
@@ -1766,6 +1767,35 @@ console.error('Erro ao verificar subdomínio:', error);
 
         }
 
+        // Gate: verificar créditos antes de prosseguir à confirmação
+        try {
+            const { data: { user } } = await createClientComponentClient().auth.getUser();
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+            const supabase = createClientComponentClient();
+            const { data: payments } = await supabase
+                .from('payments')
+                .select('status, plan_type')
+                .eq('user_id', user.id);
+            const confirmed = (payments || []).filter(p => p.status === 'RECEIVED' || p.status === 'CONFIRMED');
+            const planCredits: Record<string, number> = { para_mim: 1, para_equipe: 2, para_negocio: 8 };
+            const totalCredits = confirmed.reduce((sum, p) => sum + (planCredits[p.plan_type] || 0), 0);
+            const { data: pagesData } = await supabase
+                .from('pages')
+                .select('id')
+                .eq('user_id', user.id);
+            const used = (pagesData || []).length;
+            if (totalCredits <= used) {
+                router.push('/create-page');
+                return;
+            }
+        } catch (e) {
+            console.error('Erro ao verificar créditos:', e);
+            alert('Não foi possível verificar seus créditos. Tente novamente.');
+            return;
+        }
 
         // Mostrar página de confirmação
         setShowCardConfirmation(true);

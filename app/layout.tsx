@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { CookieBanner } from "./components/CookieBanner";
 import "./globals.css";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -56,6 +57,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className="antialiased">
         {children}
+        <CookieBanner />
         <SpeedInsights />
       </body>
     </html>

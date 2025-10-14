@@ -38,7 +38,8 @@ export function Footer() {
             <ul className="footer-links">
               <li><a href="#">Sobre Nós</a></li>
               <li><a href="#">Contato</a></li>
-              <li><a href="#">Termos de Uso</a></li>
+              <li><a href="/termos">Termos de Serviço</a></li>
+              <li><a href="/privacidade">Política de Privacidade</a></li>
             </ul>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react"
 import { useState } from "react"
+import { PaymentModal } from "./PaymentModal"
 
 const plans = [
   {
@@ -19,8 +20,8 @@ const plans = [
       "Atualizações ilimitadas",
     ],
     footnote: "Advogados e escritórios jurídicos, Médicos e dentistas, Psicólogos, Nutricionistas e personal trainers, Esteticistas, cabeleireiros, barbeiros, Tatuadores, Fotógrafos e videomakers, Designers e profissionais de marketing, Consultores financeiros e contadores, Coaches e mentores, Arquitetos e engenheiros, Corretor de seguros e consórcios, Representantes comerciais",
-    // Substitua pela URL real do link de pagamento do Asaas
-    paymentLink: process.env.NEXT_PUBLIC_ASAAS_LINK_PARA_MIM || '#',
+    // Usar API ao invés de links diretos
+    paymentLink: '#',
   },
   {
     id: 'para_equipe',
@@ -41,8 +42,8 @@ const plans = [
       "Estatísticas de acessos",
     ],
     popular: true,
-    // Substitua pela URL real do link de pagamento do Asaas
-    paymentLink: process.env.NEXT_PUBLIC_ASAAS_LINK_PARA_EQUIPE || '#',
+    // Usar API ao invés de links diretos
+    paymentLink: '#',
   },
   {
     id: 'para_negocio',
@@ -63,34 +64,70 @@ const plans = [
       "Analytics avançado",
       "Suporte VIP 24/7",
     ],
-    // Substitua pela URL real do link de pagamento do Asaas
-    paymentLink: process.env.NEXT_PUBLIC_ASAAS_LINK_PARA_NEGOCIO || '#',
+    // Usar API ao invés de links diretos
+    paymentLink: '#',
   },
 ]
 
 export function PricingSection() {
   const [loading, setLoading] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
 
-  const handleSelectPlan = async (plan: typeof plans[0]) => {
-    setLoading(plan.id);
+  const handleSelectPlan = (plan: typeof plans[0]) => {
+    // Se o link de pagamento direto estiver configurado, redirecionar para ele
+    if (plan.paymentLink && plan.paymentLink !== '#') {
+      window.location.href = plan.paymentLink;
+      return;
+    }
+
+    // Caso contrário, abrir modal para coletar dados
+    setSelectedPlan(plan);
+    setModalOpen(true);
+  };
+
+  const handlePaymentConfirm = async (customerData: { name: string; cpf: string; phone: string; email: string; method: 'PIX' | 'CARD'; cardMode?: 'CREDIT' | 'DEBIT' }) => {
+    if (!selectedPlan) return;
+
+    setLoading(selectedPlan.id);
 
     try {
-      // Se o link de pagamento direto estiver configurado, redirecionar para ele
-      if (plan.paymentLink && plan.paymentLink !== '#') {
-        window.location.href = plan.paymentLink;
+      if (customerData.method === 'CARD') {
+        // Ir para checkout de cartão com dados do cliente e do plano
+        const payload = {
+          planType: selectedPlan.id,
+          value: selectedPlan.priceValue,
+          description: `${selectedPlan.name} - Zag NFC Card${customerData.cardMode ? ` (${customerData.cardMode === 'CREDIT' ? 'Crédito' : 'Débito'})` : ''}`,
+          customer: {
+            name: customerData.name,
+            cpf: customerData.cpf,
+            phone: customerData.phone,
+            email: customerData.email,
+          },
+          cardMode: customerData.cardMode || 'CREDIT',
+        };
+        sessionStorage.setItem('card_checkout_data', JSON.stringify(payload));
+        setModalOpen(false);
+        setSelectedPlan(null);
+        window.location.href = '/checkout/card';
         return;
       }
 
-      // Caso contrário, criar pagamento via API
       const response = await fetch('/api/create-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          planType: plan.id,
-          value: plan.priceValue,
-          description: `${plan.name} - Zag NFC Card`,
+          planType: selectedPlan.id,
+          value: selectedPlan.priceValue,
+          description: `${selectedPlan.name} - Zag NFC Card`,
+          customerData: {
+            name: customerData.name,
+            cpf: customerData.cpf,
+            phone: customerData.phone,
+            email: customerData.email,
+          }
         }),
       });
 
@@ -100,6 +137,10 @@ export function PricingSection() {
       }
 
       const data = await response.json();
+      
+      // Fechar modal
+      setModalOpen(false);
+      setSelectedPlan(null);
       
       // Redirecionar para página de checkout com QR code PIX
       if (data.payment && data.payment.pix) {
@@ -113,14 +154,9 @@ export function PricingSection() {
       }
 
     } catch (error) {
-console.error('Erro ao selecionar plano:', error);
-      alert('Erro ao processar pagamento. Por favor, faça login e tente novamente.');
-    
-
-
-
-
-} finally {
+      console.error('Erro ao processar pagamento:', error);
+      alert('Erro ao processar pagamento. Tente novamente.');
+    } finally {
       setLoading(null);
     }
   };
@@ -169,7 +205,7 @@ console.error('Erro ao selecionar plano:', error);
               <button
                 onClick={() => handleSelectPlan(plan)}
                 disabled={loading !== null}
-                className={`pricing-button ${plan.popular ? 'primary' : 'outline'} ${loading === plan.id ? 'opacity-50 cursor-not-loading' : ''}`}
+                className={`pricing-button ${plan.popular ? 'primary' : 'outline'} ${loading === plan.id ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {loading === plan.id ? 'Processando...' : `Escolher ${plan.name}`}
               </button>
@@ -182,6 +218,21 @@ console.error('Erro ao selecionar plano:', error);
           ))}
         </div>
       </div>
+      
+      {/* Modal de Pagamento */}
+      {selectedPlan && (
+        <PaymentModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedPlan(null);
+          }}
+          onConfirm={handlePaymentConfirm}
+          planName={selectedPlan.name}
+          planValue={selectedPlan.priceValue}
+          loading={loading === selectedPlan.id}
+        />
+      )}
     </section>
   )
 }

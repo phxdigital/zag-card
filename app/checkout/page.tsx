@@ -79,6 +79,9 @@ export default function CheckoutPage() {
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <img src="/zag-site.png" alt="Zag" className="h-8 object-contain" />
+          </div>
           <div className="flex justify-center mb-4">
             <div className="rounded-full bg-blue-100 p-3">
               <QrCode className="h-12 w-12 text-blue-600" />

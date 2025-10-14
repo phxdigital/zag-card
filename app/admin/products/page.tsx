@@ -20,6 +20,7 @@ interface Product {
   is_featured: boolean;
   thumbnail_url?: string;
   category?: string;
+  unlock_pages?: number;
   created_at: string;
 }
 
@@ -302,6 +303,7 @@ console.error('Erro ao excluir produto:', error);
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Preço
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Créditos</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Estoque
               </th>
@@ -361,6 +363,11 @@ console.error('Erro ao excluir produto:', error);
                         R$ {product.compare_price.toFixed(2).replace('.', ',')}
                       </div>
                     )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {typeof product.unlock_pages === 'number' ? product.unlock_pages : '-'}
+                    </span>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">

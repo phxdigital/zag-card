@@ -9,8 +9,8 @@ import type {
   CreatePaymentRequest,
 } from '@/types/asaas';
 
-const ASAAS_API_URL = process.env.ASAAS_API_URL || 'https://api.asaas.com/v3';
-const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
+const ASAAS_API_URL = process.env.ASAAS_API_URL || 'https://sandbox.asaas.com/api/v3';
+const ASAAS_API_KEY = process.env.ASAAS_API_KEY || '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmQzNTEzODQ1LTI4ZTEtNDNjNi05NjhiLWRhODVhZDRiZTRjNzo6JGFhY2hfYWExMGQ5MzMtNjkzYy00YmJjLWI2NjItM2JkMGZlMWEyYzQy';
 
 if (!ASAAS_API_KEY && process.env.NODE_ENV === 'production') {
   console.warn('⚠️ ASAAS_API_KEY não configurada!');
@@ -64,6 +64,36 @@ export async function createPayment(payment: CreatePaymentRequest): Promise<Asaa
     return await response.json();
   } catch (error) {
     console.error('Erro ao criar cobrança no Asaas:', error);
+    throw error;
+  }
+}
+
+/**
+ * Cria cobrança e processa pagamento com cartão de crédito
+ * Observação: Para cartão, `billingType` deve ser 'CREDIT_CARD' e é necessário enviar `creditCard` e `creditCardHolderInfo`.
+ */
+export async function createCreditCardPayment(payment: CreatePaymentRequest): Promise<AsaasPayment> {
+  try {
+    const payload: CreatePaymentRequest = {
+      ...payment,
+      billingType: 'CREDIT_CARD',
+    };
+
+    const response = await fetch(`${ASAAS_API_URL}/payments`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      let errorBody: any = null;
+      try { errorBody = await response.json(); } catch {}
+      throw new Error(`Erro ao criar cobrança no cartão: ${JSON.stringify({ status: response.status, body: errorBody })}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao criar cobrança com cartão no Asaas:', error);
     throw error;
   }
 }

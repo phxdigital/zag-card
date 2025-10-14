@@ -3,10 +3,56 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+        
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', user.id)
+            .single()
+          setUserProfile(profile)
+        }
+      } catch (error) {
+        console.error('Erro ao buscar usuário:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getUser()
+
+    // Escutar mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null)
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => setUserProfile(data))
+      } else {
+        setUserProfile(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -33,8 +79,26 @@ export function Header() {
 
         {/* Botões - Visíveis em todas as resoluções */}
         <div className="header-buttons">
-          <Link href="/login" className="btn-primary">Entrar</Link>
-          <button className="btn-primary">Começar Agora</button>
+          {loading ? (
+            <div className="text-sm text-gray-600">Carregando...</div>
+          ) : user ? (
+            <>
+              {/* Desktop: Mostra nome do usuário */}
+              <div className="hidden md:block text-sm text-gray-700">
+                Olá, {userProfile?.name || user.email?.split('@')[0] || 'Usuário'}
+              </div>
+              {/* Mobile: Mostra nome do usuário e remove "Começar Agora" */}
+              <div className="md:hidden text-sm text-gray-700">
+                Olá, {userProfile?.name || user.email?.split('@')[0] || 'Usuário'}
+              </div>
+              <Link href="/create-page" className="btn-primary">Create page</Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="btn-primary">Entrar</Link>
+              <button className="btn-primary">Começar Agora</button>
+            </>
+          )}
         </div>
 
         {/* Botão Menu Mobile */}

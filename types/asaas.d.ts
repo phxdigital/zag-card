@@ -82,6 +82,7 @@ export interface CreatePaymentRequest {
   externalReference?: string;
   installmentCount?: number;
   installmentValue?: number;
+  remoteIp?: string;
   discount?: {
     value: number;
     dueDateLimitDays: number;
@@ -93,5 +94,23 @@ export interface CreatePaymentRequest {
     value: number;
   };
   postalService?: boolean;
+  // Campos para pagamento com cartão de crédito (checkout direto)
+  creditCard?: {
+    holderName: string;
+    number: string;
+    expiryMonth: string;
+    expiryYear: string;
+    ccv: string; // Asaas usa 'ccv'
+  };
+  creditCardHolderInfo?: {
+    name: string;
+    email: string;
+    cpfCnpj: string;
+    postalCode?: string;
+    addressNumber?: string;
+    addressComplement?: string;
+    phone?: string;
+    mobilePhone?: string;
+  };
 }
 
