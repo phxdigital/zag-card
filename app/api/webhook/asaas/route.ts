@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Atualizar perfil do usuário
-      await supabase
+      const { data: updateResult, error: updateError } = await supabase
         .from('profiles')
         .update({
           subscription_status: 'active',
@@ -85,9 +85,17 @@ export async function POST(request: NextRequest) {
           subscription_start: new Date().toISOString(),
           subscription_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 ano
         })
-        .eq('id', existingPayment.user_id);
+        .eq('id', existingPayment.user_id)
+        .select();
 
-      console.log(`✅ Plano ${planType} ativado para usuário ${existingPayment.user_id}`);
+      if (updateError) {
+        console.error('❌ Erro ao atualizar perfil:', updateError);
+      } else {
+        console.log(`✅ Plano ${planType} ativado para usuário ${existingPayment.user_id}`);
+        console.log(`📊 Max pages definido como: ${maxPages}`);
+        console.log(`🔧 Features: ${features.join(', ')}`);
+        console.log(`📄 Resultado da atualização:`, updateResult);
+      }
     }
 
     // Se o pagamento foi cancelado/estornado, desativar plano

@@ -23,17 +23,30 @@ export default function CreatePage() {
           return;
         }
 
-        // Count confirmed payments and available credits
-        const { data: payments } = await supabase
-          .from('payments')
-          .select('status, plan_type')
-          .eq('user_id', user.id);
+        // Verificar perfil do usuário para obter créditos disponíveis
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status, subscription_plan, max_pages')
+          .eq('id', user.id)
+          .single();
 
-        const confirmed = (payments || []).filter(p => p.status === 'RECEIVED' || p.status === 'CONFIRMED');
+        // Se o usuário tem assinatura ativa, usar max_pages do perfil
+        // Caso contrário, calcular baseado nos pagamentos confirmados
+        let totalCredits = 0;
+        
+        if (profile?.subscription_status === 'active' && profile?.max_pages) {
+          totalCredits = profile.max_pages;
+        } else {
+          // Fallback: calcular baseado nos pagamentos confirmados
+          const { data: payments } = await supabase
+            .from('payments')
+            .select('status, plan_type')
+            .eq('user_id', user.id);
 
-        // Map plan_type to credits; can be overridden later by products.unlock_pages if linked
-        const planCredits = { para_mim: 1, para_equipe: 2, para_negocio: 8 } as Record<string, number>;
-        const totalCredits = confirmed.reduce((sum, p) => sum + (planCredits[p.plan_type] || 0), 0);
+          const confirmed = (payments || []).filter(p => p.status === 'RECEIVED' || p.status === 'CONFIRMED');
+          const planCredits = { para_mim: 1, para_equipe: 2, para_negocio: 8 } as Record<string, number>;
+          totalCredits = confirmed.reduce((sum, p) => sum + (planCredits[p.plan_type] || 0), 0);
+        }
 
         // Count pages already created by this user
         const { data: pagesData } = await supabase
