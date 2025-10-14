@@ -6,7 +6,7 @@ import type { AsaasWebhook } from '@/types/asaas';
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies });
     
     // Verificar token de webhook (opcional, mas recomendado)
     const webhookToken = request.headers.get('asaas-access-token');
@@ -22,7 +22,11 @@ export async function POST(request: NextRequest) {
 
     const webhook: AsaasWebhook = await request.json();
     
-    console.log('Webhook recebido:', webhook.event, webhook.payment.id);
+    console.log('🔔 Webhook recebido do Asaas:');
+    console.log('- Evento:', webhook.event);
+    console.log('- Payment ID:', webhook.payment.id);
+    console.log('- Status:', webhook.payment.status);
+    console.log('- Valor:', webhook.payment.value);
 
     // Atualizar status do pagamento no banco de dados
     const { data: existingPayment } = await supabase
@@ -32,9 +36,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!existingPayment) {
-      console.log('Pagamento não encontrado no banco:', webhook.payment.id);
+      console.log('⚠️ Pagamento não encontrado no banco:', webhook.payment.id);
+      console.log('Isso pode acontecer se o pagamento foi criado diretamente no Asaas');
       return NextResponse.json({ success: true });
     }
+
+    console.log('✅ Pagamento encontrado no banco:', existingPayment.id);
 
     // Atualizar status
     await supabase
