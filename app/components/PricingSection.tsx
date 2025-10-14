@@ -153,8 +153,8 @@ export function PricingSection() {
         window.location.href = data.payment.invoiceUrl;
       }
 
-    } catch {
-      console.error('Erro ao processar pagamento:', error);
+    } catch (err) {
+      console.error('Erro ao processar pagamento:', err);
       alert('Erro ao processar pagamento. Tente novamente.');
     } finally {
       setLoading(null);
