@@ -97,8 +97,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
 
-  } catch {
-console.error('Erro ao processar webhook:', error);
+  } catch (err) {
+console.error('Erro ao processar webhook:', err);
     return NextResponse.json(
       { error: 'Erro ao processar webhook' 
 
