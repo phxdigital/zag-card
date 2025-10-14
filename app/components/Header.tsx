@@ -27,8 +27,8 @@ export function Header() {
             .single()
           setUserProfile(profile)
         }
-      } catch {
-        console.error('Erro ao buscar usuário:', error)
+      } catch (err) {
+        console.error('Erro ao buscar usuário:', err)
       } finally {
         setLoading(false)
       }
