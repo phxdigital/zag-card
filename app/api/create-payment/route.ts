@@ -122,13 +122,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch {
-    console.error('Erro ao criar cobrança:', error);
+  } catch (err) {
+    console.error('Erro ao criar cobrança:', err);
     return NextResponse.json(
       { 
         error: 'Erro ao processar pagamento', 
-        details: error instanceof Error ? error.message : 'Erro desconhecido',
-        stack: error instanceof Error ? error.stack : undefined
+        details: err instanceof Error ? err.message : 'Erro desconhecido',
+        stack: err instanceof Error ? err.stack : undefined
       },
       { status: 500 }
     );
