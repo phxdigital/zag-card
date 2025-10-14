@@ -2232,7 +2232,7 @@ console.error('Error clearing localStorage:', err);
 
                 }
 
-            } catch {
+            } catch (err) {
 console.error('Erro ao carregar dados do usuário:', err);
 
             
