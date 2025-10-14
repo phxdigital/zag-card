@@ -69,13 +69,9 @@ export default function AdminProductsPage() {
 
       if (error) throw error;
       setProducts(data || []);
-    } catch {
-console.error('Erro ao carregar produtos:', error);
-    
-
-
-
-} finally {
+    } catch (err) {
+console.error('Erro ao carregar produtos:', err);
+    } finally {
       setLoading(false);
     }
   };
@@ -91,15 +87,10 @@ console.error('Erro ao carregar produtos:', error);
       if (error) throw error;
       
       loadProducts();
-    } catch {
-console.error('Erro ao atualizar status:', error);
+    } catch (err) {
+console.error('Erro ao atualizar status:', err);
       alert('Erro ao atualizar status do produto');
-    
-
-
-
-
-}
+    }
   };
 
   const toggleFeatured = async (productId: string, currentStatus: boolean) => {
@@ -113,15 +104,10 @@ console.error('Erro ao atualizar status:', error);
       if (error) throw error;
       
       loadProducts();
-    } catch {
-console.error('Erro ao atualizar destaque:', error);
+    } catch (err) {
+console.error('Erro ao atualizar destaque:', err);
       alert('Erro ao atualizar destaque do produto');
-    
-
-
-
-
-}
+    }
   };
 
   const deleteProduct = async (productId: string, productName: string) => {
@@ -138,15 +124,10 @@ console.error('Erro ao atualizar destaque:', error);
       
       alert('Produto excluído com sucesso!');
       loadProducts();
-    } catch {
-console.error('Erro ao excluir produto:', error);
+    } catch (err) {
+console.error('Erro ao excluir produto:', err);
       alert('Erro ao excluir produto');
-    
-
-
-
-
-}
+    }
   };
 
   const filteredProducts = products.filter(product => {
