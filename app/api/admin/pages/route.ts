@@ -88,10 +88,10 @@ export async function GET() {
             pages: formattedPages
         });
 
-    } catch {
-console.error('❌ Erro ao buscar páginas:', error);
+    } catch (err) {
+console.error('❌ Erro ao buscar páginas:', err);
         return NextResponse.json(
-            { error: 'Erro interno do servidor: ' + (error instanceof Error ? error.message : 'Desconhecido') 
+            { error: 'Erro interno do servidor: ' + (err instanceof Error ? err.message : 'Desconhecido') 
 
 
 
@@ -143,10 +143,10 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
 
-    } catch {
-console.error('❌ Erro ao deletar página:', error);
+    } catch (err) {
+console.error('❌ Erro ao deletar página:', err);
         return NextResponse.json(
-            { error: 'Erro interno do servidor: ' + (error instanceof Error ? error.message : 'Desconhecido') 
+            { error: 'Erro interno do servidor: ' + (err instanceof Error ? err.message : 'Desconhecido') 
 
 
 
