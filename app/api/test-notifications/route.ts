@@ -28,7 +28,7 @@ export async function GET() {
             notifications: notifications || []
         });
 
-    } catch (error) {
+    } catch {
 console.error('Erro no teste:', error);
         return NextResponse.json({
             success: false,
@@ -74,7 +74,7 @@ export async function POST() {
             notification
         });
 
-    } catch (error) {
+    } catch {
 console.error('Erro ao criar notificação de teste:', error);
         return NextResponse.json({
             success: false,

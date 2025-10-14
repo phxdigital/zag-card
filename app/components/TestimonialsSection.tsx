@@ -38,7 +38,7 @@ export function TestimonialsSection() {
                   <Star key={i} className="star" />
                 ))}
               </div>
-              <p className="testimonial-text">&quot;{testimonial.content}&quot;</p>
+              <p className="testimonial-text">"{testimonial.content}"</p>
               <div>
                 <div className="testimonial-author">{testimonial.name}</div>
                 <div className="testimonial-role">{testimonial.role}</div>

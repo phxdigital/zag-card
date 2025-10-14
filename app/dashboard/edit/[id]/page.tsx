@@ -239,7 +239,7 @@ export default function EditPage() {
                 alert('Página não encontrada');
                 router.push('/dashboard/pages');
             }
-        } catch (error) {
+        } catch {
 console.error('Erro ao carregar página:', error);
             alert('Erro ao carregar página');
         
@@ -622,7 +622,7 @@ console.error('Erro ao carregar página:', error);
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.error || errorMessage;
-                } catch (error) {
+                } catch {
 // Se não conseguir fazer parse do JSON, usar o status e texto da resposta
                     const responseText = await response.text();
                     console.error('Response text:', responseText);
@@ -635,7 +635,7 @@ console.error('Erro ao carregar página:', error);
                 }
                 throw new Error(errorMessage);
             }
-        } catch (error) {
+        } catch {
 console.error('Erro ao salvar:', error);
             alert('Erro ao salvar: ' + (error as Error).message);
         
@@ -828,7 +828,7 @@ console.error('Erro ao salvar:', error);
                                                             // Redimensionar imagem para caber no cartão (máximo 200x120px)
                                                             const resizedImage = await resizeImageToFit(file, 200, 120);
                                                             setLogoDataUrl(resizedImage);
-                                                        } catch (error) {
+                                                        } catch {
 console.error('Erro ao processar imagem:', error);
                                                             alert('Erro ao processar a imagem. Tente novamente.');
                                                         

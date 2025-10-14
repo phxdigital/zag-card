@@ -5,7 +5,7 @@ import { createOrUpdateCustomer, createPayment, getPixQrCode } from '@/lib/asaas
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Verificar autenticação (temporariamente desabilitado para teste)
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error) {
+  } catch {
     console.error('Erro ao criar cobrança:', error);
     return NextResponse.json(
       { 

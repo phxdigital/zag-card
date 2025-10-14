@@ -86,7 +86,7 @@ export async function createCreditCardPayment(payment: CreatePaymentRequest): Pr
     });
 
     if (!response.ok) {
-      let errorBody: any = null;
+      let errorBody: unknown = null;
       try { errorBody = await response.json(); } catch {}
       throw new Error(`Erro ao criar cobrança no cartão: ${JSON.stringify({ status: response.status, body: errorBody })}`);
     }

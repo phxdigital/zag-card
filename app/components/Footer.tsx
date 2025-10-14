@@ -1,5 +1,6 @@
 import Image from "next/image"
 import { Instagram, Linkedin, Mail } from "lucide-react"
+import Link from 'next/link'
 
 export function Footer() {
   return (
@@ -38,8 +39,8 @@ export function Footer() {
             <ul className="footer-links">
               <li><a href="#">Sobre Nós</a></li>
               <li><a href="#">Contato</a></li>
-              <li><a href="/termos">Termos de Serviço</a></li>
-              <li><a href="/privacidade">Política de Privacidade</a></li>
+              <li><Link href="/termos">Termos de Serviço</Link></li>
+              <li><Link href="/privacidade">Política de Privacidade</Link></li>
             </ul>
           </div>
         </div>

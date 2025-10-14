@@ -91,7 +91,7 @@ function AccountPageContent() {
         confirm_password: ''
       });
       
-    } catch (error) {
+    } catch {
 console.error('Erro ao carregar perfil:', error);
       alert('Erro ao carregar perfil. Por favor, tente novamente.');
     
@@ -205,7 +205,7 @@ console.error('Erro ao carregar perfil:', error);
       // Limpar mensagem após 5 segundos
       setTimeout(() => setSuccessMessage(''), 5000);
       
-    } catch (error) {
+    } catch {
 console.error('Erro ao salvar perfil:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       alert(errorMessage);

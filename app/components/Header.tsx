@@ -8,8 +8,8 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [userProfile, setUserProfile] = useState<any>(null)
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
+  const [userProfile, setUserProfile] = useState<{ name?: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClientComponentClient()
 
@@ -27,7 +27,7 @@ export function Header() {
             .single()
           setUserProfile(profile)
         }
-      } catch (error) {
+      } catch {
         console.error('Erro ao buscar usuário:', error)
       } finally {
         setLoading(false)

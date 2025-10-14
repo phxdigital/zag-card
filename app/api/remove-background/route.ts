@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
       resetTime: rateLimit.resetTime
     });
 
-  } catch (error) {
+  } catch {
     console.error('Erro na API de remoção de fundo:', error);
     
     return NextResponse.json(
@@ -196,9 +196,10 @@ export async function GET(request: NextRequest) {
       resetTime: userLimit.resetTime
     });
 
-  } catch {
-    return NextResponse.json(
-      { error: 'Erro ao verificar status' },
+  } catch (error) {
+return NextResponse.json(
+      { error: 'Erro ao verificar status' 
+},
       { status: 500 }
     );
   }

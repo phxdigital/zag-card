@@ -123,7 +123,7 @@ export default function NewProductPage() {
 
       alert('Produto criado com sucesso!');
       router.push('/admin/products');
-    } catch (error) {
+    } catch {
 const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao criar produto:', error);
       alert(`Erro ao criar produto: ${errorMessage
@@ -255,7 +255,7 @@ const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="129.00"
               />
-              <p className="mt-1 text-xs text-gray-500">Preço &quot;de&quot; para mostrar desconto</p>
+              <p className="mt-1 text-xs text-gray-500">Preço "de" para mostrar desconto</p>
             </div>
 
             <div>

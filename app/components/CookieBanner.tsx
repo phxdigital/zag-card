@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, Cookie, Settings } from 'lucide-react'
+import Link from 'next/link'
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false)
@@ -213,9 +214,9 @@ export function CookieBanner() {
           <div className="mt-4 pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-500">
               Para mais informações, consulte nossa{' '}
-              <a href="/privacidade" className="text-blue-600 hover:underline">
+              <Link href="/privacidade/" className="text-blue-600 underline">
                 Política de Privacidade
-              </a>
+              </Link>
             </p>
           </div>
         </div>

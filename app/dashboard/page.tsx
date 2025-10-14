@@ -1462,7 +1462,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
             localStorage.removeItem('zag-dashboard-config');
 
-        } catch (error) {
+        } catch {
 console.error('Error clearing localStorage:', error);
 
         
@@ -1606,7 +1606,7 @@ console.error('Error clearing localStorage:', error);
 
             }
 
-        } catch (error) {
+        } catch {
 console.error('Erro ao verificar subdomínio:', error);
 
             setSubdomainAvailable(null);
@@ -1917,7 +1917,7 @@ console.error('Erro ao verificar subdomínio:', error);
 
             setActiveStep(2);
 
-        } catch (error) {
+        } catch {
 console.error('Erro ao processar layout:', error);
 
             alert('Erro ao salvar o layout. Tente novamente.');
@@ -2047,7 +2047,7 @@ console.error('Erro ao processar layout:', error);
 
             localStorage.removeItem('zag-dashboard-config');
 
-        } catch (error) {
+        } catch {
 console.error('Error clearing localStorage:', error);
 
         
@@ -2248,7 +2248,7 @@ console.error('Error clearing localStorage:', error);
 
                 }
 
-            } catch (error) {
+            } catch {
 console.error('Erro ao carregar dados do usuário:', error);
 
             
@@ -4562,7 +4562,7 @@ console.error('Erro ao carregar dados do usuário:', error);
 
                                                     errorMessage = errorData.error || errorMessage;
 
-                                                } catch (error) {
+                                                } catch {
 // Se não conseguir fazer parse do JSON, usar o status e texto da resposta
 
                                                     const responseText = await response.text();
@@ -4594,7 +4594,7 @@ console.error('Erro ao carregar dados do usuário:', error);
 
                                             router.push(`/success?subdomain=${subdomain}&pageId=${pageData.id}`);
 
-                                        } catch (error) {
+                                        } catch {
 console.error('Erro ao salvar:', error);
 
                                             alert('Erro ao salvar: ' + (error as Error).message);

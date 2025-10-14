@@ -20,7 +20,7 @@ export default function TermosPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Aceitação dos Termos</h2>
               <p className="text-gray-700 mb-4">
-                Bem-vindo à Zag NFC! Estes Termos de Serviço ("Termos") regem o uso de nossa plataforma de cartão de visita digital NFC. Ao acessar ou usar nossos serviços, você concorda em cumprir e estar vinculado a estes Termos.
+                Bem-vindo à Zag NFC! Estes Termos de Serviço (&quot;Termos&quot;) regem o uso de nossa plataforma de cartão de visita digital NFC. Ao acessar ou usar nossos serviços, você concorda em cumprir e estar vinculado a estes Termos.
               </p>
               <p className="text-gray-700 mb-4">
                 Se você não concordar com qualquer parte destes Termos, não deve usar nossos serviços. Recomendamos que leia estes Termos cuidadosamente antes de usar nossa plataforma.
@@ -134,7 +134,7 @@ export default function TermosPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Limitação de Responsabilidade</h2>
               <p className="text-gray-700 mb-4">
-                Nossos serviços são fornecidos "como estão" e "conforme disponível". Não garantimos que nossos serviços serão ininterruptos, livres de erros ou atenderão às suas necessidades específicas.
+                Nossos serviços são fornecidos &quot;como estão&quot; e &quot;conforme disponível&quot;. Não garantimos que nossos serviços serão ininterruptos, livres de erros ou atenderão às suas necessidades específicas.
               </p>
               <p className="text-gray-700 mb-4">
                 Em nenhuma circunstância a Zag NFC será responsável por danos indiretos, incidentais, especiais ou consequenciais, incluindo perda de lucros, dados ou oportunidades de negócio.

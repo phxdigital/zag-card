@@ -20,7 +20,7 @@ export default function PrivacidadePage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Introdução</h2>
               <p className="text-gray-700 mb-4">
-                A Zag NFC ("nós", "nosso" ou "empresa") está comprometida em proteger a privacidade e os dados pessoais de nossos usuários. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações pessoais quando você utiliza nossos serviços de cartão de visita digital NFC.
+                A Zag NFC (&quot;nós&quot;, &quot;nosso&quot; ou &quot;empresa&quot;) está comprometida em proteger a privacidade e os dados pessoais de nossos usuários. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações pessoais quando você utiliza nossos serviços de cartão de visita digital NFC.
               </p>
             </section>
 

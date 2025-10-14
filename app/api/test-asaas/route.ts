@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
             }
         });
 
-    } catch (error) {
+    } catch {
 console.error('Erro ao testar Asaas:', error);
         return NextResponse.json({
             success: false,

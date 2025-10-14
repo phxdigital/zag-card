@@ -5,7 +5,7 @@ import { createCreditCardPayment, createOrUpdateCustomer } from '@/lib/asaas';
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -96,11 +96,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, payment });
-  } catch (error) {
+  } catch {
     console.error('Erro ao processar pagamento com cartão:', error);
-    const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
+    const errMsg: string = error instanceof Error ? error.message : 'Erro desconhecido';
     // Tentar extrair um payload conhecido do Asaas
-    let parsed: any = null;
+    let parsed: unknown = null;
     try {
       parsed = JSON.parse(errMsg.replace('Erro ao criar cobrança no cartão: ', ''));
     } catch {}
