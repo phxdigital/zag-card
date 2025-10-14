@@ -4578,22 +4578,12 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                             router.push(`/success?subdomain=${subdomain}&pageId=${pageData.id}`);
 
-                                        } catch {
+                                        } catch (err) {
 console.error('Erro ao salvar:', err);
-
-                                            alert('Erro ao salvar: ' + (error as Error).message);
-
-                                        
-
-
-
-
-} finally {
-
+                                            alert('Erro ao salvar: ' + (err as Error).message);
+                                        } finally {
                                             setSaving(false);
-
                                             setSavingMessage('');
-
                                         }
 
                                     }}
