@@ -157,8 +157,8 @@ export async function POST(request: NextRequest) {
       resetTime: rateLimit.resetTime
     });
 
-  } catch {
-    console.error('Erro na API de remoção de fundo:', error);
+  } catch (err) {
+    console.error('Erro na API de remoção de fundo:', err);
     
     return NextResponse.json(
       { 
