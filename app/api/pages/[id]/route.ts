@@ -34,7 +34,7 @@ export async function GET(
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (err) {
 return NextResponse.json({ error: 'Internal server error' 
 }, { status: 500 });
   }
@@ -58,8 +58,8 @@ export async function PUT(
     let body;
     try {
       body = await request.json();
-    } catch {
-console.error('JSON parse error:', error);
+    } catch (err) {
+console.error('JSON parse error:', err);
       return NextResponse.json({ error: 'Invalid JSON in request body' 
 
 
@@ -97,7 +97,7 @@ console.error('JSON parse error:', error);
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (err) {
 return NextResponse.json({ error: 'Internal server error' 
 }, { status: 500 });
   }
@@ -139,8 +139,8 @@ export async function DELETE(
 
     console.log('Page deleted successfully');
     return NextResponse.json({ success: true });
-  } catch {
-console.error('DELETE API error:', error);
+  } catch (err) {
+console.error('DELETE API error:', err);
     return NextResponse.json({ error: 'Internal server error' 
 
 
