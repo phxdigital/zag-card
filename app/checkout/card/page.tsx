@@ -41,6 +41,11 @@ export default function CardCheckoutPage() {
       const parsed = JSON.parse(raw) as CardCheckoutData;
       setData(parsed);
       setCard((prev) => ({ ...prev, holderName: parsed.customer.name }));
+      
+      // Se for débito, sempre usar 1 parcela (à vista)
+      if (parsed.cardMode === 'DEBIT') {
+        setInstallments(1);
+      }
     } catch (e) {
       router.push('/');
     }
@@ -138,9 +143,9 @@ export default function CardCheckoutPage() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Número do cartão</label>
-            <input className="w-full px-3 py-2 border rounded-md" value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} placeholder="0000 0000 0000 0000" />
+            <input className="w-full px-3 py-2 border rounded-md" value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} placeholder="0000 0000 0000 0000" maxLength={16} />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className={`grid gap-4 ${data.cardMode === 'CREDIT' ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <div>
               <label className="block text-sm font-medium mb-1">Validade (MM/AA)</label>
               <input className="w-full px-3 py-2 border rounded-md" value={card.expiry} onChange={(e) => setCard({ ...card, expiry: formatExpiry(e.target.value) })} placeholder="MM/AA" maxLength={5} />
@@ -149,14 +154,16 @@ export default function CardCheckoutPage() {
               <label className="block text-sm font-medium mb-1">CVV</label>
               <input className="w-full px-3 py-2 border rounded-md" value={card.ccv} onChange={(e) => setCard({ ...card, ccv: formatCvv(e.target.value) })} placeholder="000" maxLength={3} />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Parcelas (Crédito)</label>
-              <select className="w-full px-3 py-2 border rounded-md" value={installments} onChange={(e) => setInstallments(parseInt(e.target.value, 10))}>
-                <option value={1}>1x</option>
-                <option value={2}>2x</option>
-                <option value={3}>3x</option>
-              </select>
-            </div>
+            {data.cardMode === 'CREDIT' && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Parcelas</label>
+                <select className="w-full px-3 py-2 border rounded-md" value={installments} onChange={(e) => setInstallments(parseInt(e.target.value, 10))}>
+                  <option value={1}>1x (à vista)</option>
+                  <option value={2}>2x</option>
+                  <option value={3}>3x</option>
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-4">
