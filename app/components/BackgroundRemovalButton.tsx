@@ -71,9 +71,37 @@ export default function BackgroundRemovalButton({
     }
   };
 
-  const handleAcceptResult = () => {
+  const handleAcceptResult = async () => {
     if (processedImageUrl && onImageProcessed) {
-      onImageProcessed(processedImageUrl);
+      // Se for uma URL do Cloudinary, usar proxy para evitar CORS
+      if (processedImageUrl.includes('res.cloudinary.com')) {
+        try {
+          const response = await fetch('/api/image-proxy', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ imageUrl: processedImageUrl })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success && data.dataUrl) {
+            onImageProcessed(data.dataUrl);
+          } else {
+            console.error('Erro ao converter imagem:', data.error);
+            // Fallback: usar URL original
+            onImageProcessed(processedImageUrl);
+          }
+        } catch (error) {
+          console.error('Erro no proxy de imagem:', error);
+          // Fallback: usar URL original
+          onImageProcessed(processedImageUrl);
+        }
+      } else {
+        // Para outras URLs, usar diretamente
+        onImageProcessed(processedImageUrl);
+      }
     }
     setShowPreview(false);
     reset();
