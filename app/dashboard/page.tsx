@@ -329,7 +329,7 @@ export default function DashboardPage() {
 
         // Configurações do cartão - VERSO
 
-        cardBackBgColor: '#e2e8f0',
+        cardBackBgColor: '#FFFFFF',
 
         qrCodeSize: 35,
 
@@ -406,13 +406,314 @@ export default function DashboardPage() {
     const [subdomain, setSubdomain] = useState('');
 
     const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
+    const [processedLogoUrl, setProcessedLogoUrl] = useState<string | null>(null);
 
     const [showCardConfirmation, setShowCardConfirmation] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    
+    // 🎨 Estado para feedback visual da detecção automática de cor
+    const [autoDetectedColor, setAutoDetectedColor] = useState<string | null>(null);
+    const [showColorDetectionFeedback, setShowColorDetectionFeedback] = useState(false);
+    
+    // ✏️ Estados para edição inline na segunda etapa
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [isEditingSubtitle, setIsEditingSubtitle] = useState(false);
+    const [tempTitleText, setTempTitleText] = useState('');
+    const [tempSubtitleText, setTempSubtitleText] = useState('');
+    
+    // 🔧 Estados para edição inline dos botões
+    const [editingButtonId, setEditingButtonId] = useState<number | null>(null);
+    const [tempButtonText, setTempButtonText] = useState('');
+    const [tempButtonUrl, setTempButtonUrl] = useState('');
     const qrcodePreviewRef = useRef<HTMLDivElement>(null);
 
 
 
+    // Helper para detectar contraste do fundo
+    const isColorDark = (hexColor?: string) => {
+        const hex = (hexColor || '#FFFFFF').replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        return luminance < 140; // threshold for dark background
+    };
+
+    // Calcular cor média da imagem enviada para a frente
+    const [averageFrontImageColor, setAverageFrontImageColor] = useState<string | null>(null);
+    const [averageFrontImageColorNfc, setAverageFrontImageColorNfc] = useState<string | null>(null);
+
+    // 🎨 ALGORITMO MELHORADO: Detecção de cor mais precisa
+    const getAverageImageColor = async (url: string): Promise<string | null> => {
+        return new Promise((resolve) => {
+            const img = new window.Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return resolve(null);
+                    
+                    // 🎯 Aumentar amostragem para maior precisão
+                    const sampleSize = 64; // Dobrou de 32 para 64
+                    canvas.width = sampleSize;
+                    canvas.height = sampleSize;
+                    
+                    // Configurar qualidade de renderização
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    
+                    ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+                    const data = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
+                    
+                    // 🎯 Algoritmo melhorado: Histograma de cores com pesos
+                    const colorHistogram = new Map<string, number>();
+                    let totalWeight = 0;
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        const alpha = data[i + 3];
+                        
+                        // Ignorar pixels transparentes ou muito transparentes
+                        if (alpha < 128) continue;
+                        
+                        // 🎯 Quantização para agrupar cores similares (reduzir ruído)
+                        const quantizedR = Math.round(r / 8) * 8;
+                        const quantizedG = Math.round(g / 8) * 8;
+                        const quantizedB = Math.round(b / 8) * 8;
+                        
+                        const colorKey = `${quantizedR},${quantizedG},${quantizedB}`;
+                        
+                        // 🎯 Peso baseado na saturação e luminosidade
+                        const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+                        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+                        const weight = (saturation / 255) * (luminance / 255) * (alpha / 255);
+                        
+                        colorHistogram.set(colorKey, (colorHistogram.get(colorKey) || 0) + weight);
+                        totalWeight += weight;
+                    }
+                    
+                    if (totalWeight === 0) return resolve(null);
+                    
+                    // 🎯 Encontrar a cor mais frequente (não apenas média)
+                    let maxWeight = 0;
+                    let dominantColor = '';
+                    
+                    for (const [color, weight] of colorHistogram) {
+                        if (weight > maxWeight) {
+                            maxWeight = weight;
+                            dominantColor = color;
+                        }
+                    }
+                    
+                    if (!dominantColor) return resolve(null);
+                    
+                    // Converter de volta para hex
+                    const [r, g, b] = dominantColor.split(',').map(Number);
+                    const hex = `#${r.toString(16).padStart(2, '0')}${g
+                        .toString(16)
+                        .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                    
+                    console.log('🎨 COR DETECTADA - Algoritmo melhorado:', {
+                        corOriginal: `${r},${g},${b}`,
+                        hex,
+                        totalPixels: totalWeight,
+                        histogramSize: colorHistogram.size
+                    });
+                    
+                    resolve(hex);
+                } catch (error) {
+                    console.error('Erro na detecção de cor:', error);
+                    resolve(null);
+                }
+            };
+            img.onerror = () => resolve(null);
+            img.src = url;
+        });
+    };
+
+    // 🎨 FUNÇÃO MELHORADA: Detecção de cor mais precisa com análise de regiões
+    const detectAndApplyBackgroundColor = async (imageUrl: string) => {
+        try {
+            // 🎯 Análise em múltiplas regiões para maior precisão
+            const regions = [
+                { x: 0, y: 0, w: 1, h: 1, name: 'full' }, // Imagem completa
+                { x: 0.1, y: 0.1, w: 0.8, h: 0.8, name: 'center' }, // Região central
+                { x: 0, y: 0, w: 0.3, h: 1, name: 'left' }, // Lado esquerdo
+                { x: 0.7, y: 0, w: 0.3, h: 1, name: 'right' }, // Lado direito
+            ];
+            
+            const regionColors = [];
+            
+            for (const region of regions) {
+                const color = await getAverageImageColorRegion(imageUrl, region);
+                if (color) {
+                    regionColors.push({ color, region: region.name });
+                }
+            }
+            
+            if (regionColors.length === 0) return null;
+            
+            // 🎯 Escolher a cor mais representativa
+            // Priorizar região central, depois full, depois laterais
+            const priorityOrder = ['center', 'full', 'left', 'right'];
+            let selectedColor = null;
+            
+            for (const priority of priorityOrder) {
+                const regionData = regionColors.find(r => r.region === priority);
+                if (regionData) {
+                    selectedColor = regionData.color;
+                    break;
+                }
+            }
+            
+            if (selectedColor) {
+                // Aplicar a cor detectada ao fundo do cartão
+                handleConfigChange('cardBgColor', selectedColor);
+                
+                // Feedback visual para o usuário
+                console.log('🎨 COR DETECTADA - Algoritmo melhorado:', {
+                    corFinal: selectedColor,
+                    regioesAnalisadas: regionColors.length,
+                    coresEncontradas: regionColors.map(r => ({ regiao: r.region, cor: r.color }))
+                });
+                
+                // Mostrar feedback visual
+                setAutoDetectedColor(selectedColor);
+                setShowColorDetectionFeedback(true);
+                
+                // Auto-hide após 3 segundos
+                setTimeout(() => {
+                    setShowColorDetectionFeedback(false);
+                }, 3000);
+                
+                return selectedColor;
+            }
+        } catch (error) {
+            console.error('Erro ao detectar cor da imagem:', error);
+        }
+        return null;
+    };
+
+    // 🎨 REGIÃO MELHORADA: Detecção de cor mais precisa em regiões específicas
+    const getAverageImageColorRegion = async (
+        url: string,
+        region: { x: number; y: number; w: number; h: number }
+    ): Promise<string | null> => {
+        return new Promise((resolve) => {
+            const img = new window.Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                try {
+                    const sampleSize = 64;
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return resolve(null);
+                    
+                    // Configurar qualidade de renderização
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    
+                    const sx = Math.max(0, Math.min(img.width - 1, Math.floor(img.width * region.x)));
+                    const sy = Math.max(0, Math.min(img.height - 1, Math.floor(img.height * region.y)));
+                    const sw = Math.max(1, Math.floor(img.width * region.w));
+                    const sh = Math.max(1, Math.floor(img.height * region.h));
+                    canvas.width = sampleSize;
+                    canvas.height = sampleSize;
+                    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sampleSize, sampleSize);
+                    const data = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
+                    
+                    // 🎯 Algoritmo melhorado: Histograma de cores com pesos
+                    const colorHistogram = new Map<string, number>();
+                    let totalWeight = 0;
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        const alpha = data[i + 3];
+                        
+                        // Ignorar pixels transparentes ou muito transparentes
+                        if (alpha < 128) continue;
+                        
+                        // 🎯 Quantização mais fina para regiões específicas
+                        const quantizedR = Math.round(r / 4) * 4; // Mais preciso que /8
+                        const quantizedG = Math.round(g / 4) * 4;
+                        const quantizedB = Math.round(b / 4) * 4;
+                        
+                        const colorKey = `${quantizedR},${quantizedG},${quantizedB}`;
+                        
+                        // 🎯 Peso baseado na saturação, luminosidade e posição
+                        const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+                        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+                        const weight = (saturation / 255) * (luminance / 255) * (alpha / 255);
+                        
+                        colorHistogram.set(colorKey, (colorHistogram.get(colorKey) || 0) + weight);
+                        totalWeight += weight;
+                    }
+                    
+                    if (totalWeight === 0) return resolve(null);
+                    
+                    // 🎯 Encontrar a cor mais frequente
+                    let maxWeight = 0;
+                    let dominantColor = '';
+                    
+                    for (const [color, weight] of colorHistogram) {
+                        if (weight > maxWeight) {
+                            maxWeight = weight;
+                            dominantColor = color;
+                        }
+                    }
+                    
+                    if (!dominantColor) return resolve(null);
+                    
+                    // Converter de volta para hex
+                    const [r, g, b] = dominantColor.split(',').map(Number);
+                    const hex = `#${r.toString(16).padStart(2, '0')}${g
+                        .toString(16)
+                        .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                    
+                    resolve(hex);
+                } catch (error) {
+                    console.error('Erro na detecção de cor da região:', error);
+                    resolve(null);
+                }
+            };
+            img.onerror = () => resolve(null);
+            img.src = url;
+        });
+    };
+
+    useEffect(() => {
+        let cancelled = false;
+        const compute = async () => {
+            if (!logoDataUrl) {
+                if (!cancelled) {
+                    setAverageFrontImageColor(null);
+                    setAverageFrontImageColorNfc(null);
+                }
+                return;
+            }
+            const color = await getAverageImageColor(logoDataUrl);
+            if (!cancelled) setAverageFrontImageColor(color);
+            // top-right região ~20% x 25%
+            const regionColor = await getAverageImageColorRegion(logoDataUrl, { x: 0.78, y: 0.02, w: 0.2, h: 0.25 });
+            if (!cancelled) setAverageFrontImageColorNfc(regionColor);
+        };
+        compute();
+        return () => { cancelled = true; };
+    }, [logoDataUrl]);
+
+    const useImageColorForFront = !!logoDataUrl && (config.logoSize || 60) >= 90;
+    const frontContrastHex = useImageColorForFront && averageFrontImageColor ? averageFrontImageColor : (config.cardBgColor || '#FFFFFF');
+    const frontContrastHexNfc = useImageColorForFront && averageFrontImageColorNfc ? averageFrontImageColorNfc : (config.cardBgColor || '#FFFFFF');
+    
+    const isBackDark = isColorDark(config.cardBackBgColor);
+    const isFrontDark = isColorDark(frontContrastHex);
+    const isFrontDarkNfc = isColorDark(frontContrastHexNfc);
+    
     const availableIcons: IconName[] = [
 
         'message-circle', 'instagram', 'facebook', 'youtube', 'twitter', 'pix', 'linkedin', 'globe', 'map-pin', 'phone', 'mail', 'shopping-cart', 'link', 'image',
@@ -453,7 +754,38 @@ export default function DashboardPage() {
 
     const subdomainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    // BACK: média de áreas específicas quando houver logo no verso
+    const [averageBackImageColorNfc, setAverageBackImageColorNfc] = useState<string | null>(null);
+    const [averageBackImageColorZag, setAverageBackImageColorZag] = useState<string | null>(null);
 
+    useEffect(() => {
+        let cancelled = false;
+        const compute = async () => {
+            if (!logoDataUrl) {
+                if (!cancelled) {
+                    setAverageBackImageColorNfc(null);
+                    setAverageBackImageColorZag(null);
+                }
+                return;
+            }
+            // mesma imagem é usada frente/verso; amostrar regiões do verso
+            const nfcRegion = await getAverageImageColorRegion(logoDataUrl, { x: 0.78, y: 0.02, w: 0.2, h: 0.25 });
+            const zagRegion = await getAverageImageColorRegion(logoDataUrl, { x: 0.70, y: 0.75, w: 0.28, h: 0.23 });
+            if (!cancelled) {
+                setAverageBackImageColorNfc(nfcRegion);
+                setAverageBackImageColorZag(zagRegion);
+            }
+        };
+        compute();
+        return () => { cancelled = true; };
+    }, [logoDataUrl]);
+
+    const useImageColorForBack = !!logoDataUrl && (config.clientLogoBackSize || 35) >= 50; // logo grande no verso
+    const backContrastHexNfc = useImageColorForBack && averageBackImageColorNfc ? averageBackImageColorNfc : (config.cardBackBgColor || '#FFFFFF');
+    const backContrastHexZag = useImageColorForBack && averageBackImageColorZag ? averageBackImageColorZag : (config.cardBackBgColor || '#FFFFFF');
+
+    const isBackDarkNfc = isColorDark(backContrastHexNfc);
+    const isBackDarkZag = isColorDark(backContrastHexZag);
 
     const handleConfigChange = (key: keyof PageConfig, value: unknown) => {
 
@@ -510,9 +842,107 @@ export default function DashboardPage() {
 
     // Função para gerar e baixar a visualização do cartão
 
+    // Função para carregar imagem com fallback para CORS
+    const loadImageWithCorsFallback = (url: string): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            // Se não for URL externa, usar diretamente
+            if (!url.startsWith('http')) {
+                resolve(url);
+                return;
+            }
+
+            // Para URLs do remove.bg (Supabase), tentar usar diretamente primeiro
+            if (url.includes('supabase') || url.includes('remove.bg')) {
+                console.log('Imagem do remove.bg detectada, usando URL original para manter qualidade');
+                resolve(url);
+                return;
+            }
+
+            const img = new window.Image();
+            
+            // Tentar primeiro com CORS
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = () => {
+                // Se carregou com CORS, usar a URL original (melhor qualidade)
+                resolve(url);
+            };
+            
+            img.onerror = () => {
+                // Se falhou com CORS, converter para data URL
+                console.log('CORS falhou, convertendo para data URL...');
+                convertUrlToDataUrl(url)
+                    .then(resolve)
+                    .catch(() => resolve(url)); // Fallback final
+            };
+            
+            img.src = url;
+        });
+    };
+
+    // Função para converter URL em data URL (resolve problemas de CORS)
+    const convertUrlToDataUrl = async (url: string): Promise<string> => {
+        console.log('🔍 CONVERTER - URL de entrada:', url);
+        console.log('🔍 CONVERTER - Tipo:', url.startsWith('data:') ? 'Data URL' : 'URL Externa');
+        
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            
+            console.log('🔍 CONVERTER - Blob type:', blob.type);
+            console.log('🔍 CONVERTER - Blob size:', blob.size);
+            
+            // Verificar se é uma imagem PNG (que mantém transparência)
+            if (blob.type === 'image/png') {
+                console.log('🔍 CONVERTER - Usando FileReader para PNG');
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = reader.result as string;
+                        console.log('🔍 CONVERTER - Data URL gerada (PNG):', result.substring(0, 100) + '...');
+                        resolve(result);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } else {
+                console.log('🔍 CONVERTER - Usando Canvas para não-PNG');
+                // Para outros tipos, usar canvas para garantir qualidade
+                return new Promise((resolve, reject) => {
+                    const img = new window.Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        console.log('🔍 CONVERTER - Imagem carregada no canvas:', {
+                            naturalWidth: img.naturalWidth,
+                            naturalHeight: img.naturalHeight
+                        });
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) {
+                            reject(new Error('Não foi possível criar contexto do canvas'));
+                            return;
+                        }
+                        
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        ctx.drawImage(img, 0, 0);
+                        const result = canvas.toDataURL('image/png', 1.0); // Qualidade máxima
+                        console.log('🔍 CONVERTER - Data URL gerada (Canvas):', result.substring(0, 100) + '...');
+                        resolve(result);
+                    };
+                    img.onerror = reject;
+                    img.src = url;
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao converter URL para data URL:', error);
+            return url; // Fallback para a URL original
+        }
+    };
+
     const generateCardImage = async (side: 'front' | 'back', returnAsDataUrl: boolean = false): Promise<string | void> => {
 
-        return new Promise((resolve) => {
+        return new Promise(async (resolve) => {
 
             const canvas = document.createElement('canvas');
 
@@ -530,6 +960,7 @@ export default function DashboardPage() {
 
 
 
+
             // Dimensões reais de cartão de crédito para impressão (85.6mm x 53.98mm)
             // Convertendo para pixels em 300 DPI para alta qualidade de impressão
             const cardWidth = 1011; // 85.6mm * 300 DPI / 25.4mm
@@ -537,17 +968,31 @@ export default function DashboardPage() {
             
             // Dimensões do preview para proporções
             const PREVIEW_WIDTH = 320;
+
+            // 🔍 DIAGNÓSTICO: Log das configurações do canvas
+            console.log('🔍 CANVAS - Configurações:', {
+                cardWidth,
+                cardHeight,
+                side,
+                canvasWidth: canvas.width,
+                canvasHeight: canvas.height
+            });
             
 
             canvas.width = cardWidth;
 
             canvas.height = cardHeight;
 
-
+            // 🔍 DIAGNÓSTICO: Log do contexto do canvas
+            console.log('🔍 CANVAS - Contexto:', {
+                imageSmoothingEnabled: ctx.imageSmoothingEnabled,
+                imageSmoothingQuality: ctx.imageSmoothingQuality,
+                globalAlpha: ctx.globalAlpha
+            });
 
             // Configurar fundo
 
-            const bgColor = side === 'front' ? (config.cardBgColor || '#FFFFFF') : (config.cardBackBgColor || '#e2e8f0');
+            const bgColor = side === 'front' ? (config.cardBgColor || '#FFFFFF') : (config.cardBackBgColor || '#FFFFFF');
 
             ctx.fillStyle = bgColor;
 
@@ -561,18 +1006,52 @@ export default function DashboardPage() {
 
                 if (logoDataUrl) {
 
+                    // Para URLs do Supabase (remove.bg), converter para data URL para evitar CORS
+                    let processedLogoUrl = logoDataUrl;
+                    if (logoDataUrl.includes('supabase') || logoDataUrl.includes('remove.bg')) {
+                        console.log('🔍 FRENTE - Convertendo URL do Supabase para data URL...');
+                        processedLogoUrl = await convertUrlToDataUrl(logoDataUrl);
+                    }
+
+                    // 🔍 DIAGNÓSTICO: Log da URL da frente
+                    console.log('🔍 FRENTE - URL recebida:', logoDataUrl);
+                    console.log('🔍 FRENTE - URL processada:', processedLogoUrl);
+                    console.log('🔍 FRENTE - Tipo de URL:', logoDataUrl.startsWith('data:') ? 'Data URL' : 'URL Externa');
+
                     const img = new window.Image();
 
                     img.onload = () => {
 
-                        // ✅ Logo proporcional mantendo o aspect ratio real da imagem
-                        const logoSizePercent = config.logoSize || 60;
-                        const baseHeight = (logoSizePercent / 100) * cardHeight; // altura-alvo
-                        const logoRatio = (img.naturalWidth && img.naturalHeight)
+                        // 🔍 DIAGNÓSTICO: Log das dimensões da imagem
+                        console.log('🔍 FRENTE - Dimensões naturais:', {
+                            naturalWidth: img.naturalWidth,
+                            naturalHeight: img.naturalHeight,
+                            ratio: img.naturalWidth / img.naturalHeight
+                        });
+
+                        // ✅ Logo proporcional mantendo o aspect ratio real da imagem (igual ao verso)
+                        // CORREÇÃO: Para imagens do remove.bg, limitar o tamanho máximo para evitar redimensionamento excessivo
+                        const isRemoveBgImage = logoDataUrl.includes('supabase') || logoDataUrl.includes('remove.bg');
+                        const logoSizePercent = isRemoveBgImage 
+                            ? Math.min(config.logoSize || 60, 80) // Máximo 80% para remove.bg
+                            : (config.logoSize || 60); // Normal para upload do usuário
+                        const baseWidth = (logoSizePercent / 100) * cardWidth; // largura-alvo (igual ao verso)
+                        const imgRatio = (img.naturalWidth && img.naturalHeight)
                             ? (img.naturalWidth / img.naturalHeight)
                             : 1;
-                        const logoHeight = Math.round(baseHeight);
-                        const logoWidth = Math.round(baseHeight * logoRatio);
+                        const logoWidth = Math.round(baseWidth);
+                        const logoHeight = Math.round(baseWidth / imgRatio);
+
+                        // 🔍 DIAGNÓSTICO: Log das dimensões calculadas
+                        console.log('🔍 FRENTE - Dimensões calculadas:', {
+                            logoWidth,
+                            logoHeight,
+                            baseWidth,
+                            logoSizePercent,
+                            configLogoSize: config.logoSize,
+                            isRemoveBgImage,
+                            originalSize: isRemoveBgImage ? 'Limitado para remove.bg' : 'Normal para upload'
+                        });
                         
                         // ✅ CORRIGIDO: Posicionamento com multiplicador 0.3 (igual ao CSS)
                         const positionPercent = config.logoPosition || 0;
@@ -713,11 +1192,11 @@ export default function DashboardPage() {
 
                         };
 
-                        nfcImg.src = '/nfc-symbol.png';
+                        nfcImg.src = isColorDark(frontContrastHexNfc) ? '/nfc-symbol-white.png' : '/nfc-symbol.png';
 
                     };
 
-                    img.src = logoDataUrl;
+                    img.src = processedLogoUrl;
 
                 } else {
 
@@ -834,7 +1313,7 @@ export default function DashboardPage() {
 
                     };
 
-                    nfcImg.src = '/nfc-symbol.png';
+                    nfcImg.src = isColorDark(frontContrastHexNfc) ? '/nfc-symbol-white.png' : '/nfc-symbol.png';
 
                 }
 
@@ -844,18 +1323,49 @@ export default function DashboardPage() {
 
                 if (logoDataUrl) {
 
+                    // Para URLs do Supabase (remove.bg), converter para data URL para evitar CORS
+                    let processedLogoUrl = logoDataUrl;
+                    if (logoDataUrl.includes('supabase') || logoDataUrl.includes('remove.bg')) {
+                        console.log('🔍 VERSO - Convertendo URL do Supabase para data URL...');
+                        processedLogoUrl = await convertUrlToDataUrl(logoDataUrl);
+                    }
+
+                    // 🔍 DIAGNÓSTICO: Log da URL do verso
+                    console.log('🔍 VERSO - URL recebida:', logoDataUrl);
+                    console.log('🔍 VERSO - URL processada:', processedLogoUrl);
+                    console.log('🔍 VERSO - Tipo de URL:', logoDataUrl.startsWith('data:') ? 'Data URL' : 'URL Externa');
+
                     const img = new window.Image();
 
                     img.onload = () => {
 
+                        // 🔍 DIAGNÓSTICO: Log das dimensões da imagem
+                        console.log('🔍 VERSO - Dimensões naturais:', {
+                            naturalWidth: img.naturalWidth,
+                            naturalHeight: img.naturalHeight,
+                            ratio: img.naturalWidth / img.naturalHeight
+                        });
+
                         // ✅ Logo do verso mantendo o aspect ratio real da imagem
-                        const logoSizePercent = config.clientLogoBackSize || 50;
+                        // CORREÇÃO: Para imagens do remove.bg, limitar o tamanho máximo para evitar redimensionamento excessivo
+                        const isRemoveBgImage = logoDataUrl.includes('supabase') || logoDataUrl.includes('remove.bg');
+                        const logoSizePercent = isRemoveBgImage 
+                            ? Math.min(config.clientLogoBackSize || 50, 80) // Máximo 80% para remove.bg
+                            : (config.clientLogoBackSize || 50); // Normal para upload do usuário
                         const baseWidth = (logoSizePercent / 100) * cardWidth; // largura-alvo
                         const imgRatioBack = (img.naturalWidth && img.naturalHeight)
                             ? (img.naturalWidth / img.naturalHeight)
                             : 1;
                         const logoWidth = Math.round(baseWidth);
                         const logoHeight = Math.round(baseWidth / imgRatioBack);
+
+                        // 🔍 DIAGNÓSTICO: Log das dimensões calculadas
+                        console.log('🔍 VERSO - Dimensões calculadas:', {
+                            logoWidth,
+                            logoHeight,
+                            baseWidth,
+                            logoSizePercent
+                        });
                         
                         // Usar a mesma lógica do preview: 50% + (position * 1.2)%
                         const positionPercent = config.logoPositionBack || 0;
@@ -945,9 +1455,9 @@ export default function DashboardPage() {
 
                                 zagImg.onload = () => {
 
-                                    // Altura proporcional ao preview (12px em 192px = 6.25%)
-                                    const zagHeight = Math.round(12 * (cardHeight / 192));
-                                    // Usar proporção real da imagem (fallback 60:18)
+                                    // Altura proporcional ao preview (12px em 192px = 6.25%) - 3x maior
+                                    const zagHeight = Math.round(36 * (cardHeight / 192));
+                                    // Preservar aspect ratio do próprio asset
                                     const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
                                         ? (zagImg.naturalWidth / zagImg.naturalHeight)
                                         : (60 / 18);
@@ -955,7 +1465,10 @@ export default function DashboardPage() {
                                     // Usar as mesmas margens do NFC: right = marginRight, bottom = marginTop
                                     const bottomMargin = marginTop; // espelha o top do NFC
                                     const rightMargin = marginRight; // mesma distância da borda direita
-                                    ctx.drawImage(zagImg, cardWidth - zagWidth - rightMargin, cardHeight - zagHeight - bottomMargin, zagWidth, zagHeight);
+                                    // Aproximar mais da borda direita e inferior (12px direita, 8px inferior)
+                                    const deltaRight = Math.round(12 * (cardWidth / 320));
+                                    const deltaBottom = Math.round(8 * (cardHeight / 192));
+                                    ctx.drawImage(zagImg, cardWidth - zagWidth - (rightMargin - deltaRight), cardHeight - zagHeight - (bottomMargin - deltaBottom), zagWidth, zagHeight);
                                     
 
                                     // Retornar dataURL ou baixar imagem
@@ -992,7 +1505,7 @@ export default function DashboardPage() {
 
                                 };
 
-                                zagImg.src = '/zag-botom.png';
+                                zagImg.src = isBackDarkZag ? '/logo-zag-white.png' : '/logo-zag-black.png';
 
                             };
 
@@ -1004,9 +1517,9 @@ export default function DashboardPage() {
 
                                 zagImg.onload = () => {
 
-                                    // Altura proporcional ao preview (12px em 192px = 6.25%)
-                                    const zagHeight = Math.round(12 * (cardHeight / 192));
-                                    // Usar proporção real da imagem (fallback 60:18)
+                                    // Altura proporcional ao preview (12px em 192px = 6.25%) - 3x maior
+                                    const zagHeight = Math.round(36 * (cardHeight / 192));
+                                    // Preservar aspect ratio do próprio asset
                                     const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
                                         ? (zagImg.naturalWidth / zagImg.naturalHeight)
                                         : (60 / 18);
@@ -1016,7 +1529,10 @@ export default function DashboardPage() {
                                     const marginRight = Math.round(20 * (cardWidth / 320));
                                     const bottomMargin = marginTop;
                                     const rightMargin = marginRight;
-                                    ctx.drawImage(zagImg, cardWidth - zagWidth - rightMargin, cardHeight - zagHeight - bottomMargin, zagWidth, zagHeight);
+                                    // Aproximar mais da borda direita e inferior (12px direita, 8px inferior)
+                                    const deltaRight = Math.round(12 * (cardWidth / 320));
+                                    const deltaBottom = Math.round(8 * (cardHeight / 192));
+                                    ctx.drawImage(zagImg, cardWidth - zagWidth - (rightMargin - deltaRight), cardHeight - zagHeight - (bottomMargin - deltaBottom), zagWidth, zagHeight);
                                     
 
                                     if (returnAsDataUrl) {
@@ -1051,11 +1567,11 @@ export default function DashboardPage() {
 
                                 };
 
-                                zagImg.src = '/zag-botom.png';
+                                zagImg.src = isBackDarkZag ? '/logo-zag-white.png' : '/logo-zag-black.png';
 
                             };
 
-                            nfcImg.src = '/nfc-symbol.png';
+                            nfcImg.src = isBackDarkNfc ? '/nfc-symbol-white.png' : '/nfc-symbol.png';
 
                         };
 
@@ -1094,8 +1610,8 @@ export default function DashboardPage() {
                                 zagImg.onload = () => {
 
                                     // Escalar proporcionalmente da prévia (320x192) para o PDF (1011x638)
-                                    // Altura da logo no preview = 12px -> 6.25% da altura (12/192)
-                                    const zagHeight = Math.round(12 * (cardHeight / 192));
+                                    // Altura da logo no preview = 12px -> 6.25% da altura (12/192) - 3x maior
+                                    const zagHeight = Math.round(36 * (cardHeight / 192));
                                     // Usar proporção real da imagem (fallback 60:18) para evitar achatamento
                                     const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
                                         ? (zagImg.naturalWidth / zagImg.naturalHeight)
@@ -1141,7 +1657,7 @@ export default function DashboardPage() {
 
                                 };
 
-                                zagImg.src = '/zag-botom.png';
+                                zagImg.src = isBackDarkZag ? '/logo-zag-white.png' : '/logo-zag-black.png';
 
                             };
 
@@ -1161,7 +1677,7 @@ export default function DashboardPage() {
 
                             };
 
-                            nfcImg.src = '/nfc-symbol.png';
+                            nfcImg.src = isColorDark(frontContrastHexNfc) ? '/nfc-symbol-white.png' : '/nfc-symbol.png';
 
                         };
 
@@ -1169,7 +1685,7 @@ export default function DashboardPage() {
 
                     };
 
-                    img.src = logoDataUrl;
+                    img.src = processedLogoUrl;
 
                 } else {
 
@@ -1229,14 +1745,20 @@ export default function DashboardPage() {
                             zagImg.onload = () => {
 
                                     // Escalar proporcionalmente da prévia (320x192) para o PDF (1011x638)
-                                    // Altura da logo no preview = 12px -> 6.25% da altura (12/192)
-                                    const zagHeight = Math.round(12 * (cardHeight / 192));
-                                    // Manter a proporção original da imagem 60:18 (3.33:1)
-                                    const zagWidth = (zagHeight * 60) / 18;
+                                    // Altura da logo no preview = 12px -> 6.25% da altura (12/192) - 3x maior
+                                    const zagHeight = Math.round(36 * (cardHeight / 192));
+                                    // Preservar aspect ratio do asset
+                                    const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
+                                        ? (zagImg.naturalWidth / zagImg.naturalHeight)
+                                        : (60 / 18);
+                                    const zagWidth = Math.round(zagHeight * zagRatio);
                                     // Usar as mesmas margens do NFC
                                     const bottomMargin = Math.round(20 * (cardHeight / 192)); // mesmo que marginTop do NFC
                                     const rightMargin = Math.round(20 * (cardWidth / 320));
-                                    ctx.drawImage(zagImg, cardWidth - zagWidth - rightMargin, cardHeight - zagHeight - bottomMargin, zagWidth, zagHeight);
+                                    // Aproximar mais da borda direita e inferior (12px direita, 8px inferior)
+                                    const deltaRight = Math.round(12 * (cardWidth / 320));
+                                    const deltaBottom = Math.round(8 * (cardHeight / 192));
+                                    ctx.drawImage(zagImg, cardWidth - zagWidth - (rightMargin - deltaRight), cardHeight - zagHeight - (bottomMargin - deltaBottom), zagWidth, zagHeight);
                                 
 
                                 if (returnAsDataUrl) {
@@ -1271,7 +1793,7 @@ export default function DashboardPage() {
 
                             };
 
-                            zagImg.src = '/logo-zag.png';
+                            zagImg.src = isBackDarkZag ? '/logo-zag-white.png' : '/logo-zag-black.png';
 
                         };
 
@@ -1283,12 +1805,18 @@ export default function DashboardPage() {
 
                             zagImg.onload = () => {
 
-                                const zagWidth = 60 * (cardWidth / 1011);
-
-                                const zagHeight = 18 * (cardHeight / 638);
+                                // Manter altura base e preservar aspect ratio do asset - 3x maior
+                                const zagHeight = Math.round(36 * (cardHeight / 192));
+                                const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
+                                    ? (zagImg.naturalWidth / zagImg.naturalHeight)
+                                    : (60 / 18);
+                                const zagWidth = Math.round(zagHeight * zagRatio);
 
                                 // Posição bottom-right com escala correta
-ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, zagWidth, zagHeight);
+// Aproximar mais da borda direita e inferior (12px direita, 8px inferior)
+const deltaRight = Math.round(12 * (cardWidth / 320));
+const deltaBottom = Math.round(8 * (cardHeight / 192));
+ctx.drawImage(zagImg, cardWidth - zagWidth - (20 - deltaRight), cardHeight - zagHeight - (20 - deltaBottom), zagWidth, zagHeight);
                                 
 
                                 if (returnAsDataUrl) {
@@ -1323,11 +1851,11 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                             };
 
-                            zagImg.src = '/logo-zag.png';
+                            zagImg.src = isBackDarkZag ? '/logo-zag-white.png' : '/logo-zag-black.png';
 
                         };
 
-                        nfcImg.src = '/nfc-symbol.png';
+                        nfcImg.src = isBackDarkNfc ? '/nfc-symbol-white.png' : '/nfc-symbol.png';
 
                     };
 
@@ -1365,12 +1893,17 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                             zagImg.onload = () => {
 
-                                const zagWidth = 60 * (cardWidth / 1011);
-
-                                const zagHeight = 18 * (cardHeight / 638);
+                                const zagHeight = Math.round(36 * (cardHeight / 192));
+                                const zagRatio = (zagImg.naturalWidth && zagImg.naturalHeight)
+                                    ? (zagImg.naturalWidth / zagImg.naturalHeight)
+                                    : (60 / 18);
+                                const zagWidth = Math.round(zagHeight * zagRatio);
 
                                 // Posição bottom-right com escala correta
-ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, zagWidth, zagHeight);
+// Aproximar mais da borda direita e inferior (12px direita, 8px inferior)
+const deltaRight = Math.round(12 * (cardWidth / 320));
+const deltaBottom = Math.round(8 * (cardHeight / 192));
+ctx.drawImage(zagImg, cardWidth - zagWidth - (20 - deltaRight), cardHeight - zagHeight - (20 - deltaBottom), zagWidth, zagHeight);
                                 
 
                                 if (returnAsDataUrl) {
@@ -1403,7 +1936,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                             };
 
-                            zagImg.src = '/logo-zag.png';
+                            zagImg.src = isBackDarkZag ? '/logo-zag-white.png' : '/logo-zag-black.png';
 
                         };
 
@@ -1423,7 +1956,7 @@ ctx.drawImage(zagImg, cardWidth - zagWidth - 20, cardHeight - zagHeight - 20, za
 
                         };
 
-                        nfcImg.src = '/nfc-symbol.png';
+                        nfcImg.src = isColorDark(frontContrastHexNfc) ? '/nfc-symbol-white.png' : '/nfc-symbol.png';
 
                     };
 
@@ -1500,7 +2033,7 @@ console.error('Error clearing localStorage:', err);
 
             // Configurações do cartão - VERSO
 
-            cardBackBgColor: '#e2e8f0',
+            cardBackBgColor: '#FFFFFF',
 
             qrCodeSize: 35,
 
@@ -1731,6 +2264,9 @@ console.error('Erro ao verificar subdomínio:', err);
 
                 setLogoDataUrl(optimizedDataUrl);
 
+                // 🎨 NOVA FUNCIONALIDADE: Detectar cor predominante e aplicar automaticamente
+                await detectAndApplyBackgroundColor(optimizedDataUrl);
+
             };
 
             reader.readAsDataURL(file);
@@ -1948,7 +2484,7 @@ console.error('Erro ao processar layout:', err);
 
     };
 
-    // Função para adicionar botão PIX personalizado
+    // 💰 Função para adicionar botão PIX personalizado
     const openPixEditor = () => {
         // Verificar se já existe um botão PIX
         const existingPix = config.customLinks?.find(link => link.icon === 'pix');
@@ -1963,21 +2499,28 @@ console.error('Erro ao processar layout:', err);
             return;
         }
 
-        // Pré-configurar o editor com valores PIX (sem id para ser tratado como novo)
-        const pixTemplate = {
-            id: 0, // id temporário para identificar no editor
-            text: 'PIX',
-            url: 'pix:',
+        // 💰 Criar botão PIX diretamente com funcionalidade inline
+        const newPixButton: CustomLink = {
+            id: Date.now(),
+            text: 'Pix Copia e Cola', // Texto fixo
+            url: 'Digite sua chave PIX', // Chave PIX vai na URL
             icon: 'pix',
             isSocial: false,
-            styleType: 'solid' as const,
+            styleType: 'solid',
             bgColor1: '#32BCAD',
             bgColor2: '#32BCAD',
             textColor: '#ffffff'
         };
         
-        setEditingLink(pixTemplate as CustomLink);
-        setShowLinkEditor(true);
+        setConfig(prev => ({
+            ...prev,
+            customLinks: [...(prev.customLinks || []), newPixButton]
+        }));
+
+        // 🎯 Auto-editar o botão PIX recém-criado
+        setTimeout(() => {
+            startEditingButton(newPixButton.id, newPixButton.text, newPixButton.url);
+        }, 100);
     };
 
 
@@ -2036,6 +2579,149 @@ console.error('Erro ao processar layout:', err);
 
     };
 
+    // ✏️ Funções para edição inline
+    const startEditingTitle = () => {
+        setTempTitleText(config.landingPageTitleText || '');
+        setIsEditingTitle(true);
+    };
+
+    const startEditingSubtitle = () => {
+        setTempSubtitleText(config.landingPageSubtitleText || '');
+        setIsEditingSubtitle(true);
+    };
+
+    const saveTitleEdit = () => {
+        if (tempTitleText.trim()) {
+            handleConfigChange('landingPageTitleText', tempTitleText.trim());
+        }
+        setIsEditingTitle(false);
+    };
+
+    const saveSubtitleEdit = () => {
+        handleConfigChange('landingPageSubtitleText', tempSubtitleText.trim());
+        setIsEditingSubtitle(false);
+    };
+
+    const cancelTitleEdit = () => {
+        setTempTitleText('');
+        setIsEditingTitle(false);
+    };
+
+    const cancelSubtitleEdit = () => {
+        setTempSubtitleText('');
+        setIsEditingSubtitle(false);
+    };
+
+    // 🔧 Funções para edição inline dos botões
+    const startEditingButton = (buttonId: number, currentText: string, currentUrl: string) => {
+        setEditingButtonId(buttonId);
+        
+        // 💰 Tratamento especial para PIX - carregar chave PIX no campo correto
+        const link = config.customLinks?.find(l => l.id === buttonId);
+        if (link?.icon === 'pix') {
+            setTempButtonText('Pix Copia e Cola'); // Texto fixo
+            setTempButtonUrl(currentUrl); // Chave PIX vai na URL
+        } else if (link?.icon === 'user-plus') {
+            // 📞 Tratamento especial para Salvar Contato
+            setTempButtonText('Salvar Contato'); // Texto fixo
+            // Remove o prefixo "tel:+" para mostrar apenas o número
+            const phoneNumber = currentUrl.replace(/^tel:\+?/, '');
+            setTempButtonUrl(phoneNumber); // Número limpo para edição
+        } else {
+            setTempButtonText(currentText);
+            setTempButtonUrl(currentUrl);
+        }
+    };
+
+    const saveButtonEdit = () => {
+        if (editingButtonId !== null) {
+            const link = config.customLinks?.find(l => l.id === editingButtonId);
+            // 💰 Para PIX, validar a chave PIX (URL), não o texto
+            // 📞 Para Salvar Contato, validar o número (URL), não o texto
+            const isValid = (link?.icon === 'pix' || link?.icon === 'user-plus') ? tempButtonUrl.trim() : tempButtonText.trim();
+            
+            if (!isValid) return;
+            setConfig((prev) => ({
+                ...prev,
+                customLinks: prev.customLinks?.map(link => {
+                    if (link.id === editingButtonId) {
+                        // 📞 Tratamento especial para Salvar Contato
+                        if (link.icon === 'user-plus') {
+                            return { 
+                                ...link, 
+                                text: 'Salvar Contato', // Texto fixo
+                                url: `tel:+${tempButtonUrl.trim()}` // Formata como tel:+número
+                            };
+                        }
+                        // 💰 Tratamento especial para PIX - manter texto fixo, editar apenas chave
+                        if (link.icon === 'pix') {
+                            return { 
+                                ...link, 
+                                text: 'Pix Copia e Cola', // Texto sempre fixo
+                                url: tempButtonUrl.trim() // Chave PIX vai na URL
+                            };
+                        }
+                        return { ...link, text: tempButtonText.trim(), url: tempButtonUrl.trim() };
+                    }
+                    return link;
+                }) || []
+            }));
+        }
+        setEditingButtonId(null);
+        setTempButtonText('');
+        setTempButtonUrl('');
+    };
+
+    const cancelButtonEdit = () => {
+        setEditingButtonId(null);
+        setTempButtonText('');
+        setTempButtonUrl('');
+    };
+
+    // 💰 Função específica para PIX - Copiar chave para clipboard
+    const copyPixToClipboard = async (pixKey: string) => {
+        try {
+            await navigator.clipboard.writeText(pixKey);
+            
+            // 🎯 Feedback apenas na página publicada (não na visualização)
+            // A mensagem será implementada na página publicada
+            console.log('PIX copiado para clipboard:', pixKey);
+            
+        } catch (error) {
+            console.error('Erro ao copiar PIX:', error);
+            alert('Erro ao copiar chave PIX. Tente novamente.');
+        }
+    };
+
+    // 📞 Função específica para Salvar Contato - Direcionar para página de contatos
+    const openContactPage = (phoneNumber: string) => {
+        try {
+            // Obter o título da página
+            const pageTitle = config.landingPageTitleText || 'Contato';
+            
+            // Criar URL para adicionar contato com dados preenchidos
+            const contactUrl = `tel:${phoneNumber}`;
+            
+            // Para dispositivos móveis, tentar abrir o app de contatos
+            if (navigator.userAgent.match(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i)) {
+                // Tentar abrir o app de contatos nativo
+                window.location.href = contactUrl;
+            } else {
+                // Para desktop, copiar informações para clipboard
+                const contactInfo = `Nome: ${pageTitle}\nTelefone: ${phoneNumber}`;
+                navigator.clipboard.writeText(contactInfo).then(() => {
+                    alert(`Informações do contato copiadas:\n${contactInfo}\n\nCole no seu app de contatos.`);
+                }).catch(() => {
+                    alert(`Contato: ${pageTitle}\nTelefone: ${phoneNumber}`);
+                });
+            }
+            
+        } catch (error) {
+            console.error('Erro ao abrir página de contatos:', error);
+            alert('Erro ao abrir página de contatos. Tente novamente.');
+        }
+    };
+
 
 
     // Garantir que a página sempre comece limpa
@@ -2086,7 +2772,7 @@ console.error('Error clearing localStorage:', err);
 
             // Configurações do cartão - VERSO
 
-            cardBackBgColor: '#e2e8f0',
+            cardBackBgColor: '#FFFFFF',
 
             qrCodeSize: 35,
 
@@ -2281,6 +2967,7 @@ console.error('Erro ao carregar dados do usuário:', err);
 
             linkedin: { text: 'LinkedIn', url: 'https://linkedin.com/in/', icon: 'linkedin', color: '#0077B5' },
 
+
             'save-contact': { text: 'Salvar Contato', url: 'tel:', icon: 'user-plus', color: '#059669' },
 
             'share': { text: 'Compartilhar', url: 'share:', icon: 'share', color: '#8B5CF6' },
@@ -2307,11 +2994,35 @@ console.error('Erro ao carregar dados do usuário:', err);
 
         const globalColor = config.socialButtonColor || '#3B82F6';
 
-        const newBtn = { text: p.text, url: p.url, icon: p.icon, styleType: 'solid' as const, bgColor1: globalColor, bgColor2: globalColor, textColor: '#ffffff', isSocial: true };
+        // 🔧 NOVA FUNCIONALIDADE: Criar botão social simplificado com placeholder
+        const placeholders: { [key: string]: string } = {
+            whatsapp: 'Ex: 11999999999',
+            instagram: 'Ex: @seuusuario', 
+            youtube: 'Ex: @seucanal',
+            linkedin: 'Ex: seuusuario',
+            'save-contact': 'Ex: 11999999999',
+            share: 'Compartilhar página'
+        };
 
-        // Botões sociais são ilimitados
+        const newBtn = { 
+            text: placeholders[kind] || p.text, 
+            url: p.url, 
+            icon: p.icon, 
+            styleType: 'solid' as const, 
+            bgColor1: globalColor, 
+            bgColor2: globalColor, 
+            textColor: '#ffffff', 
+            isSocial: true 
+        };
 
-        setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), { ...newBtn, id: Date.now() }] }));
+        const newLink = { ...newBtn, id: Date.now() };
+
+        setConfig(prev => ({ ...prev, customLinks: [...(prev.customLinks || []), newLink] }));
+
+        // 🎯 Auto-editar o botão recém-criado para facilitar a edição
+        setTimeout(() => {
+            startEditingButton(newLink.id, newLink.text, newLink.url);
+        }, 100);
 
     };
 
@@ -2328,6 +3039,7 @@ console.error('Erro ao carregar dados do usuário:', err);
             youtube: 'youtube',
 
             linkedin: 'linkedin',
+
 
             'save-contact': 'user-plus',
 
@@ -2693,7 +3405,7 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                     <div className="flex justify-between items-center mb-4">
 
-                                        <p className="text-center font-semibold">Frente</p>
+                                        <h3 className="text-center font-bold text-lg">Personalizar Frente</h3>
 
                                         {logoDataUrl && (
 
@@ -2702,6 +3414,7 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                 onClick={() => {
 
                                                     setLogoDataUrl(null);
+                                                    setProcessedLogoUrl(null);
 
                                                     handleConfigChange('logoSize', 80);
 
@@ -2761,15 +3474,15 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                                 <Image 
 
-                                                    src={logoDataUrl} 
+                                                    src={processedLogoUrl || logoDataUrl} 
 
                                                     alt="Logo Preview" 
 
-                                                    width={120} 
+                                                    width={150} 
 
-                                                    height={120} 
+                                                    height={150} 
 
-                                                    className="object-contain w-full h-full image-transparent" 
+                                                    className="w-full h-full image-transparent object-contain" 
 
                                                     style={{ 
 
@@ -2777,9 +3490,28 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                                         mixBlendMode: 'normal',
 
-                                                        background: 'transparent'
+                                                        background: 'transparent',
+                                                        
+                                                        imageRendering: (logoDataUrl.includes('supabase') || logoDataUrl.includes('remove.bg')) ? 'crisp-edges' : 'auto'
 
                                                 }}
+
+                                                    onLoad={(e) => {
+                                                        const img = e.target as HTMLImageElement;
+                                                        console.log('🔍 FRENTE-PREVIEW - Dimensões:', {
+                                                            offsetWidth: img.offsetWidth,
+                                                            offsetHeight: img.offsetHeight,
+                                                            naturalWidth: img.naturalWidth,
+                                                            naturalHeight: img.naturalHeight,
+                                                            src: img.src,
+                                                            className: img.className,
+                                                            style: img.style.cssText,
+                                                            parentWidth: img.parentElement?.offsetWidth,
+                                                            parentHeight: img.parentElement?.offsetHeight,
+                                                            isRemoveBg: (processedLogoUrl || logoDataUrl)?.includes('supabase') || (processedLogoUrl || logoDataUrl)?.includes('remove.bg'),
+                                                            urlType: img.src.startsWith('data:') ? 'Data URL' : 'URL Externa'
+                                                        });
+                                                    }}
 
                                             />
 
@@ -2859,7 +3591,7 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                         <Image 
 
-                                            src="/nfc-symbol.png" 
+                                            src={isFrontDarkNfc ? '/nfc-symbol-white.png' : '/nfc-symbol.png'} 
 
                                             alt="NFC" 
 
@@ -2868,15 +3600,30 @@ console.error('Erro ao carregar dados do usuário:', err);
                                             height={24} 
 
                                             className="absolute top-5 right-5 w-6 h-6 object-contain opacity-80" 
+
                                         />
 
                                     </div>
 
                                     <div className="mt-6 space-y-4 max-w-sm mx-auto">
 
-                                        <h3 className="font-bold text-lg border-b pb-2">Personalizar Frente</h3>
-
-                                        
+                                        {/* 🎨 Feedback visual da detecção automática de cor */}
+                                        {showColorDetectionFeedback && autoDetectedColor && (
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 animate-fade-in">
+                                                <div className="flex items-center gap-2">
+                                                    <div 
+                                                        className="w-4 h-4 rounded-full border border-gray-300"
+                                                        style={{ backgroundColor: autoDetectedColor }}
+                                                    ></div>
+                                                    <span className="text-sm text-green-700 font-medium">
+                                                        Cor detectada automaticamente!
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-green-600 mt-1">
+                                                    O fundo do cartão foi ajustado para combinar com sua imagem
+                                                </p>
+                                            </div>
+                                        )}
 
                                         {/* Cores - Primeiro */}
 
@@ -2944,7 +3691,11 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                 <label className="block text-xs font-medium text-slate-700 mb-1">Remover Fundo</label>
                                                 <BackgroundRemovalButton 
                                                     onImageProcessed={(url) => {
+                                                        console.log('🔍 REMOVEBG - URL recebida:', url);
+                                                        console.log('🔍 REMOVEBG - Tipo:', url.startsWith('data:') ? 'Data URL' : 'URL Externa');
+                                                        console.log('🔍 REMOVEBG - Tamanho:', url.length);
                                                         setLogoDataUrl(url);
+                                                        setProcessedLogoUrl(url);
                                                     }}
                                                 />
 
@@ -3130,27 +3881,58 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
 
-                                    <p className="text-center font-semibold mb-4">Verso</p>
+                                    <h3 className="text-center font-bold text-lg mb-4">Personalizar Verso</h3>
 
                                     <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg p-4 border relative overflow-hidden card-preview">
 
                                         {logoDataUrl && (
 
-                                            <img src={logoDataUrl} alt="Logo Verso" width={150} height={150} className="object-contain absolute transition-all duration-300 image-transparent" style={{ width: `${config.clientLogoBackSize}%`, top: '50%', left: `${50 + (config.logoPositionBack ?? 0) * 1.2}%`, transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, opacity: config.logoOpacityBack ?? 0.3, background: 'transparent' }} />
+                                            <Image 
+                                                src={processedLogoUrl || logoDataUrl} 
+                                                alt="Logo Verso" 
+                                                width={150} 
+                                                height={150} 
+                                                className="object-contain absolute transition-all duration-300 image-transparent" 
+                                                style={{ 
+                                                    width: `${config.clientLogoBackSize}%`, 
+                                                    top: '50%', 
+                                                    left: `${50 + (config.logoPositionBack ?? 0) * 1.2}%`, 
+                                                    transform: `translate(-50%, -50%) rotate(${config.logoRotationBack || 0}deg)`, 
+                                                    opacity: config.logoOpacityBack ?? 0.3, 
+                                                    background: 'transparent' 
+                                                }} 
+                                                onLoad={(e) => {
+                                                    const img = e.target as HTMLImageElement;
+                                                    console.log('🔍 VERSO-PREVIEW - Dimensões:', {
+                                                        offsetWidth: img.offsetWidth,
+                                                        offsetHeight: img.offsetHeight,
+                                                        naturalWidth: img.naturalWidth,
+                                                        naturalHeight: img.naturalHeight,
+                                                        src: img.src,
+                                                        className: img.className,
+                                                        style: img.style.cssText,
+                                                        parentWidth: img.parentElement?.offsetWidth,
+                                                        parentHeight: img.parentElement?.offsetHeight
+                                                    });
+                                                }}
+                                            />
 
                                         )}
 
                                         <div className={`absolute inset-0 p-4 flex items-center ${config.qrCodePosition}`}>
 
-                                            <div ref={qrcodePreviewRef} className="bg-white p-1 rounded-md aspect-square" style={{ width: `${config.qrCodeSize}%` }} />
+                                            <div
+                                                ref={qrcodePreviewRef}
+                                                className={`${!subdomain ? 'bg-slate-200' : 'bg-white'} p-1 rounded-md aspect-square`}
+                                                style={{ width: `${config.qrCodeSize}%` }}
+                                            />
 
                                         </div>
 
-                                        {/* Logo Zag fixa no canto inferior direito - sempre visível e sutil */}
-
+                                        {/* Logo Zag fixa no canto inferior direito - alterna conforme contraste */}
                                         <Image 
 
-                                            src="/logo-zag.png" 
+                                            src={isBackDarkZag ? '/logo-zag-white.png' : '/logo-zag-black.png'} 
 
                                             alt="Logo Zag Card" 
 
@@ -3174,11 +3956,11 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                         />
 
-                                        {/* Símbolo NFC fixo no canto superior direito */}
+                                        {/* Símbolo NFC fixo no canto superior direito - alterna conforme contraste */}
 
                                         <Image 
 
-                                            src="/nfc-symbol.png" 
+                                            src={isBackDarkNfc ? '/nfc-symbol-white.png' : '/nfc-symbol.png'} 
 
                                             alt="NFC" 
 
@@ -3187,13 +3969,12 @@ console.error('Erro ao carregar dados do usuário:', err);
                                             height={24} 
 
                                             className="absolute top-5 right-5 w-6 h-6 object-contain opacity-80" 
+
                                         />
 
                                     </div>
 
                                     <div className="mt-6 space-y-4 max-w-sm mx-auto">
-
-                                        <h3 className="font-bold text-lg border-b pb-2">Personalizar Verso</h3>
 
                                         
 
@@ -3600,10 +4381,18 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                     </div>
                                                 )}
                                                 {/* Símbolo NFC fixo no canto superior direito */}
-                                                <img 
-                                                    src="/nfc-symbol.png" 
+                                                <Image 
+
+                                                    src={isFrontDarkNfc ? '/nfc-symbol-white.png' : '/nfc-symbol.png'} 
+
                                                     alt="NFC" 
-                                                    className="absolute top-4 right-4 w-4 h-4 object-contain opacity-80" 
+
+                                                    width={24} 
+
+                                                    height={24} 
+
+                                                    className="absolute top-5 right-5 w-6 h-6 object-contain opacity-80" 
+
                                                 />
                                             </div>
                                         </div>
@@ -3642,24 +4431,49 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {/* Logo Zag fixa no canto inferior direito - sempre visível e sutil */}
-                                                <img 
-                                                    src="/logo-zag.png" 
+                                                {/* Logo Zag fixa no canto inferior direito - alterna conforme contraste */}
+                                                <Image 
+
+                                                    src={isBackDarkZag ? '/logo-zag-white.png' : '/logo-zag-black.png'} 
+
                                                     alt="Logo Zag Card" 
-                                                    className="absolute bottom-1 right-1 h-3 w-auto object-contain opacity-100" 
+
+                                                    width={60} 
+
+                                                    height={18} 
+
+                                                    className="absolute bottom-2 right-2 h-4 w-auto object-contain opacity-100" 
+
                                                     style={{ 
+
                                                         width: 'auto', 
+
                                                         height: 'auto',
-                                                        minWidth: '30px',
-                                                        maxWidth: '45px'
+
+                                                        minWidth: '40px',
+
+                                                        maxWidth: '60px'
+
                                                     }} 
+
                                                 />
-                                                {/* Símbolo NFC fixo no canto superior direito */}
-                                                <img 
-                                                    src="/nfc-symbol.png" 
+
+                                                {/* Símbolo NFC fixo no canto superior direito - alterna conforme contraste */}
+
+                                                <Image 
+
+                                                    src={isBackDarkNfc ? '/nfc-symbol-white.png' : '/nfc-symbol.png'} 
+
                                                     alt="NFC" 
-                                                    className="absolute top-4 right-4 w-4 h-4 object-contain opacity-80" 
+
+                                                    width={24} 
+
+                                                    height={24} 
+
+                                                    className="absolute top-5 right-5 w-6 h-6 object-contain opacity-80" 
+
                                                 />
+
                                             </div>
                                         </div>
                                     </div>
@@ -4029,6 +4843,7 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                                         </button>
 
+
                                                     </div>
 
                                                     {/* Segunda linha - Salvar Contato e Compartilhar */}
@@ -4316,7 +5131,7 @@ console.error('Erro ao carregar dados do usuário:', err);
                                             >
                                                 {config.landingPageLogoUrl || logoDataUrl ? (
 
-                                                    <img src={config.landingPageLogoUrl || logoDataUrl || ''} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
+                                                    <Image src={config.landingPageLogoUrl || logoDataUrl || ''} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
 
                                                 ) : (
 
@@ -4357,46 +5172,302 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                 }}
                                             />
 
-                                            <div className="flex flex-col items-center text-center relative" style={{ zIndex: 5, marginTop: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px + ${(config.landingPageLogoSize || 96) / 2}px)` }}>
+                                            {/* Botões Salvar Contato e Compartilhar - Posicionados entre logo e título */}
+                                            <div 
+                                                className="flex justify-center items-center gap-3 mb-4 relative"
+                                                style={{ 
+                                                    marginTop: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px + 15px)`,
+                                                    zIndex: 30
+                                                }}
+                                            >
+                                                {config.customLinks?.filter(link => link.isSocial && (link.icon === 'user-plus' || link.icon === 'share')).map((link) => {
+                                                    const globalColor = config.socialButtonColor || '#3B82F6';
+                                                    const isPillButton = link.icon === 'user-plus';
 
-                                                <h1 className="text-xl font-bold break-words mt-4 mb-1" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageTitleColor || '#1e293b' }}>{config.landingPageTitleText || 'Bem-vindo(a)!'}</h1>
+                                                    return (
+                                                        <div key={link.id}>
+                                                            {editingButtonId === link.id ? (
+                                                                link.icon === 'user-plus' ? (
+                                                                    // 📞 Interface especial para Salvar Contato - apenas número de telefone
+                                                                    <input
+                                                                        type="text"
+                                                                        value={tempButtonUrl}
+                                                                        onChange={(e) => setTempButtonUrl(e.target.value)}
+                                                                        onBlur={saveButtonEdit}
+                                                                        onKeyDown={(e) => {
+                                                                            if (e.key === 'Enter') {
+                                                                                saveButtonEdit();
+                                                                            } else if (e.key === 'Escape') {
+                                                                                cancelButtonEdit();
+                                                                            }
+                                                                        }}
+                                                                        className="h-8 px-3 rounded-full text-xs font-medium bg-white border-2 border-dashed border-blue-400 focus:outline-none focus:border-blue-500"
+                                                                        placeholder="Ex: 11999999999"
+                                                                        autoFocus
+                                                                    />
+                                                                ) : (
+                                                                    // Interface normal para outros botões sociais
+                                                                    <div className="flex items-center gap-2">
+                                                                        <input
+                                                                            type="text"
+                                                                            value={tempButtonText}
+                                                                            onChange={(e) => setTempButtonText(e.target.value)}
+                                                                            onBlur={saveButtonEdit}
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') {
+                                                                                    saveButtonEdit();
+                                                                                } else if (e.key === 'Escape') {
+                                                                                    cancelButtonEdit();
+                                                                                }
+                                                                            }}
+                                                                            className="h-8 px-3 rounded-full text-xs font-medium bg-white border-2 border-dashed border-blue-400 focus:outline-none focus:border-blue-500"
+                                                                            placeholder="Digite o texto..."
+                                                                            autoFocus
+                                                                        />
+                                                                        <input
+                                                                            type="text"
+                                                                            value={tempButtonUrl}
+                                                                            onChange={(e) => setTempButtonUrl(e.target.value)}
+                                                                            onBlur={saveButtonEdit}
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') {
+                                                                                    saveButtonEdit();
+                                                                                } else if (e.key === 'Escape') {
+                                                                                    cancelButtonEdit();
+                                                                                }
+                                                                            }}
+                                                                            className="h-8 px-3 rounded-full text-xs font-medium bg-white border-2 border-dashed border-blue-400 focus:outline-none focus:border-blue-500"
+                                                                            placeholder="Digite a URL..."
+                                                                        />
+                                                                    </div>
+                                                                )
+                                                            ) : (
+                                                                <div 
+                                                            className={`${
+                                                                isPillButton 
+                                                                            ? 'h-8 px-3 rounded-full gap-1 font-medium cursor-pointer border-2 border-dashed border-transparent hover:border-blue-300 transition-all duration-200 hover:bg-blue-50' 
+                                                                            : 'w-8 h-8 rounded-full cursor-pointer border-2 border-dashed border-transparent hover:border-blue-300 transition-all duration-200 hover:bg-blue-50'
+                                                                    } flex items-center justify-center text-white shadow-md inline-editable`}
+                                                            style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : globalColor }}
+                                                                    onClick={() => startEditingButton(link.id, link.text, link.url)}
+                                                                    title="Clique para editar"
+                                                        >
+                                                            {link.icon ? (
+                                                                <IconForName name={link.icon as IconName} size={isPillButton ? 14 : 16} />
+                                                            ) : (
+                                                                <span className="text-xs font-bold">?</span>
+                                                            )}
+                                                            {isPillButton && <span className="text-xs whitespace-nowrap">{link.text}</span>}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
 
-                                                {config.landingPageSubtitleText && <p className="text-sm px-2 break-words mb-4" style={{ fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, color: config.landingPageSubtitleColor || '#64748b' }}>{config.landingPageSubtitleText}</p>}
+                                            <div className="flex flex-col items-center text-center relative" style={{ zIndex: 30, marginTop: '8px' }}>
 
-                                                {/* Botões Sociais - Todos na mesma linha */}
+                                                {/* ✏️ Título editável inline */}
+                                                {isEditingTitle ? (
+                                                    <div className="w-full mb-1">
+                                                        <input
+                                                            type="text"
+                                                            value={tempTitleText}
+                                                            onChange={(e) => setTempTitleText(e.target.value)}
+                                                            onBlur={saveTitleEdit}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    saveTitleEdit();
+                                                                } else if (e.key === 'Escape') {
+                                                                    cancelTitleEdit();
+                                                                }
+                                                            }}
+                                                            className="w-full text-xl font-bold text-center bg-transparent border-2 border-dashed border-blue-400 rounded-lg px-2 py-1 focus:outline-none focus:border-blue-500"
+                                                            style={{ 
+                                                                fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, 
+                                                                color: config.landingPageTitleColor || '#1e293b' 
+                                                            }}
+                                                            autoFocus
+                                                            placeholder="Digite o título aqui..."
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <h1 
+                                                        className="text-xl font-bold break-words mb-1 cursor-pointer border-2 border-dashed border-transparent rounded-lg px-2 py-1 inline-editable"
+                                                        style={{ 
+                                                            fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, 
+                                                            color: config.landingPageTitleColor || '#1e293b' 
+                                                        }}
+                                                        onClick={startEditingTitle}
+                                                        title="Clique para editar o título"
+                                                    >
+                                                        {config.landingPageTitleText || 'Bem-vindo(a)!'}
+                                                    </h1>
+                                                )}
+
+                                                {/* ✏️ Subtítulo editável inline */}
+                                                {isEditingSubtitle ? (
+                                                    <div className="w-full mb-4">
+                                                        <input
+                                                            type="text"
+                                                            value={tempSubtitleText}
+                                                            onChange={(e) => setTempSubtitleText(e.target.value)}
+                                                            onBlur={saveSubtitleEdit}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    saveSubtitleEdit();
+                                                                } else if (e.key === 'Escape') {
+                                                                    cancelSubtitleEdit();
+                                                                }
+                                                            }}
+                                                            className="w-full text-sm text-center bg-transparent border-2 border-dashed border-blue-400 rounded-lg px-2 py-1 focus:outline-none focus:border-blue-500"
+                                                            style={{ 
+                                                                fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, 
+                                                                color: config.landingPageSubtitleColor || '#64748b' 
+                                                            }}
+                                                            autoFocus
+                                                            placeholder="Digite o subtítulo aqui..."
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div 
+                                                        className="w-full mb-4 cursor-pointer border-2 border-dashed border-transparent rounded-lg px-2 py-1 inline-editable"
+                                                        onClick={startEditingSubtitle}
+                                                        title="Clique para editar o subtítulo"
+                                                    >
+                                                        {config.landingPageSubtitleText ? (
+                                                            <p 
+                                                                className="text-sm px-2 break-words" 
+                                                                style={{ 
+                                                                    fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, 
+                                                                    color: config.landingPageSubtitleColor || '#64748b' 
+                                                                }}
+                                                            >
+                                                                {config.landingPageSubtitleText}
+                                                            </p>
+                                                        ) : (
+                                                            <p 
+                                                                className="text-sm px-2 break-words inline-editable-placeholder" 
+                                                                style={{ 
+                                                                    fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})` 
+                                                                }}
+                                                            >
+                                                                Clique para adicionar um subtítulo...
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Outros Botões Sociais (exceto salvar-contato e compartilhar) */}
                                                 <div className="w-full flex flex-wrap justify-center items-center gap-3 mb-4">
 
-                                                    {config.customLinks?.filter(link => link.isSocial).map((link) => {
+                                                    {config.customLinks?.filter(link => link.isSocial && link.icon !== 'user-plus' && link.icon !== 'share').map((link) => {
 
                                                         const globalColor = config.socialButtonColor || '#3B82F6';
-                                                        const isPillButton = link.icon === 'user-plus';
 
                                                         return (
-
-                                                            <div 
-                                                                key={link.id} 
-                                                                className={`${
-                                                                    isPillButton 
-                                                                        ? 'h-10 px-4 rounded-full gap-2 font-medium' 
-                                                                        : 'w-12 h-12 rounded-full'
-                                                                } flex items-center justify-center text-white shadow-md`}
+                                                            <div key={link.id}>
+                                                                {editingButtonId === link.id ? (
+                                                                    <div className="flex flex-col items-center gap-2">
+                                                                        {link.icon === 'pix' ? (
+                                                                            // 💰 Interface específica para editar PIX
+                                                                            <div className="flex flex-col items-center gap-3 p-3 bg-white border-2 border-dashed border-blue-400 rounded-lg">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={tempButtonText}
+                                                                                    onChange={(e) => setTempButtonText(e.target.value)}
+                                                                                    onBlur={saveButtonEdit}
+                                                                                    onKeyDown={(e) => {
+                                                                                        if (e.key === 'Enter') {
+                                                                                            saveButtonEdit();
+                                                                                        } else if (e.key === 'Escape') {
+                                                                                            cancelButtonEdit();
+                                                                                        }
+                                                                                    }}
+                                                                                    className="w-48 h-8 px-3 rounded-lg text-sm font-medium bg-white border border-gray-300 focus:outline-none focus:border-blue-500 text-center"
+                                                                                    placeholder="Digite sua chave PIX"
+                                                                                    autoFocus
+                                                                                />
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <label className="text-xs text-gray-600">Cor do botão:</label>
+                                                                                    <input
+                                                                                        type="color"
+                                                                                        value={link.bgColor1 || '#32BCAD'}
+                                                                                        onChange={(e) => {
+                                                                                            setConfig(prev => ({
+                                                                                                ...prev,
+                                                                                                customLinks: prev.customLinks?.map(l => 
+                                                                                                    l.id === link.id 
+                                                                                                        ? { ...l, bgColor1: e.target.value, bgColor2: e.target.value }
+                                                                                                        : l
+                                                                                                ) || []
+                                                                                            }));
+                                                                                        }}
+                                                                                        className="w-8 h-6 border border-gray-300 rounded"
+                                                                                    />
+                                                                                </div>
+                                                                                <div className="flex gap-2">
+                                                                                    <button
+                                                                                        onClick={saveButtonEdit}
+                                                                                        className="px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                                                                                    >
+                                                                                        Salvar
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={cancelButtonEdit}
+                                                                                        className="px-3 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600"
+                                                                                    >
+                                                                                        Cancelar
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <input
+                                                                                type="text"
+                                                                                value={link.icon === 'user-plus' ? tempButtonUrl : tempButtonText}
+                                                                                onChange={(e) => link.icon === 'user-plus' ? setTempButtonUrl(e.target.value) : setTempButtonText(e.target.value)}
+                                                                                onBlur={saveButtonEdit}
+                                                                                onKeyDown={(e) => {
+                                                                                    if (e.key === 'Enter') {
+                                                                                        saveButtonEdit();
+                                                                                    } else if (e.key === 'Escape') {
+                                                                                        cancelButtonEdit();
+                                                                                    }
+                                                                                }}
+                                                                                className="w-32 h-8 px-2 rounded-full text-xs font-medium bg-white border-2 border-dashed border-blue-400 focus:outline-none focus:border-blue-500 text-center"
+                                                                                placeholder={link.icon === 'user-plus' ? 'Ex: 11999999999' : 'Usuário/Telefone...'}
+                                                                                autoFocus
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <div 
+                                                                        className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md cursor-pointer border-2 border-dashed border-transparent hover:border-blue-300 transition-all duration-200 hover:bg-blue-50 inline-editable"
                                                                 style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : globalColor }}
-                                                            >
-
+                                                                        onClick={() => {
+                                                                            // 💰 Comportamento específico para PIX
+                                                                            if (link.icon === 'pix') {
+                                                                                copyPixToClipboard(link.text);
+                                                                            } else {
+                                                                                startEditingButton(link.id, link.text, link.url);
+                                                                            }
+                                                                        }}
+                                                                        onDoubleClick={() => {
+                                                                            // 💰 Duplo clique no PIX para editar
+                                                                            if (link.icon === 'pix') {
+                                                                                startEditingButton(link.id, link.text, link.url);
+                                                                            }
+                                                                        }}
+                                                                        title={link.icon === 'pix' ? 'Clique para copiar PIX • Duplo clique para editar chave e cor' : 'Clique para editar'}
+                                                                    >
                                                             {link.icon ? (
-
-                                                                <IconForName name={link.icon as IconName} size={isPillButton ? 16 : 20} />
-
+                                                                <IconForName name={link.icon as IconName} size={20} />
                                                             ) : (
-
                                                                 <span className="text-xs font-bold">?</span>
-
                                                             )}
-
-                                                            {isPillButton && <span className="text-xs whitespace-nowrap">{link.text}</span>}
-
                                                         </div>
-
+                                                                )}
+                                                            </div>
                                                         );
 
                                                     })}
@@ -4410,15 +5481,131 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                 <div className="w-full flex flex-col items-center gap-2">
 
                                                     {config.customLinks?.filter(link => !link.isSocial).map((link) => (
-
-                                                        <div key={link.id} className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md gap-2" style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}>
-
+                                                        <div key={link.id}>
+                                                            {editingButtonId === link.id ? (
+                                                                <div className="flex flex-col items-center gap-2">
+                                                                    {link.icon === 'pix' ? (
+                                                                        // 💰 Interface específica para editar PIX
+                                                                        <div className="flex flex-col items-center gap-3 p-3 bg-white border-2 border-dashed border-blue-400 rounded-lg">
+                                                                            <div className="text-center">
+                                                                                <p className="text-sm font-medium text-gray-700 mb-2">Texto do botão: <strong>Pix Copia e Cola</strong></p>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={tempButtonUrl} // Editar a chave PIX (que está na URL)
+                                                                                    onChange={(e) => setTempButtonUrl(e.target.value)}
+                                                                                    onBlur={saveButtonEdit}
+                                                                                    onKeyDown={(e) => {
+                                                                                        if (e.key === 'Enter') {
+                                                                                            saveButtonEdit();
+                                                                                        } else if (e.key === 'Escape') {
+                                                                                            cancelButtonEdit();
+                                                                                        }
+                                                                                    }}
+                                                                                    className="w-48 h-8 px-3 rounded-lg text-sm font-medium bg-white border border-gray-300 focus:outline-none focus:border-blue-500 text-center"
+                                                                                    placeholder="Digite sua chave PIX"
+                                                                                    autoFocus
+                                                                                />
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <label className="text-xs text-gray-600">Cor do botão:</label>
+                                                                                <input
+                                                                                    type="color"
+                                                                                    value={link.bgColor1 || '#32BCAD'}
+                                                                                    onChange={(e) => {
+                                                                                        setConfig(prev => ({
+                                                                                            ...prev,
+                                                                                            customLinks: prev.customLinks?.map(l => 
+                                                                                                l.id === link.id 
+                                                                                                    ? { ...l, bgColor1: e.target.value, bgColor2: e.target.value }
+                                                                                                    : l
+                                                                                            ) || []
+                                                                                        }));
+                                                                                    }}
+                                                                                    className="w-8 h-6 border border-gray-300 rounded"
+                                                                                />
+                                                                            </div>
+                                                                            <div className="flex gap-2">
+                                                                                <button
+                                                                                    onClick={saveButtonEdit}
+                                                                                    className="px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                                                                                >
+                                                                                    Salvar
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={cancelButtonEdit}
+                                                                                    className="px-3 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600"
+                                                                                >
+                                                                                    Cancelar
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={tempButtonText}
+                                                                                onChange={(e) => setTempButtonText(e.target.value)}
+                                                                                onBlur={saveButtonEdit}
+                                                                                onKeyDown={(e) => {
+                                                                                    if (e.key === 'Enter') {
+                                                                                        saveButtonEdit();
+                                                                                    } else if (e.key === 'Escape') {
+                                                                                        cancelButtonEdit();
+                                                                                    }
+                                                                                }}
+                                                                                className="w-48 h-10 px-3 rounded-lg text-sm font-medium bg-white border-2 border-dashed border-blue-400 focus:outline-none focus:border-blue-500 text-center"
+                                                                                placeholder="Digite o texto..."
+                                                                                autoFocus
+                                                                            />
+                                                                            <input
+                                                                                type="text"
+                                                                                value={tempButtonUrl}
+                                                                                onChange={(e) => setTempButtonUrl(e.target.value)}
+                                                                                onBlur={saveButtonEdit}
+                                                                                onKeyDown={(e) => {
+                                                                                    if (e.key === 'Enter') {
+                                                                                        saveButtonEdit();
+                                                                                    } else if (e.key === 'Escape') {
+                                                                                        cancelButtonEdit();
+                                                                                    }
+                                                                                }}
+                                                                                className="w-48 h-8 px-3 rounded-lg text-xs font-medium bg-white border-2 border-dashed border-blue-400 focus:outline-none focus:border-blue-500 text-center"
+                                                                                placeholder="Digite a URL..."
+                                                                            />
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <div 
+                                                                    className="w-48 h-10 rounded-lg flex items-center justify-center text-white shadow-md gap-2 cursor-pointer border-2 border-dashed border-transparent hover:border-blue-300 transition-all duration-200 hover:bg-blue-50 inline-editable"
+                                                                    style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : link.bgColor1 }}
+                                                                    onClick={() => {
+                                                                        // 💰 Comportamento específico para PIX
+                                                                        if (link.icon === 'pix') {
+                                                                            copyPixToClipboard(link.url); // Chave PIX está na URL
+                                                                        } else if (link.icon === 'user-plus') {
+                                                                            // 📞 Comportamento específico para Salvar Contato
+                                                                            openContactPage(link.url); // Número está na URL
+                                                                        } else {
+                                                                            startEditingButton(link.id, link.text, link.url);
+                                                                        }
+                                                                    }}
+                                                                    onDoubleClick={() => {
+                                                                        // 💰 Duplo clique no PIX para editar
+                                                                        if (link.icon === 'pix') {
+                                                                            startEditingButton(link.id, link.text, link.url);
+                                                                        } else if (link.icon === 'user-plus') {
+                                                                            // 📞 Duplo clique no Salvar Contato para editar
+                                                                            startEditingButton(link.id, link.text, link.url);
+                                                                        }
+                                                                    }}
+                                                                    title={link.icon === 'pix' ? 'Clique para copiar PIX • Duplo clique para editar' : link.icon === 'user-plus' ? 'Clique para salvar contato • Duplo clique para editar número' : 'Clique para editar'}
+                                                                >
                                                             {link.icon && <IconForName name={link.icon as IconName} size={16} />}
-
                                                             <span className="text-sm font-medium">{link.text}</span>
-
                                                         </div>
-
+                                                            )}
+                                                        </div>
                                                     ))}
 
                                                 </div>

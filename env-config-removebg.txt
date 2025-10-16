@@ -1,0 +1,6 @@
+# Adicione estas variáveis ao seu arquivo .env.local
+
+# Remove.bg API Configuration
+REMOVEBG_API_KEY=9eyfX7z4VUYxy679BCBYkrdv
+
+# Se você já tem outras variáveis no .env.local, adicione apenas a linha acima

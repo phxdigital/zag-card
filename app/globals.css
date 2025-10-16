@@ -41,6 +41,55 @@ body {
   animation: slide-in-right 0.8s ease-out;
 }
 
+/* Animação para feedback de detecção de cor */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+/* ✏️ Estilos para edição inline */
+.inline-editable {
+  transition: all 0.2s ease-in-out;
+}
+
+.inline-editable:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.inline-editable:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.inline-editable-placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* 💰 Animação para feedback do PIX */
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 
 /* Mobile optimizations */
 @media (max-width: 768px) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadWithBackgroundRemoval, generateFileHash } from '@/lib/cloudinary';
+import { removeBackgroundWithRemoveBg, generateFileHash, saveProcessedImageToSupabase } from '@/lib/removebg';
 
 // Interface para o cache de imagens processadas
 interface ProcessedImageCache {
@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar se o Cloudinary está configurado
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    // Verificar se o remove.bg está configurado
+    if (!process.env.REMOVEBG_API_KEY) {
       return NextResponse.json(
         { error: 'Serviço de remoção de fundo não configurado' },
         { status: 500 }
@@ -132,26 +132,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Gerar ID único para o arquivo
-    const publicId = `background-removal/${fileHash}`;
+    // Gerar nome único para o arquivo
+    const fileName = `background-removal/${fileHash}.png`;
 
-    // Fazer upload com remoção de fundo
-    const result = await uploadWithBackgroundRemoval(buffer, {
-      public_id: publicId,
-      folder: 'zag-card-app/background-removal'
+    // Processar com remove.bg
+    const result = await removeBackgroundWithRemoveBg(buffer, {
+      size: 'auto',
+      format: 'png',
+      type: 'auto'
     });
+
+    // Salvar no Supabase Storage
+    const storageResult = await saveProcessedImageToSupabase(
+      result.buffer,
+      fileName,
+      'processed-images'
+    );
 
     // Salvar no cache
     imageCache[fileHash] = {
-      url: result.secure_url,
-      publicId: result.public_id,
+      url: storageResult.url,
+      publicId: storageResult.path,
       timestamp: Date.now()
     };
 
     return NextResponse.json({
       success: true,
-      url: result.secure_url,
-      publicId: result.public_id,
+      url: storageResult.url,
+      publicId: storageResult.path,
       cached: false,
       remaining: rateLimit.remaining,
       resetTime: rateLimit.resetTime

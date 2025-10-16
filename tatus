@@ -1,0 +1,37 @@
+[33mcommit 1d6327b364e58eeeeb93d38aef688d89a04720ba[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: phxdigital <andresavite@gmail.com>
+Date:   Wed Oct 15 20:52:32 2025 -0300
+
+    fix: correções CORS e remoção de fundo - aplicadas correções smart-deploy
+    
+    - Adicionado suporte ao Cloudinary no next.config.ts
+    - Criado API proxy para contornar problemas de CORS
+    - Implementado sistema de debug para diagnóstico
+    - Aplicadas correções automáticas do smart-deploy:
+      * Catch blocks corrigidos
+      * Tipos any -> unknown
+      * Aspas JSX corrigidas
+      * Compatibilidade de tipos melhorada
+    - Função loadImageWithFallback com múltiplas estratégias
+    - BackgroundRemovalButton com debug integrado
+
+app/[subdomain]/page-client.tsx
+app/admin/products/new/page.tsx
+app/api/charge-card/route.ts
+app/api/debug-image/route.ts
+app/api/image-proxy/route.ts
+app/checkout/card/page.tsx
+app/checkout/page.tsx
+app/components/BackgroundRemovalButton.tsx
+app/components/ImageDebugger.tsx
+app/components/PaymentModal.tsx
+app/components/SuccessPage.tsx
+app/components/TestimonialsSection.tsx
+app/dashboard/edit/[id]/page.tsx
+app/dashboard/page.tsx
+app/privacidade/page.tsx
+app/termos/page.tsx
+next.config.ts
+public/logo-zag-black.png
+public/logo-zag-white.png
+public/nfc-symbol-white.png

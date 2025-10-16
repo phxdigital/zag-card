@@ -1,0 +1,133 @@
+================================================================================
+CONFIGURAÇÃO COMPLETA - REMOVE.BG
+================================================================================
+
+✅ MIGRAÇÃO DO CLOUDINARY PARA REMOVE.BG CONCLUÍDA!
+
+================================================================================
+PASSO 1: CONFIGURAR ARQUIVO .env.local (DESENVOLVIMENTO LOCAL)
+================================================================================
+
+Abra o arquivo .env.local na raiz do projeto e adicione esta linha:
+
+# Remove.bg API Configuration
+REMOVEBG_API_KEY=9eyfX7z4VUYxy679BCBYkrdv
+
+Se você já tem um .env.local, apenas adicione a linha acima.
+Se não tem, crie o arquivo .env.local na raiz do projeto.
+
+================================================================================
+PASSO 2: CONFIGURAR BUCKET NO SUPABASE
+================================================================================
+
+1. Acesse: https://supabase.com → Seu Projeto → SQL Editor
+2. Execute o SQL abaixo:
+
+-- Criar bucket para imagens processadas
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('processed-images', 'processed-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Política para permitir uploads autenticados
+CREATE POLICY "Allow authenticated uploads to processed-images" ON storage.objects
+FOR INSERT WITH CHECK (
+  bucket_id = 'processed-images' AND 
+  auth.role() = 'authenticated'
+);
+
+-- Política para permitir leitura pública
+CREATE POLICY "Allow public read access to processed-images" ON storage.objects
+FOR SELECT USING (bucket_id = 'processed-images');
+
+-- Política para permitir atualizações (upsert)
+CREATE POLICY "Allow authenticated updates to processed-images" ON storage.objects
+FOR UPDATE USING (
+  bucket_id = 'processed-images' AND 
+  auth.role() = 'authenticated'
+);
+
+-- Política para permitir exclusões
+CREATE POLICY "Allow authenticated deletes to processed-images" ON storage.objects
+FOR DELETE USING (
+  bucket_id = 'processed-images' AND 
+  auth.role() = 'authenticated'
+);
+
+================================================================================
+PASSO 3: CONFIGURAR NA VERCEL (PRODUÇÃO)
+================================================================================
+
+Acesse: https://vercel.com → Seu Projeto → Settings → Environment Variables
+
+Adicione esta variável:
+
+Nome: REMOVEBG_API_KEY
+Valor: 9eyfX7z4VUYxy679BCBYkrdv
+
+⚠️ IMPORTANTE: Depois de adicionar, faça um REDEPLOY!
+
+================================================================================
+PASSO 4: REMOVER DEPENDÊNCIA DO CLOUDINARY
+================================================================================
+
+Execute no terminal:
+
+npm uninstall cloudinary
+
+================================================================================
+PASSO 5: TESTAR CONFIGURAÇÃO
+================================================================================
+
+Execute no terminal:
+
+node scripts/test-removebg-config.js
+
+Se tudo estiver correto, você verá:
+✅ API key do remove.bg configurada
+✅ Todos os arquivos necessários existem
+✅ Dependência do Cloudinary removida
+
+================================================================================
+VANTAGENS DA MIGRAÇÃO
+================================================================================
+
+✅ Melhor qualidade de remoção de fundo
+✅ Especializado apenas em remoção de fundo
+✅ API mais simples e direta
+✅ Preços competitivos para uso específico
+✅ Sem problemas de CORS (imagens salvas no Supabase)
+✅ Sem dependência do Cloudinary
+
+================================================================================
+FUNCIONALIDADES MANTIDAS
+================================================================================
+
+✅ Upload de imagens
+✅ Remoção de fundo
+✅ Preview modal
+✅ Rate limiting (2 por dia)
+✅ Cache de imagens
+✅ Validação de arquivos
+✅ Tratamento de erros
+✅ Interface do usuário
+
+================================================================================
+TESTAR SE FUNCIONOU
+================================================================================
+
+1. Teste local:
+   npm run dev
+   Acesse: http://localhost:3000/dashboard
+   Faça upload de uma imagem
+   Clique em "Remover Fundo"
+
+2. Teste produção (depois do deploy):
+   Acesse: https://zagnfc.com.br/dashboard
+   Teste a funcionalidade de remoção de fundo
+
+================================================================================
+🎉 PRONTO! O REMOVE.BG ESTÁ CONFIGURADO!
+================================================================================
+
+A migração do Cloudinary para o remove.bg foi concluída com sucesso!
+Agora você tem melhor qualidade de remoção de fundo sem problemas de CORS.
