@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'db5txodeu.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+    domains: [
+      'res.cloudinary.com',
+      'db5txodeu.cloudinary.com'
     ],
   },
   serverExternalPackages: ['@supabase/supabase-js'],

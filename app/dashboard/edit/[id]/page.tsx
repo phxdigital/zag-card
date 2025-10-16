@@ -863,7 +863,7 @@ console.error('Erro ao processar imagem:', err);
                                 <div style={{ backgroundColor: config.cardBackBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg flex items-center justify-between p-4 transition-colors duration-300 border-2">
                                     <div className="flex flex-col items-center">
                                         {logoDataUrl && (
-                                            <Image src={logoDataUrl} alt="Logo Preview" width={60} height={60} className="object-contain mb-2" style={{ width: `${config.clientLogoBackSize || 35}px`, height: `${config.clientLogoBackSize || 35}px`, opacity: config.logoOpacityBack ?? 1, transform: `rotate(${config.logoRotationBack || 0}deg) translateX(${(config.logoPositionBack ?? 0) * 1.2}px)` }} />
+                                            <img src={logoDataUrl} alt="Logo Preview" width={60} height={60} className="object-contain mb-2" style={{ width: `${config.clientLogoBackSize || 35}px`, height: `${config.clientLogoBackSize || 35}px`, opacity: config.logoOpacityBack ?? 1, transform: `rotate(${config.logoRotationBack || 0}deg) translateX(${(config.logoPositionBack ?? 0) * 1.2}px)` }} />
                                         )}
                                     </div>
                                     <div className={`flex ${config.qrCodePosition}`}>
@@ -1092,7 +1092,7 @@ console.error('Erro ao processar imagem:', err);
                             <div className="w-80 h-96 mx-auto rounded-xl shadow-lg overflow-hidden" style={{ backgroundColor: config.landingPageBgColor || '#F8FAFC' }}>
                                 <div className="p-4 h-full flex flex-col items-center justify-center text-center">
                                     {logoDataUrl ? (
-                                        <Image src={logoDataUrl} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} />
+                                        <img src={logoDataUrl} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto mb-4 shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} />
                                     ) : (
                                         <div className={`w-24 h-24 bg-slate-200 flex items-center justify-center shadow-md ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`}>
                                             <ImageIcon className="w-8 h-8 text-slate-400" />
