@@ -26,7 +26,7 @@ export async function removeBackgroundWithRemoveBg(
     }
 
     const formData = new FormData();
-    formData.append('image_file', new Blob([file]), 'image.jpg');
+    formData.append('image_file', new Blob([new Uint8Array(file)]), 'image.jpg');
     formData.append('size', options.size || 'auto');
     formData.append('format', options.format || 'auto');
     
