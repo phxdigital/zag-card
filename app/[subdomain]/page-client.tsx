@@ -11,6 +11,52 @@ import Image from 'next/image';
 import PixIconCustom from '@/app/components/PixIcon';
 import { ensureBackwardCompatibility } from '@/lib/page-compatibility';
 
+// 🎯 Função para mostrar feedback personalizado do PIX
+const showPixFeedback = () => {
+    // Criar elemento de feedback
+    const feedback = document.createElement('div');
+    feedback.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #32BCAD, #059669);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            z-index: 10000;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-align: center;
+            max-width: 300px;
+            animation: pixFeedbackSlideIn 0.4s ease-out;
+        ">
+            <div style="font-size: 18px; margin-bottom: 8px;">✅ PIX Copiado!</div>
+            <div style="font-size: 14px; opacity: 0.9;">Efetue o pagamento no aplicativo do seu banco preferido</div>
+        </div>
+        <style>
+            @keyframes pixFeedbackSlideIn {
+                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            }
+        </style>
+    `;
+    
+    document.body.appendChild(feedback);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        feedback.style.animation = 'pixFeedbackSlideIn 0.3s ease-in reverse';
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.parentNode.removeChild(feedback);
+            }
+        }, 300);
+    }, 3000);
+};
+
 // --- Tipos de Dados ---
 export type CustomLink = {
     id: number;
@@ -166,7 +212,8 @@ const handleLinkClick = (url: string): void => {
     } else if (url.startsWith('pix:')) {
         const textToCopy = url.substring(4);
         navigator.clipboard.writeText(textToCopy).then(() => {
-            alert('Pix copia e cola copiado com sucesso');
+            // 🎯 Feedback personalizado para PIX
+            showPixFeedback();
         }).catch(err => {
             console.error('Erro ao copiar PIX:', err);
             alert('Não foi possível copiar o código PIX.');
@@ -216,7 +263,27 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
 
     const handleLinkClickWrapper = (url: string) => {
         if (url.startsWith('share:') || url === 'share:') {
-            setShowShareModal(true);
+            // 🎯 Usar API nativa de compartilhamento com URL da página atual
+            if (navigator.share) {
+                navigator.share({
+                    title: config.landingPageTitleText || 'Meu Cartão Digital',
+                    text: config.landingPageSubtitleText || 'Confira meu cartão digital',
+                    url: window.location.href
+                }).catch(err => {
+                    console.error('Erro ao compartilhar:', err);
+                    // Fallback: copiar URL para clipboard
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        alert('Link copiado para a área de transferência!');
+                    });
+                });
+            } else {
+                // Fallback para navegadores sem suporte ao Web Share API
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Link copiado para a área de transferência!');
+                }).catch(() => {
+                    alert('Link da página: ' + window.location.href);
+                });
+            }
         } else {
             handleLinkClick(url);
         }
@@ -354,7 +421,20 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                                 return (
                                     <button
                                         key={link.id}
-                                        onClick={() => handleLinkClickWrapper(link.url)}
+                                        onClick={() => {
+                                            // 💰 Tratamento especial para PIX
+                                            if (link.icon === 'pix') {
+                                                const pixKey = link.url.startsWith('pix:') ? link.url.substring(4) : link.url;
+                                                navigator.clipboard.writeText(pixKey).then(() => {
+                                                    showPixFeedback();
+                                                }).catch(err => {
+                                                    console.error('Erro ao copiar PIX:', err);
+                                                    alert('Não foi possível copiar o código PIX.');
+                                                });
+                                            } else {
+                                                handleLinkClickWrapper(link.url);
+                                            }
+                                        }}
                                         style={{
                                             background: link.styleType === 'gradient' 
                                                 ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
@@ -375,7 +455,23 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                         {safeCustomLinks?.filter(link => !link.isSocial).map(link => (
                             <button 
                                 key={link.id} 
-                                onClick={() => handleLinkClickWrapper(link.url)}
+                                onClick={() => {
+                                    // 💰 Tratamento especial para PIX
+                                    console.log('Botão clicado:', { icon: link.icon, url: link.url, text: link.text });
+                                    if (link.icon === 'pix') {
+                                        const pixKey = link.url.startsWith('pix:') ? link.url.substring(4) : link.url;
+                                        console.log('Copiando PIX:', pixKey);
+                                        navigator.clipboard.writeText(pixKey).then(() => {
+                                            showPixFeedback();
+                                        }).catch(err => {
+                                            console.error('Erro ao copiar PIX:', err);
+                                            alert('Não foi possível copiar o código PIX.');
+                                        });
+                                    } else {
+                                        console.log('Não é PIX, chamando handleLinkClickWrapper');
+                                        handleLinkClickWrapper(link.url);
+                                    }
+                                }}
                                 style={{
                                     color: link.textColor, 
                                     background: link.styleType === 'gradient' 

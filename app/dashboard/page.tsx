@@ -3001,7 +3001,7 @@ console.error('Erro ao carregar dados do usuário:', err);
             youtube: 'Ex: @seucanal',
             linkedin: 'Ex: seuusuario',
             'save-contact': 'Ex: 11999999999',
-            share: 'Compartilhar página'
+            share: 'URL será gerada automaticamente'
         };
 
         const newBtn = { 
@@ -5072,6 +5072,19 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                     <div className="absolute top-0 left-0 right-0 z-0" style={{ height: `calc(64px + ${(config.landingPageLogoSize || 96) / 2}px)` }}>
                                                         <img src={config.landingPageBannerUrl} alt="Banner" className="w-full h-full object-cover" />
                                                     </div>
+                                                    
+                                                    {/* Botão de remover banner (aparece no canto superior direito) */}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleConfigChange('landingPageBannerUrl', '');
+                                                        }}
+                                                        className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity hover:bg-red-600 shadow-md z-10"
+                                                        title="Remover banner"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                    
                                                     {/* Área clicável do banner (acima do banner, abaixo da logo) */}
                                                     <div 
                                                         className="absolute top-0 left-0 right-0 group cursor-pointer"
@@ -5131,7 +5144,20 @@ console.error('Erro ao carregar dados do usuário:', err);
                                             >
                                                 {config.landingPageLogoUrl || logoDataUrl ? (
 
-                                                    <Image src={config.landingPageLogoUrl || logoDataUrl || ''} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
+                                                    <div className="relative group">
+                                                        <Image src={config.landingPageLogoUrl || logoDataUrl || ''} alt="Logo Preview" width={config.landingPageLogoSize || 96} height={config.landingPageLogoSize || 96} className={`object-cover mx-auto shadow-md image-transparent ${config.landingPageLogoShape === 'circle' ? 'rounded-full' : 'rounded-2xl'}`} style={{ background: 'transparent' }} />
+                                                        
+                                                        {/* Botão de troca de logo (aparece ao hover) */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                document.getElementById('logo-upload-input')?.click();
+                                                            }}
+                                                            className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                                        >
+                                                            <span className="text-white text-xs font-medium">Trocar Logo</span>
+                                                        </button>
+                                                    </div>
 
                                                 ) : (
 
@@ -5142,17 +5168,6 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                     </div>
 
                                                 )}
-                                                
-                                                {/* Botão de troca de logo (aparece ao hover) */}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        document.getElementById('logo-upload-input')?.click();
-                                                    }}
-                                                    className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100"
-                                                >
-                                                    <span className="text-white text-xs font-medium">Trocar Logo</span>
-                                                </button>
                                             </div>
 
                                             <input
@@ -5331,20 +5346,34 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                     </div>
                                                 ) : (
                                                     <div 
-                                                        className="w-full mb-4 cursor-pointer border-2 border-dashed border-transparent rounded-lg px-2 py-1 inline-editable"
+                                                        className="w-full mb-4 cursor-pointer border-2 border-dashed border-transparent rounded-lg px-2 py-1 inline-editable relative group"
                                                         onClick={startEditingSubtitle}
                                                         title="Clique para editar o subtítulo"
                                                     >
                                                         {config.landingPageSubtitleText ? (
-                                                            <p 
-                                                                className="text-sm px-2 break-words" 
-                                                                style={{ 
-                                                                    fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, 
-                                                                    color: config.landingPageSubtitleColor || '#64748b' 
-                                                                }}
-                                                            >
-                                                                {config.landingPageSubtitleText}
-                                                            </p>
+                                                            <>
+                                                                <p 
+                                                                    className="text-sm px-2 break-words" 
+                                                                    style={{ 
+                                                                        fontFamily: `var(--font-${(config.landingFont || 'Inter').toLowerCase().replace(' ', '-')})`, 
+                                                                        color: config.landingPageSubtitleColor || '#64748b' 
+                                                                    }}
+                                                                >
+                                                                    {config.landingPageSubtitleText}
+                                                                </p>
+                                                                
+                                                                {/* Botão de remover subtítulo (aparece no canto superior direito) */}
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleConfigChange('landingPageSubtitleText', '');
+                                                                    }}
+                                                                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-md"
+                                                                    title="Remover subtítulo"
+                                                                >
+                                                                    <Trash2 size={10} />
+                                                                </button>
+                                                            </>
                                                         ) : (
                                                             <p 
                                                                 className="text-sm px-2 break-words inline-editable-placeholder" 
