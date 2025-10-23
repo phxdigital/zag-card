@@ -108,7 +108,7 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
   const prepareDailyVisitsData = (dailyVisits: DailyVisit[]) => {
     return dailyVisits.map(visit => ({
       date: format(new Date(visit.date), 'MMM dd'),
-      visits: visit.total_visits,
+      visits: visit.count,
       uniqueVisitors: visit.unique_visitors,
       avgDuration: Math.round(visit.avg_duration)
     }));
@@ -369,7 +369,7 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
                   cy="50%"
                   outerRadius={100}
                   dataKey="value"
-                  label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
+                  label={({ name, percentage }) => `${name} ${Number(percentage).toFixed(1)}%`}
                 >
                   {deviceData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />

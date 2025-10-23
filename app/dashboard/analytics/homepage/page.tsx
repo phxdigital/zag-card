@@ -526,7 +526,7 @@ export default function HomepageAnalyticsPage() {
                   cy="50%"
                   outerRadius={100}
                   dataKey="value"
-                  label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
+                  label={({ name, percentage }) => `${name} ${Number(percentage).toFixed(1)}%`}
                 >
                   {trafficData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={`hsl(${index * 60}, 70%, 50%)`} />
@@ -556,7 +556,7 @@ export default function HomepageAnalyticsPage() {
                       <div>
                         <p className="font-medium text-gray-900">{step.step}</p>
                         <p className="text-sm text-gray-500">
-                          {step.conversion_rate.toFixed(1)}% de conversão
+                          {step.conversionRate.toFixed(1)}% de conversão
                         </p>
                       </div>
                     </div>

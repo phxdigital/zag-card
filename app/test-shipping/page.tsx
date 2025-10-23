@@ -93,7 +93,7 @@ export default function TestShippingPage() {
                   dimensions: { length: 20, width: 15, height: 5 }
                 }]}
                 onOptionSelect={setShippingOption}
-                selectedOption={shippingOption}
+                selectedOption={shippingOption || undefined}
               />
             ) : (
               <div className="text-center py-8 text-gray-500">

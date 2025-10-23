@@ -35,6 +35,7 @@ interface PageAnalytics {
   pageId: string;
   subdomain: string;
   title?: string;
+  created_at: string;
   totalVisits: number;
   uniqueVisitors: number;
   avgDuration: number;
@@ -85,6 +86,7 @@ export default function AnalyticsDashboard() {
               pageId: page.id,
               subdomain: page.subdomain,
               title: page.title,
+              created_at: page.created_at,
               ...data.data
             });
           } else {
@@ -93,6 +95,7 @@ export default function AnalyticsDashboard() {
               pageId: page.id,
               subdomain: page.subdomain,
               title: page.title,
+              created_at: page.created_at,
               totalVisits: 0,
               uniqueVisitors: 0,
               avgDuration: 0,
