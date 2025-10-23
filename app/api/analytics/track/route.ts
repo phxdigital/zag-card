@@ -79,9 +79,7 @@ async function getGeolocation(ip: string): Promise<GeolocationData | null> {
     }
     
     // Use ipapi.co for geolocation (free tier: 1000 requests/day)
-    const response = await fetch(`https://ipapi.co/${ip}/json/`, {
-      timeout: 5000
-    });
+    const response = await fetch(`https://ipapi.co/${ip}/json/`);
     
     if (!response.ok) {
       throw new Error(`Geolocation API error: ${response.status}`);
