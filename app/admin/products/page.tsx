@@ -19,6 +19,7 @@ interface Product {
   is_active: boolean;
   is_featured: boolean;
   thumbnail_url?: string;
+  images?: string[];
   category?: string;
   unlock_pages?: number;
   created_at: string;
