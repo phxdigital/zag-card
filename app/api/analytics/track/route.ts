@@ -125,7 +125,7 @@ function validateAnalyticsData(data: Record<string, unknown>): data is Record<st
 /**
  * Process and store analytics data
  */
-async function processAnalyticsData(data: AnalyticsData, ip: string, geolocation: GeolocationData | null) {
+async function processAnalyticsData(data: Record<string, unknown>, ip: string, geolocation: GeolocationData | null) {
   
   try {
     // Extract device information
