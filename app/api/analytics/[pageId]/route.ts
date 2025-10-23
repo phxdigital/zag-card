@@ -175,18 +175,42 @@ async function getTopLinks(
 ): Promise<TopLink[]> {
   try {
     const { data, error } = await supabase
-      .rpc('get_top_clicked_links', {
-        p_page_id: pageId,
-        p_start_date: startDate.toISOString().split('T')[0],
-        p_limit: 5
-      });
+      .from('page_visits')
+      .select('clicked_links')
+      .eq('page_id', parseInt(pageId))
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .not('clicked_links', 'is', null);
 
     if (error) {
       console.error('Error getting top links:', error);
       return [];
     }
 
-    return data || [];
+    // Aggregate clicked links
+    const linkCounts: { [key: string]: { text: string; count: number } } = {};
+    
+    data?.forEach((visit: { clicked_links: any }) => {
+      if (visit.clicked_links && Array.isArray(visit.clicked_links)) {
+        visit.clicked_links.forEach((link: any) => {
+          const key = link.link_id || link.link_text || 'unknown';
+          if (!linkCounts[key]) {
+            linkCounts[key] = { text: link.link_text || link.link_id || 'Unknown', count: 0 };
+          }
+          linkCounts[key].count++;
+        });
+      }
+    });
+
+    return Object.entries(linkCounts)
+      .map(([link_id, data]) => ({
+        link_id,
+        link_text: data.text,
+        clicks: data.count,
+        rate: 0 // Will be calculated in the main function
+      }))
+      .sort((a, b) => b.clicks - a.clicks)
+      .slice(0, 5);
   } catch (error) {
     console.error('Error getting top links:', error);
     return [];
