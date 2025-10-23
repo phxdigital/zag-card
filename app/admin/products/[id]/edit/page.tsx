@@ -129,8 +129,10 @@ export default function EditProductPage() {
         is_active: data.is_active ?? true,
         is_featured: data.is_featured ?? false,
         images: data.images || [],
+        thumbnail_url: data.thumbnail_url || '',
         requires_shipping: data.requires_shipping ?? true,
         weight: data.weight || 0,
+        dimensions: data.dimensions || {},
         shipping_time: data.shipping_time || '',
         meta_title: data.meta_title || '',
         meta_description: data.meta_description || ''
