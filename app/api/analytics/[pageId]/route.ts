@@ -153,8 +153,8 @@ async function getDailyVisits(
     });
 
     return Object.entries(dailyData).map(([date, metrics]) => ({
-      visit_date: date,
-      total_visits: metrics.visits,
+      date: date,
+      count: metrics.visits,
       unique_visitors: metrics.uniqueVisitors.size,
       avg_duration: metrics.visits > 0 ? metrics.totalDuration / metrics.visits : 0
     }));
