@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 // Rate limiting store (in production, use Redis or similar)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -83,6 +83,18 @@ async function getGeolocation(ip: string): Promise<any> {
     });
     
     if (!response.ok) {
+      // If rate limited or error, return default values
+      if (response.status === 429) {
+        console.warn('Geolocation API rate limited, using default values');
+        return {
+          ip,
+          country: 'Unknown',
+          city: 'Unknown',
+          region: 'Unknown',
+          timezone: 'UTC',
+          isp: 'Unknown'
+        };
+      }
       throw new Error(`Geolocation API error: ${response.status}`);
     }
     
@@ -126,7 +138,6 @@ function validateHomepageData(data: any): boolean {
  * Process and store homepage analytics data
  */
 async function processHomepageData(data: any, ip: string, geolocation: any) {
-  const supabase = createClient();
   
   try {
     // Extract device information
@@ -186,7 +197,6 @@ async function processHomepageData(data: any, ip: string, geolocation: any) {
  * Handle different types of homepage analytics events
  */
 async function handleHomepageEvent(data: any, ip: string, geolocation: any) {
-  const supabase = createClient();
   
   switch (data.type) {
     case 'homepage_view':

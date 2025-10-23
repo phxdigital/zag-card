@@ -23,7 +23,13 @@ interface Payment {
   invoice_url?: string;
   pix_qr_code?: string;
   // Campos de shipping
-  shipping_address?: any;
+  shipping_address?: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+  };
   tracking_code?: string;
   shipping_carrier?: string;
   shipping_service?: string;

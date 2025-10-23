@@ -73,11 +73,11 @@ export function Header() {
 
         {/* Menu Desktop */}
         <nav className="desktop-nav">
-          <a href="/#features">Recursos</a>
-          <a href="/#how-it-works">Como Funciona</a>
-          <a href="/#pricing">Preços</a>
-          <a href="/loja">Loja</a>
-          <a href="/#faq">FAQ</a>
+          <Link href="/#features">Recursos</Link>
+          <Link href="/#how-it-works">Como Funciona</Link>
+          <Link href="/#pricing">Preços</Link>
+          <Link href="/loja">Loja</Link>
+          <Link href="/#faq">FAQ</Link>
         </nav>
 
         {/* Botões - Visíveis em todas as resoluções */}
@@ -118,19 +118,19 @@ export function Header() {
           <div className="mobile-menu">
             <nav className="mobile-nav">
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="/#features">Recursos</a>
+                <Link href="/#features">Recursos</Link>
               </button>
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="/#how-it-works">Como Funciona</a>
+                <Link href="/#how-it-works">Como Funciona</Link>
               </button>
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="/#pricing">Preços</a>
+                <Link href="/#pricing">Preços</Link>
               </button>
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="/loja">Loja</a>
+                <Link href="/loja">Loja</Link>
               </button>
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="/#faq">FAQ</a>
+                <Link href="/#faq">FAQ</Link>
               </button>
             </nav>
           </div>

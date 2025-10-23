@@ -6,8 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
 import { isAdminEmail } from '@/lib/auth-config';
 
 interface RouteParams {
@@ -235,7 +234,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Create Supabase client
-    const supabase = createServerComponentClient({ cookies });
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     
     // Validate admin access
     const isAdmin = await validateAdminAccess(supabase);

@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   ArrowLeft,
@@ -15,22 +15,15 @@ import {
   Users, 
   Clock, 
   Smartphone, 
-  Monitor, 
-  Tablet,
   TrendingUp,
   RefreshCw,
-  Download,
   Calendar,
-  Globe,
   MousePointer
 } from 'lucide-react';
-import { format, subDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { format } from 'date-fns';
 import {
   LineChart,
   Line,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   PieChart,
@@ -43,7 +36,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { AnalyticsSummary, DailyVisit, TopLink, BrowserBreakdown, CountryBreakdown } from '@/types/analytics';
+import { AnalyticsSummary, DailyVisit, BrowserBreakdown, CountryBreakdown } from '@/types/analytics';
 
 interface PageDetailProps {
   params: Promise<{ pageId: string }>;
@@ -56,7 +49,6 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
-  const router = useRouter();
 
   // Initialize page ID
   useEffect(() => {
@@ -100,7 +92,7 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
     if (pageId) {
       fetchAnalytics();
     }
-  }, [pageId, period]);
+  }, [pageId, period, fetchAnalytics]);
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -122,7 +114,7 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
     }));
   };
 
-  const prepareDeviceData = (deviceBreakdown: any) => {
+  const prepareDeviceData = (deviceBreakdown: { [key: string]: number }) => {
     return [
       { name: 'Mobile', value: deviceBreakdown.mobile, color: '#3B82F6' },
       { name: 'Desktop', value: deviceBreakdown.desktop, color: '#10B981' },
@@ -210,7 +202,7 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
             <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Analytics Data</h3>
             <p className="text-gray-600 mb-4">
-              This page hasn't received any visits yet. Share your NFC page to start collecting analytics!
+              This page hasn&apos;t received any visits yet. Share your NFC page to start collecting analytics!
             </p>
             <Link
               href="/dashboard/analytics"
