@@ -259,8 +259,8 @@ async function getHomepageSummary(supabase: ReturnType<typeof import('@supabase/
     const uniqueVisitors = new Set(data.map((v: Record<string, unknown>) => v.session_id)).size;
     const conversions = data.filter((v: Record<string, unknown>) => v.conversion_goal).length;
     const conversionRate = totalVisits > 0 ? (conversions / totalVisits) * 100 : 0;
-    const totalRevenue = data.reduce((sum: number, v: Record<string, unknown>) => sum + (v.conversion_value || 0), 0);
-    const avgSessionDuration = data.reduce((sum: number, v: Record<string, unknown>) => sum + (v.duration_seconds || 0), 0) / totalVisits;
+    const totalRevenue = data.reduce((sum: number, v: Record<string, unknown>) => sum + (Number(v.conversion_value) || 0), 0);
+    const avgSessionDuration = data.reduce((sum: number, v: Record<string, unknown>) => sum + (Number(v.duration_seconds) || 0), 0) / totalVisits;
     const paidTraffic = data.filter((v: Record<string, unknown>) => v.traffic_source === 'paid').length;
     const paidTrafficPercent = totalVisits > 0 ? (paidTraffic / totalVisits) * 100 : 0;
 
