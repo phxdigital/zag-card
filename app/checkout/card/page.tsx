@@ -304,7 +304,7 @@ export default function CardCheckoutPage() {
                       dimensions: { length: 20, width: 15, height: 5 }
                     }]}
                     onOptionSelect={setShippingOption}
-                    selectedOption={shippingOption}
+                    selectedOption={shippingOption || undefined}
                   />
                 )}
 
