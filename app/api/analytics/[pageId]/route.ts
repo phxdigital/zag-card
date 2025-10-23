@@ -273,18 +273,36 @@ async function getCountryBreakdown(
 ): Promise<CountryBreakdown[]> {
   try {
     const { data, error } = await supabase
-      .rpc('get_country_breakdown', {
-        p_page_id: pageId,
-        p_start_date: startDate.toISOString().split('T')[0],
-        p_limit: 10
-      });
+      .from('page_visits')
+      .select('country')
+      .eq('page_id', parseInt(pageId))
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .not('country', 'is', null);
 
     if (error) {
       console.error('Error getting country breakdown:', error);
       return [];
     }
 
-    return data || [];
+    // Aggregate country data
+    const countryCounts: { [key: string]: number } = {};
+    
+    data?.forEach((visit: { country: string }) => {
+      const country = visit.country || 'Unknown';
+      countryCounts[country] = (countryCounts[country] || 0) + 1;
+    });
+
+    const totalVisits = data?.length || 0;
+    
+    return Object.entries(countryCounts)
+      .map(([country, count]) => ({
+        country,
+        count,
+        percentage: totalVisits > 0 ? (count / totalVisits) * 100 : 0
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
   } catch (error) {
     console.error('Error getting country breakdown:', error);
     return [];
