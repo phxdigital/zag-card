@@ -206,6 +206,8 @@ async function handleAnalyticsEvent(data: AnalyticsData, ip: string, geolocation
       if (data.link_id && data.link_text) {
         const clickData = {
           page_id: data.page_id,
+          type: data.type,
+          timestamp: data.timestamp,
           visited_at: data.timestamp,
           user_agent: data.user_agent,
           device_type: data.device_info?.device_type || 'desktop',
