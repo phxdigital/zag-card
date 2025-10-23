@@ -118,7 +118,7 @@ function validateAnalyticsData(data: Record<string, unknown>): data is Record<st
     typeof data.session_id === 'string' &&
     typeof data.timestamp === 'string' &&
     typeof data.user_agent === 'string' &&
-    ['page_view', 'heartbeat', 'click', 'session_end'].includes(data.type)
+    ['page_view', 'heartbeat', 'click', 'session_end'].includes(String(data.type))
   );
 }
 
