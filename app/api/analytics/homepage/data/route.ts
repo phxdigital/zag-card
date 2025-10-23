@@ -40,17 +40,41 @@ function getDateRange(period: string): { startDate: Date; endDate: Date } {
 async function getTrafficSources(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
-      .rpc('get_homepage_traffic_sources', {
-        p_start_date: startDate.toISOString().split('T')[0],
-        p_end_date: endDate.toISOString().split('T')[0]
-      });
+      .from('homepage_visits')
+      .select('traffic_source, utm_source, utm_medium, utm_campaign')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString());
 
     if (error) {
       console.error('Error getting traffic sources:', error);
       return [];
     }
 
-    return data || [];
+    // Aggregate traffic sources
+    const sourceCounts: { [key: string]: number } = {};
+    
+    data?.forEach((visit: { traffic_source: string; utm_source?: string; utm_medium?: string; utm_campaign?: string }) => {
+      let source = visit.traffic_source || 'direct';
+      
+      if (visit.utm_source) {
+        source = `utm_${visit.utm_source}`;
+        if (visit.utm_medium) {
+          source += `_${visit.utm_medium}`;
+        }
+      }
+      
+      sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+    });
+
+    const totalVisits = data?.length || 0;
+    
+    return Object.entries(sourceCounts)
+      .map(([source, count]) => ({
+        source,
+        count,
+        percentage: totalVisits > 0 ? (count / totalVisits) * 100 : 0
+      }))
+      .sort((a, b) => b.count - a.count);
   } catch (error) {
     console.error('Error getting traffic sources:', error);
     return [];
