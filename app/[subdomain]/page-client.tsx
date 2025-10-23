@@ -411,7 +411,7 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                                 return (
                                     <button
                                         key={link.id}
-                                        onClick={() => handleLinkClickWrapper(link.url, link.icon)}
+                                        onClick={() => handleLinkClickWrapper(link.url, link.icon || undefined)}
                                         style={{
                                             background: link.styleType === 'gradient' 
                                                 ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
