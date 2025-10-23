@@ -9,7 +9,7 @@ import { ShippingAddress, ShippingOption } from '@/lib/shipping';
 export default function TestShippingPage() {
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null);
   const [shippingOption, setShippingOption] = useState<ShippingOption | null>(null);
-  const [testResults, setTestResults] = useState<any>(null);
+  const [testResults, setTestResults] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testShippingCalculation = async () => {

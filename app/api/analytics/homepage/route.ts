@@ -124,7 +124,7 @@ async function getGeolocation(ip: string): Promise<any> {
 /**
  * Validate homepage analytics data
  */
-function validateHomepageData(data: any): boolean {
+function validateHomepageData(data: Record<string, unknown>): boolean {
   return (
     data &&
     typeof data.session_id === 'string' &&
@@ -137,7 +137,7 @@ function validateHomepageData(data: any): boolean {
 /**
  * Process and store homepage analytics data
  */
-async function processHomepageData(data: any, ip: string, geolocation: any) {
+async function processHomepageData(data: Record<string, unknown>, ip: string, geolocation: Record<string, unknown>) {
   
   try {
     // Extract device information
@@ -196,7 +196,7 @@ async function processHomepageData(data: any, ip: string, geolocation: any) {
 /**
  * Handle different types of homepage analytics events
  */
-async function handleHomepageEvent(data: any, ip: string, geolocation: any) {
+async function handleHomepageEvent(data: Record<string, unknown>, ip: string, geolocation: Record<string, unknown>) {
   
   switch (data.type) {
     case 'homepage_view':

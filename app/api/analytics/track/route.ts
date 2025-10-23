@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { AnalyticsData, GeolocationData } from '@/types/analytics';
 
 // Rate limiting store (in production, use Redis or similar)
@@ -128,7 +128,6 @@ function validateAnalyticsData(data: any): data is AnalyticsData {
  * Process and store analytics data
  */
 async function processAnalyticsData(data: AnalyticsData, ip: string, geolocation: GeolocationData | null) {
-  const supabase = createClient();
   
   try {
     // Extract device information
@@ -179,7 +178,6 @@ async function processAnalyticsData(data: AnalyticsData, ip: string, geolocation
  * Handle different types of analytics events
  */
 async function handleAnalyticsEvent(data: AnalyticsData, ip: string, geolocation: GeolocationData | null) {
-  const supabase = createClient();
   
   switch (data.type) {
     case 'page_view':

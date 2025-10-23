@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Download, Eye, Calendar, User, FileText, AlertCircle, CheckCircle, Trash2, FileStack, Loader } from 'lucide-react';
 
 interface Notification {
@@ -350,7 +351,7 @@ export default function AdminPanel() {
                             <p className="text-sm text-gray-600">Ferramentas administrativas disponíveis</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <a
+                            <Link
                                 href="/dashboard/analytics/homepage"
                                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                             >
@@ -358,14 +359,14 @@ export default function AdminPanel() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
                                 Homepage Analytics
-                            </a>
-                            <a
+                            </Link>
+                            <Link
                                 href="/admin/pages"
                                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                             >
                                 <FileText className="w-4 h-4" />
                                 Gerenciar Páginas
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>
