@@ -234,7 +234,7 @@ async function getCountryBreakdown(
 /**
  * Validate that the page belongs to the authenticated user
  */
-async function validatePageOwnership(supabase: any, pageId: string, userId: string): Promise<boolean> {
+async function validatePageOwnership(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, pageId: string, userId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from('pages')

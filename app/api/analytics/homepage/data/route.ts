@@ -9,9 +9,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { isAdminEmail } from '@/lib/auth-config';
 
-interface RouteParams {
-  params: Promise<{ pageId: string }>;
-}
 
 /**
  * Calculate date range based on period
@@ -200,7 +197,7 @@ async function getHomepageSummary(supabase: ReturnType<typeof import('@supabase/
 /**
  * Validate admin access
  */
-async function validateAdminAccess(supabase: any): Promise<boolean> {
+async function validateAdminAccess(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>): Promise<boolean> {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
