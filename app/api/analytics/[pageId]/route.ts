@@ -89,7 +89,7 @@ async function getAnalyticsSummary(
     const mobilePercent = totalVisits > 0 ? (deviceBreakdown.mobile / totalVisits) * 100 : 0;
 
     // Get daily visits
-    const dailyVisits = await getDailyVisits(supabase, pageId, startDate, endDate);
+    const dailyVisits = await getDailyVisits(supabase, pageId, startDate);
     
     // Get top links
     const topLinks = await getTopLinks(supabase, pageId, startDate, endDate);
