@@ -227,6 +227,7 @@ const handleLinkClick = (url: string): void => {
 
 export default function PageClient({ config, logoUrl }: PageClientProps) {
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showShareFeedback, setShowShareFeedback] = useState(false);
     const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
 
     // 🛡️ RETROCOMPATIBILIDADE: Garante que páginas antigas continuem funcionando
@@ -261,8 +262,13 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
         }
     };
 
-    const handleLinkClickWrapper = (url: string) => {
-        if (url.startsWith('share:') || url === 'share:') {
+    const handleLinkClickWrapper = (url: string, icon?: string) => {
+        // Detectar botão de compartilhar pelo ícone ou URL
+        if (icon === 'share' || url.startsWith('share:') || url === 'share:') {
+            // Mostrar feedback visual
+            setShowShareFeedback(true);
+            setTimeout(() => setShowShareFeedback(false), 2000);
+            
             // 🎯 Usar API nativa de compartilhamento com URL da página atual
             if (navigator.share) {
                 navigator.share({
@@ -299,6 +305,16 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                 backgroundPosition: 'center'
             }}
         >
+            {/* Feedback visual para botão de compartilhar */}
+            {showShareFeedback && (
+                <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                        <span className="text-sm font-medium">Compartilhamento configurado automaticamente!</span>
+                    </div>
+                </div>
+            )}
+            
             <div className="w-full max-w-md mx-auto text-center relative">
                 {/* Banner do Topo (atrás da logo) */}
                 {config.landingPageBannerUrl && (
@@ -395,7 +411,7 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                                 return (
                                     <button
                                         key={link.id}
-                                        onClick={() => handleLinkClickWrapper(link.url)}
+                                        onClick={() => handleLinkClickWrapper(link.url, link.icon)}
                                         style={{
                                             background: link.styleType === 'gradient' 
                                                 ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` 
@@ -432,7 +448,7 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                                                     alert('Não foi possível copiar o código PIX.');
                                                 });
                                             } else {
-                                                handleLinkClickWrapper(link.url);
+                                                handleLinkClickWrapper(link.url, link.icon);
                                             }
                                         }}
                                         style={{
@@ -469,7 +485,7 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                                         });
                                     } else {
                                         console.log('Não é PIX, chamando handleLinkClickWrapper');
-                                        handleLinkClickWrapper(link.url);
+                                        handleLinkClickWrapper(link.url, link.icon);
                                     }
                                 }}
                                 style={{

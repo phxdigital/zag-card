@@ -66,15 +66,18 @@ export function Header() {
     <header>
       <div className="header-content">
         <div className="flex items-center gap-2">
-          <Image src="/zag-site.png" alt="Zag NFC" width={240} height={80} className="logo" />
+          <Link href="/" className="cursor-pointer">
+            <Image src="/zag-site.png" alt="Zag NFC" width={240} height={80} className="logo" />
+          </Link>
         </div>
 
         {/* Menu Desktop */}
         <nav className="desktop-nav">
-          <a href="#features">Recursos</a>
-          <a href="#how-it-works">Como Funciona</a>
-          <a href="#pricing">Preços</a>
-          <a href="#faq">FAQ</a>
+          <a href="/#features">Recursos</a>
+          <a href="/#how-it-works">Como Funciona</a>
+          <a href="/#pricing">Preços</a>
+          <a href="/loja">Loja</a>
+          <a href="/#faq">FAQ</a>
         </nav>
 
         {/* Botões - Visíveis em todas as resoluções */}
@@ -91,7 +94,7 @@ export function Header() {
               <div className="md:hidden text-sm text-gray-700">
                 Olá, {userProfile?.name || user.email?.split('@')[0] || 'Usuário'}
               </div>
-              <Link href="/create-page" className="btn-primary">Create page</Link>
+              <Link href="/dashboard/pages" className="btn-primary">Minhas páginas</Link>
             </>
           ) : (
             <>
@@ -115,16 +118,19 @@ export function Header() {
           <div className="mobile-menu">
             <nav className="mobile-nav">
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="#features">Recursos</a>
+                <a href="/#features">Recursos</a>
               </button>
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="#how-it-works">Como Funciona</a>
+                <a href="/#how-it-works">Como Funciona</a>
               </button>
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="#pricing">Preços</a>
+                <a href="/#pricing">Preços</a>
               </button>
               <button onClick={closeMenu} className="menu-item-button">
-                <a href="#faq">FAQ</a>
+                <a href="/loja">Loja</a>
+              </button>
+              <button onClick={closeMenu} className="menu-item-button">
+                <a href="/#faq">FAQ</a>
               </button>
             </nav>
           </div>

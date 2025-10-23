@@ -9,7 +9,8 @@ import {
   Eye, 
   ExternalLink, 
   Calendar,
-  Globe
+  Globe,
+  BarChart3
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -292,24 +293,37 @@ console.error('❌ Erro na requisição:', err);
 
               {/* Actions */}
               <div className="px-4 py-4 bg-gray-50 border-t border-gray-200">
+                {/* Primeira linha - Botões principais */}
+                <div className="flex flex-wrap gap-3 mb-3">
+                  <a
+                    href={getPageUrl(page.subdomain)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Visualizar
+                  </a>
+                  <Link
+                    href={`/dashboard/edit/${page.id}`}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar
+                  </Link>
+                  <Link
+                    href={`/dashboard/analytics/${page.id}`}
+                    className="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Estatísticas
+                  </Link>
+                </div>
+                
+                {/* Segunda linha - Botões de ação */}
                 <div className="flex items-center justify-between">
-                  <div className="flex space-x-3">
-                    <a
-                      href={getPageUrl(page.subdomain)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Visualizar
-                    </a>
-                    <Link
-                      href={`/dashboard/edit/${page.id}`}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Editar
-                    </Link>
+                  <div className="text-sm text-gray-500">
+                    Ações rápidas
                   </div>
                   <div className="flex space-x-2">
                     <button

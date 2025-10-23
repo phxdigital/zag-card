@@ -577,7 +577,8 @@ export default function DashboardPage() {
                 console.log('🎨 COR DETECTADA - Algoritmo melhorado:', {
                     corFinal: selectedColor,
                     regioesAnalisadas: regionColors.length,
-                    coresEncontradas: regionColors.map(r => ({ regiao: r.region, cor: r.color }))
+                    coresEncontradas: regionColors.map(r => ({ regiao: r.region, cor: r.color })),
+                    isBlack: selectedColor.toLowerCase() === '#000000' || selectedColor.toLowerCase() === '#000'
                 });
                 
                 // Mostrar feedback visual
@@ -648,7 +649,13 @@ export default function DashboardPage() {
                         // 🎯 Peso baseado na saturação, luminosidade e posição
                         const saturation = Math.max(r, g, b) - Math.min(r, g, b);
                         const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-                        const weight = (saturation / 255) * (luminance / 255) * (alpha / 255);
+                        
+                        // 🎨 CORREÇÃO: Não penalizar cores escuras (como preto)
+                        // Para cores muito escuras, usar peso baseado na frequência, não na luminosidade
+                        const isVeryDark = luminance < 50; // Cores muito escuras
+                        const weight = isVeryDark 
+                            ? (alpha / 255) * 0.8 // Peso fixo para cores escuras
+                            : (saturation / 255) * (luminance / 255) * (alpha / 255);
                         
                         colorHistogram.set(colorKey, (colorHistogram.get(colorKey) || 0) + weight);
                         totalWeight += weight;
@@ -674,6 +681,15 @@ export default function DashboardPage() {
                     const hex = `#${r.toString(16).padStart(2, '0')}${g
                         .toString(16)
                         .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                    
+                    // 🎨 DEBUG: Log para cores escuras
+                    if (r < 30 && g < 30 && b < 30) {
+                        console.log('🔍 COR ESCURA DETECTADA:', {
+                            rgb: [r, g, b],
+                            hex: hex,
+                            region: 'region'
+                        });
+                    }
                     
                     resolve(hex);
                 } catch (error) {
@@ -793,7 +809,14 @@ export default function DashboardPage() {
 
             const newConfig = { ...prev, [key]: value };
 
-            
+            // 🎨 DEBUG: Log para mudanças de cor
+            if (key === 'cardBgColor') {
+                console.log('🎨 COR APLICADA:', {
+                    corAnterior: prev.cardBgColor,
+                    corNova: value,
+                    tipo: typeof value
+                });
+            }
 
             // Sincronizar cor de fundo da frente com o verso
 
@@ -810,6 +833,14 @@ export default function DashboardPage() {
         });
 
     };
+
+    // 🎨 DEBUG: Monitorar mudanças na cor
+    useEffect(() => {
+        console.log('🎨 ESTADO DA COR ATUALIZADO:', {
+            cardBgColor: config.cardBgColor,
+            timestamp: new Date().toISOString()
+        });
+    }, [config.cardBgColor]);
 
 
 
@@ -993,6 +1024,16 @@ export default function DashboardPage() {
             // Configurar fundo
 
             const bgColor = side === 'front' ? (config.cardBgColor || '#FFFFFF') : (config.cardBackBgColor || '#FFFFFF');
+
+            // 🎨 DEBUG: Log para cor do canvas
+            if (side === 'front' && (bgColor === '#000000' || bgColor === '#000')) {
+                console.log('🎨 CANVAS - Cor preta aplicada:', {
+                    side: side,
+                    bgColor: bgColor,
+                    configCardBgColor: config.cardBgColor,
+                    timestamp: new Date().toISOString()
+                });
+            }
 
             ctx.fillStyle = bgColor;
 
@@ -2970,7 +3011,7 @@ console.error('Erro ao carregar dados do usuário:', err);
 
             'save-contact': { text: 'Salvar Contato', url: 'tel:', icon: 'user-plus', color: '#059669' },
 
-            'share': { text: 'Compartilhar', url: 'share:', icon: 'share', color: '#8B5CF6' },
+            'share': { text: 'Compartilhar', url: '#', icon: 'share', color: '#8B5CF6' },
 
         } as const;
 
@@ -3000,10 +3041,33 @@ console.error('Erro ao carregar dados do usuário:', err);
             instagram: 'Ex: @seuusuario', 
             youtube: 'Ex: @seucanal',
             linkedin: 'Ex: seuusuario',
-            'save-contact': 'Ex: 11999999999',
-            share: 'URL será gerada automaticamente'
+            'save-contact': '(61)981938165',
+            share: '' // Botão de compartilhar não precisa de placeholder
         };
 
+        // Para botão de compartilhar, adicionar automaticamente sem formulário
+        if (kind === 'share') {
+            const shareBtn = { 
+                text: 'Compartilhar', 
+                url: 'share:', 
+                icon: 'share', 
+                styleType: 'solid' as const,
+                bgColor1: '#8B5CF6',
+                bgColor2: '#8B5CF6',
+                textColor: '#ffffff',
+                isSocial: true,
+                id: Date.now()
+            };
+
+            setConfig(prev => ({
+                ...prev,
+                customLinks: [...(prev.customLinks || []), shareBtn]
+            }));
+            
+            return; // Não abrir formulário para botão de compartilhar
+        }
+
+        // Para outros botões, usar a lógica normal com formulário
         const newBtn = { 
             text: placeholders[kind] || p.text, 
             url: p.url, 
@@ -3440,7 +3504,46 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                     </div>
 
-                                    <div style={{ backgroundColor: config.cardBgColor }} className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border overflow-hidden card-preview">
+                                    <div 
+                                        style={{ backgroundColor: config.cardBgColor }} 
+                                        className="w-80 h-48 mx-auto rounded-xl shadow-lg relative p-4 transition-colors duration-300 border overflow-hidden card-preview"
+                                        data-debug-color={config.cardBgColor}
+                                        onLoad={() => {
+                                            console.log('🎨 PREVIEW CARREGADO:', {
+                                                backgroundColor: config.cardBgColor,
+                                                element: 'preview-1',
+                                                timestamp: new Date().toISOString()
+                                            });
+                                        }}
+                                        onMouseEnter={() => {
+                                            console.log('🎨 PREVIEW HOVER:', {
+                                                backgroundColor: config.cardBgColor,
+                                                element: 'preview-1',
+                                                timestamp: new Date().toISOString()
+                                            });
+                                        }}
+                                        onMouseLeave={() => {
+                                            console.log('🎨 PREVIEW LEAVE:', {
+                                                backgroundColor: config.cardBgColor,
+                                                element: 'preview-1',
+                                                timestamp: new Date().toISOString()
+                                            });
+                                        }}
+                                        onFocus={() => {
+                                            console.log('🎨 PREVIEW FOCUS:', {
+                                                backgroundColor: config.cardBgColor,
+                                                element: 'preview-1',
+                                                timestamp: new Date().toISOString()
+                                            });
+                                        }}
+                                        onBlur={() => {
+                                            console.log('🎨 PREVIEW BLUR:', {
+                                                backgroundColor: config.cardBgColor,
+                                                element: 'preview-1',
+                                                timestamp: new Date().toISOString()
+                                            });
+                                        }}
+                                    >
 
                                         {/* Logo com posicionamento simplificado e centralizado */}
 
@@ -3677,7 +3780,13 @@ console.error('Erro ao carregar dados do usuário:', err);
                                             <div>
 
                                                 <label className="block text-xs font-medium text-slate-700 mb-1">Cor de Fundo</label>
-                                                <input type="color" value={config.cardBgColor} onChange={(e) => handleConfigChange('cardBgColor', e.target.value)} className="w-full h-6 border border-slate-300 rounded-md" />
+                                                <input 
+                                                    type="color" 
+                                                    value={config.cardBgColor} 
+                                                    onChange={(e) => handleConfigChange('cardBgColor', e.target.value)} 
+                                                    className="w-full h-6 border border-slate-300 rounded-md"
+                                                    data-debug-color={config.cardBgColor}
+                                                />
                                             </div>
 
                                             <div>
@@ -4343,6 +4452,42 @@ console.error('Erro ao carregar dados do usuário:', err);
                                             <div 
                                                 style={{ backgroundColor: config.cardBgColor }} 
                                                 className="w-64 h-40 mx-auto rounded-xl shadow-lg relative p-3 transition-colors duration-300 border overflow-hidden card-preview"
+                                                data-debug-color={config.cardBgColor}
+                                                onLoad={() => {
+                                                    console.log('🎨 PREVIEW CARREGADO:', {
+                                                        backgroundColor: config.cardBgColor,
+                                                        element: 'preview-2',
+                                                        timestamp: new Date().toISOString()
+                                                    });
+                                                }}
+                                                onMouseEnter={() => {
+                                                    console.log('🎨 PREVIEW HOVER:', {
+                                                        backgroundColor: config.cardBgColor,
+                                                        element: 'preview-2',
+                                                        timestamp: new Date().toISOString()
+                                                    });
+                                                }}
+                                                onMouseLeave={() => {
+                                                    console.log('🎨 PREVIEW LEAVE:', {
+                                                        backgroundColor: config.cardBgColor,
+                                                        element: 'preview-2',
+                                                        timestamp: new Date().toISOString()
+                                                    });
+                                                }}
+                                                onFocus={() => {
+                                                    console.log('🎨 PREVIEW FOCUS:', {
+                                                        backgroundColor: config.cardBgColor,
+                                                        element: 'preview-2',
+                                                        timestamp: new Date().toISOString()
+                                                    });
+                                                }}
+                                                onBlur={() => {
+                                                    console.log('🎨 PREVIEW BLUR:', {
+                                                        backgroundColor: config.cardBgColor,
+                                                        element: 'preview-2',
+                                                        timestamp: new Date().toISOString()
+                                                    });
+                                                }}
                                             >
                                                 {/* Logo com posicionamento simplificado e centralizado */}
                                                 {logoDataUrl && (
@@ -5201,13 +5346,13 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                                     return (
                                                         <div key={link.id}>
-                                                            {editingButtonId === link.id ? (
+                                                            {editingButtonId === link.id && link.icon !== 'share' ? (
                                                                 link.icon === 'user-plus' ? (
                                                                     // 📞 Interface especial para Salvar Contato - apenas número de telefone
                                                                     <input
                                                                         type="text"
-                                                                        value={tempButtonUrl}
-                                                                        onChange={(e) => setTempButtonUrl(e.target.value)}
+                                                                        value={tempButtonUrl.replace('tel:', '')}
+                                                                        onChange={(e) => setTempButtonUrl('tel:' + e.target.value)}
                                                                         onBlur={saveButtonEdit}
                                                                         onKeyDown={(e) => {
                                                                             if (e.key === 'Enter') {
@@ -5217,7 +5362,7 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                                             }
                                                                         }}
                                                                         className="h-8 px-3 rounded-full text-xs font-medium bg-white border-2 border-dashed border-blue-400 focus:outline-none focus:border-blue-500"
-                                                                        placeholder="Ex: 11999999999"
+                                                                        placeholder="(61)981938165"
                                                                         autoFocus
                                                                     />
                                                                 ) : (
@@ -5264,8 +5409,15 @@ console.error('Erro ao carregar dados do usuário:', err);
                                                                             : 'w-8 h-8 rounded-full cursor-pointer border-2 border-dashed border-transparent hover:border-blue-300 transition-all duration-200 hover:bg-blue-50'
                                                                     } flex items-center justify-center text-white shadow-md inline-editable`}
                                                             style={{ background: link.styleType === 'gradient' ? `linear-gradient(to right, ${link.bgColor1}, ${link.bgColor2})` : globalColor }}
-                                                                    onClick={() => startEditingButton(link.id, link.text, link.url)}
-                                                                    title="Clique para editar"
+                                                                    onClick={() => {
+                                                                        if (link.icon === 'share') {
+                                                                            // Para botão de compartilhar, mostrar feedback em vez de editar
+                                                                            alert('Botão de compartilhar configurado automaticamente!');
+                                                                        } else {
+                                                                            startEditingButton(link.id, link.text, link.url);
+                                                                        }
+                                                                    }}
+                                                                    title={link.icon === 'share' ? 'Compartilhar configurado automaticamente' : 'Clique para editar'}
                                                         >
                                                             {link.icon ? (
                                                                 <IconForName name={link.icon as IconName} size={isPillButton ? 14 : 16} />
@@ -5971,12 +6123,27 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
             'linkedin': 'Ex: seuusuario',
 
-            'user-plus': 'Ex: 11999999999 (número de celular)',
+            'user-plus': '(61)981938165',
 
         };
 
         return placeholders[icon] || '';
 
+    };
+
+    // Função para formatar número de telefone
+    const formatPhoneNumber = (value: string) => {
+        // Remove tudo que não é número
+        const numbers = value.replace(/\D/g, '');
+        
+        // Aplica formatação (XX)XXXXX-XXXX
+        if (numbers.length <= 2) {
+            return numbers;
+        } else if (numbers.length <= 7) {
+            return `(${numbers.slice(0, 2)})${numbers.slice(2)}`;
+        } else {
+            return `(${numbers.slice(0, 2)})${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+        }
     };
 
 
@@ -6013,20 +6180,19 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
 
         
 
-        // Garantir que URLs personalizadas tenham protocolo
-
+        // Processar URL baseado no tipo de botão
         let finalUrl = data.url;
 
-        if (!getSocialBaseUrl(data.icon)) {
-
-            // Se não é um botão social, garantir que tenha protocolo
-
-            if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-
-                finalUrl = 'http://' + finalUrl;
-
+        if (data.icon === 'user-plus') {
+            // Para botão de salvar contato, adicionar 'tel:' automaticamente
+            if (!finalUrl.startsWith('tel:')) {
+                finalUrl = 'tel:' + finalUrl;
             }
-
+        } else if (!getSocialBaseUrl(data.icon)) {
+            // Se não é um botão social, garantir que tenha protocolo
+            if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+                finalUrl = 'http://' + finalUrl;
+            }
         }
 
         
@@ -6070,8 +6236,14 @@ function LinkEditorForm({ initial, onSave, onCancel, icons }: { initial: CustomL
                         onChange={(e) => {
 
                             const baseUrl = getSocialBaseUrl(data.icon);
+                            let inputValue = e.target.value;
 
-                            const newUrl = baseUrl ? baseUrl + e.target.value : e.target.value;
+                            // Aplicar formatação automática para botão de salvar contato
+                            if (data.icon === 'user-plus') {
+                                inputValue = formatPhoneNumber(inputValue);
+                            }
+
+                            const newUrl = baseUrl ? baseUrl + inputValue : inputValue;
 
                             setData({ ...data, url: newUrl });
 

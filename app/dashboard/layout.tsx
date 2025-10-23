@@ -14,7 +14,9 @@ import {
   Menu, 
   X,
   LogOut,
-  Settings
+  Settings,
+  Store,
+  BarChart3
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -49,6 +51,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       href: '/dashboard/pages',
       icon: FileText,
       current: pathname === '/dashboard/pages'
+    },
+    {
+      name: 'Analytics',
+      href: '/dashboard/analytics',
+      icon: BarChart3,
+      current: pathname.startsWith('/dashboard/analytics')
+    },
+    // Homepage Analytics - only for admins
+    ...(isAdmin ? [{
+      name: 'Homepage Analytics',
+      href: '/dashboard/analytics/homepage',
+      icon: BarChart3,
+      current: pathname === '/dashboard/analytics/homepage'
+    }] : []),
+    {
+      name: 'Loja',
+      href: '/loja',
+      icon: Store,
+      current: pathname === '/loja'
     },
     {
       name: 'Pagamentos',

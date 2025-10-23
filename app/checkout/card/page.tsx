@@ -2,6 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AlertCircle } from 'lucide-react';
+import ShippingAddressForm from '@/app/components/ShippingAddressForm';
+import ShippingOptions from '@/app/components/ShippingOptions';
+import { ShippingAddress, ShippingOption } from '@/lib/shipping';
 
 interface CardCheckoutData {
   planType: string;
@@ -30,6 +34,12 @@ export default function CardCheckoutPage() {
     addressNumber: '',
     addressComplement: '',
   });
+
+  // Estados para shipping
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null);
+  const [shippingOption, setShippingOption] = useState<ShippingOption | null>(null);
+  const [showShippingForm, setShowShippingForm] = useState(false);
+  const [useSameData, setUseSameData] = useState(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem('card_checkout_data');
@@ -65,6 +75,31 @@ export default function CardCheckoutPage() {
 
   const formatCvv = (value: string) => value.replace(/\D/g, '').slice(0, 3);
 
+  // Auto-completar dados de shipping com base nos dados do pagamento
+  const autoFillShippingData = () => {
+    if (!data) return;
+
+    const autoFilledAddress: ShippingAddress = {
+      name: data.customer.name,
+      email: data.customer.email,
+      phone: data.customer.phone,
+      street: '', // Será preenchido pela validação de CEP
+      number: address.addressNumber,
+      complement: address.addressComplement,
+      neighborhood: '',
+      city: '',
+      state: '',
+      postal_code: address.postalCode,
+      country: 'BR',
+      reference: '',
+      instructions: ''
+    };
+
+    setShippingAddress(autoFilledAddress);
+    setUseSameData(true);
+    setShowShippingForm(true); // Abrir o formulário automaticamente
+  };
+
   const handlePay = async () => {
     if (!data) return;
     setLoading(true);
@@ -89,6 +124,8 @@ export default function CardCheckoutPage() {
             ccv: card.ccv,
           },
           address,
+          shippingAddress,
+          shippingOption,
         }),
       });
 
@@ -129,6 +166,12 @@ export default function CardCheckoutPage() {
           <div className="font-semibold text-blue-900">{data.planType}</div>
           <div className="text-2xl font-bold text-blue-900">R$ {data.value.toFixed(2).replace('.', ',')}</div>
           <div className="text-sm text-blue-900 mt-1">{data.cardMode === 'DEBIT' ? 'Débito' : 'Crédito'}</div>
+          {data.cardMode === 'CREDIT' && installments > 1 && (
+            <div className="mt-2 text-sm text-blue-900">
+              <div className="font-medium">{installments}x de R$ {(data.value / installments).toFixed(2).replace('.', ',')}</div>
+              <div className="text-xs text-blue-700">Sem juros</div>
+            </div>
+          )}
         </div>
 
         {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
@@ -166,6 +209,7 @@ export default function CardCheckoutPage() {
             )}
           </div>
 
+          {/* Endereço básico para validação do cartão */}
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">CEP</label>
@@ -179,6 +223,107 @@ export default function CardCheckoutPage() {
               <label className="block text-sm font-medium mb-1">Complemento</label>
               <input className="w-full px-3 py-2 border rounded-md" value={address.addressComplement} onChange={(e) => setAddress({ ...address, addressComplement: e.target.value })} />
             </div>
+          </div>
+
+          {/* Seção de Shipping */}
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Endereço de Entrega</h3>
+              <button
+                type="button"
+                onClick={() => setShowShippingForm(!showShippingForm)}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                {showShippingForm ? 'Ocultar' : 'Configurar Entrega'}
+              </button>
+            </div>
+
+            {/* Opção de usar os mesmos dados */}
+            {!showShippingForm && data?.customer.name && data?.customer.email && address.postalCode && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-blue-900">Usar os mesmos dados para entrega?</h4>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Nome: {data.customer.name} • Email: {data.customer.email} • CEP: {address.postalCode}
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      ✓ Dados pessoais e endereço básico já preenchidos
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={autoFillShippingData}
+                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Usar Mesmos Dados
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Aviso se dados estão incompletos */}
+            {!showShippingForm && (!data?.customer.name || !data?.customer.email || !address.postalCode) && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <div>
+                    <h4 className="font-medium text-yellow-900">Dados incompletos para auto-preenchimento</h4>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      Preencha todos os dados do pagamento primeiro para usar a opção de auto-preenchimento
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showShippingForm && (
+              <div className="space-y-6">
+                <ShippingAddressForm 
+                  onAddressChange={setShippingAddress}
+                  loading={loading}
+                  autoFillFromPayment={data ? {
+                    name: data.customer.name,
+                    email: data.customer.email,
+                    phone: data.customer.phone,
+                    postalCode: address.postalCode,
+                    addressNumber: address.addressNumber,
+                    addressComplement: address.addressComplement
+                  } : undefined}
+                />
+
+                {shippingAddress && (
+                  <ShippingOptions
+                    address={{
+                      postal_code: shippingAddress.postal_code,
+                      city: shippingAddress.city,
+                      state: shippingAddress.state
+                    }}
+                    products={[{
+                      weight: 1.0, // Peso padrão do cartão NFC
+                      dimensions: { length: 20, width: 15, height: 5 }
+                    }]}
+                    onOptionSelect={setShippingOption}
+                    selectedOption={shippingOption}
+                  />
+                )}
+
+                {shippingOption && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-green-800">
+                        Frete selecionado: {shippingOption.carrier} - {shippingOption.service_type}
+                      </span>
+                    </div>
+                    <p className="text-sm text-green-700 mt-1">
+                      R$ {shippingOption.cost.toFixed(2).replace('.', ',')} - 
+                      Entrega em {shippingOption.estimated_days} dia{shippingOption.estimated_days > 1 ? 's' : ''} úteis
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <button onClick={handlePay} disabled={loading} className="mt-4 bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 disabled:opacity-50">

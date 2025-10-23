@@ -8,6 +8,7 @@ import {
   Calendar, DollarSign, Star, TrendingUp
 } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import TrackingSection from '@/app/components/TrackingSection';
 
 interface Payment {
   id: string;
@@ -21,6 +22,14 @@ interface Payment {
   billing_type?: string;
   invoice_url?: string;
   pix_qr_code?: string;
+  // Campos de shipping
+  shipping_address?: any;
+  tracking_code?: string;
+  shipping_carrier?: string;
+  shipping_service?: string;
+  shipping_cost?: number;
+  shipping_status?: string;
+  estimated_delivery?: string;
 }
 
 interface UserProfile {
@@ -440,6 +449,20 @@ console.error('Erro ao carregar dados:', err);
                             </p>
                             <p className="text-xs text-gray-500">{planInfo.shipping}</p>
                           </div>
+                        </div>
+                      )}
+
+                      {/* Rastreamento */}
+                      {payment.tracking_code && (
+                        <div className="mt-4">
+                          <TrackingSection
+                            paymentId={payment.id}
+                            trackingCode={payment.tracking_code}
+                            carrier={payment.shipping_carrier}
+                            serviceType={payment.shipping_service}
+                            shippingStatus={payment.shipping_status}
+                            estimatedDelivery={payment.estimated_delivery}
+                          />
                         </div>
                       )}
 

@@ -342,6 +342,34 @@ export default function AdminPanel() {
                     </div>
                 </div>
 
+                {/* Botões de Ação Rápida do Admin */}
+                <div className="bg-white rounded-lg shadow-sm border p-4 mb-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Ações Rápidas</h3>
+                            <p className="text-sm text-gray-600">Ferramentas administrativas disponíveis</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <a
+                                href="/dashboard/analytics/homepage"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                Homepage Analytics
+                            </a>
+                            <a
+                                href="/admin/pages"
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                            >
+                                <FileText className="w-4 h-4" />
+                                Gerenciar Páginas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Barra de Ferramentas: Seleção e Mesclar PDFs */}
                 {filteredNotifications.length > 0 && (
                     <div className="bg-white rounded-lg shadow-sm border p-4 mb-4">

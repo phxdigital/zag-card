@@ -1,0 +1,290 @@
+/**
+ * Homepage Analytics Data API
+ * 
+ * This endpoint provides detailed analytics data for the homepage
+ * including paid traffic analysis and conversion tracking.
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { isAdminEmail } from '@/lib/auth-config';
+
+interface RouteParams {
+  params: Promise<{ pageId: string }>;
+}
+
+/**
+ * Calculate date range based on period
+ */
+function getDateRange(period: string): { startDate: Date; endDate: Date } {
+  const endDate = new Date();
+  const startDate = new Date();
+  
+  switch (period) {
+    case '7d':
+      startDate.setDate(endDate.getDate() - 7);
+      break;
+    case '30d':
+      startDate.setDate(endDate.getDate() - 30);
+      break;
+    case '90d':
+      startDate.setDate(endDate.getDate() - 90);
+      break;
+    default:
+      startDate.setDate(endDate.getDate() - 30);
+  }
+  
+  return { startDate, endDate };
+}
+
+/**
+ * Get homepage traffic sources
+ */
+async function getTrafficSources(supabase: any, startDate: Date, endDate: Date) {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_homepage_traffic_sources', {
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0]
+      });
+
+    if (error) {
+      console.error('Error getting traffic sources:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error getting traffic sources:', error);
+    return [];
+  }
+}
+
+/**
+ * Get UTM campaign performance
+ */
+async function getUTMPerformance(supabase: any, startDate: Date, endDate: Date) {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_homepage_utm_performance', {
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0]
+      });
+
+    if (error) {
+      console.error('Error getting UTM performance:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error getting UTM performance:', error);
+    return [];
+  }
+}
+
+/**
+ * Get daily performance
+ */
+async function getDailyPerformance(supabase: any, startDate: Date, endDate: Date) {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_homepage_daily_performance', {
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0]
+      });
+
+    if (error) {
+      console.error('Error getting daily performance:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error getting daily performance:', error);
+    return [];
+  }
+}
+
+/**
+ * Get conversion funnel
+ */
+async function getConversionFunnel(supabase: any, startDate: Date, endDate: Date) {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_homepage_conversion_funnel', {
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0]
+      });
+
+    if (error) {
+      console.error('Error getting conversion funnel:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error getting conversion funnel:', error);
+    return [];
+  }
+}
+
+/**
+ * Get homepage summary metrics
+ */
+async function getHomepageSummary(supabase: any, startDate: Date, endDate: Date) {
+  try {
+    const { data, error } = await supabase
+      .from('homepage_visits')
+      .select('*')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString());
+
+    if (error) {
+      console.error('Error getting homepage summary:', error);
+      return {
+        totalVisits: 0,
+        uniqueVisitors: 0,
+        conversions: 0,
+        conversionRate: 0,
+        totalRevenue: 0,
+        avgSessionDuration: 0,
+        paidTrafficPercent: 0
+      };
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        totalVisits: 0,
+        uniqueVisitors: 0,
+        conversions: 0,
+        conversionRate: 0,
+        totalRevenue: 0,
+        avgSessionDuration: 0,
+        paidTrafficPercent: 0
+      };
+    }
+
+    const totalVisits = data.length;
+    const uniqueVisitors = new Set(data.map((v: any) => v.session_id)).size;
+    const conversions = data.filter((v: any) => v.conversion_goal).length;
+    const conversionRate = totalVisits > 0 ? (conversions / totalVisits) * 100 : 0;
+    const totalRevenue = data.reduce((sum: number, v: any) => sum + (v.conversion_value || 0), 0);
+    const avgSessionDuration = data.reduce((sum: number, v: any) => sum + (v.duration_seconds || 0), 0) / totalVisits;
+    const paidTraffic = data.filter((v: any) => v.traffic_source === 'paid').length;
+    const paidTrafficPercent = totalVisits > 0 ? (paidTraffic / totalVisits) * 100 : 0;
+
+    return {
+      totalVisits,
+      uniqueVisitors,
+      conversions,
+      conversionRate: Math.round(conversionRate * 100) / 100,
+      totalRevenue,
+      avgSessionDuration: Math.round(avgSessionDuration),
+      paidTrafficPercent: Math.round(paidTrafficPercent * 100) / 100
+    };
+  } catch (error) {
+    console.error('Error getting homepage summary:', error);
+    return {
+      totalVisits: 0,
+      uniqueVisitors: 0,
+      conversions: 0,
+      conversionRate: 0,
+      totalRevenue: 0,
+      avgSessionDuration: 0,
+      paidTrafficPercent: 0
+    };
+  }
+}
+
+/**
+ * Validate admin access
+ */
+async function validateAdminAccess(supabase: any): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return false;
+    }
+
+    return isAdminEmail(user.email || '');
+  } catch (error) {
+    console.error('Error validating admin access:', error);
+    return false;
+  }
+}
+
+/**
+ * GET /api/analytics/homepage/data
+ * 
+ * Get comprehensive homepage analytics data.
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || '30d';
+    
+    // Validate period
+    if (!['7d', '30d', '90d'].includes(period)) {
+      return NextResponse.json(
+        { error: 'Invalid period. Must be 7d, 30d, or 90d' },
+        { status: 400 }
+      );
+    }
+
+    // Create Supabase client
+    const supabase = createServerComponentClient({ cookies });
+    
+    // Validate admin access
+    const isAdmin = await validateAdminAccess(supabase);
+    
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Access denied. Admin privileges required.' },
+        { status: 403 }
+      );
+    }
+
+    // Get date range
+    const { startDate, endDate } = getDateRange(period);
+    
+    // Get all analytics data
+    const [
+      summary,
+      trafficSources,
+      utmPerformance,
+      dailyPerformance,
+      conversionFunnel
+    ] = await Promise.all([
+      getHomepageSummary(supabase, startDate, endDate),
+      getTrafficSources(supabase, startDate, endDate),
+      getUTMPerformance(supabase, startDate, endDate),
+      getDailyPerformance(supabase, startDate, endDate),
+      getConversionFunnel(supabase, startDate, endDate)
+    ]);
+    
+    return NextResponse.json({
+      success: true,
+      data: {
+        summary,
+        trafficSources,
+        utmPerformance,
+        dailyPerformance,
+        conversionFunnel
+      },
+      period,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
+    });
+
+  } catch (error) {
+    console.error('Homepage analytics API error:', error);
+    
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

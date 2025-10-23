@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Plus, X, Loader } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { ImageUpload } from '@/components/ImageUpload';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function NewProductPage() {
     is_active: true,
     is_featured: false,
     requires_shipping: true,
+    images: [] as string[],
   });
   const [features, setFeatures] = useState<string[]>(['']);
   const [thumbnailUrl, setThumbnailUrl] = useState('');
@@ -111,7 +113,8 @@ export default function NewProductPage() {
         is_featured: formData.is_featured,
         requires_shipping: formData.requires_shipping,
         features: features.filter(f => f.trim() !== ''),
-        thumbnail_url: thumbnailUrl || null,
+        images: formData.images,
+        thumbnail_url: formData.images.length > 0 ? formData.images[0] : null,
         created_by: user?.id,
       };
 
@@ -354,36 +357,14 @@ export default function NewProductPage() {
           </div>
         </div>
 
-        {/* Imagem */}
+        {/* Imagens */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Imagem do Produto</h2>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              URL da Imagem
-            </label>
-            <input
-              type="url"
-              value={thumbnailUrl}
-              onChange={(e) => setThumbnailUrl(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="https://exemplo.com/imagem.jpg"
-            />
-            {thumbnailUrl && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-600 mb-2">Preview:</p>
-                <img 
-                  src={thumbnailUrl} 
-                  alt="Preview" 
-                  className="h-40 w-40 object-cover rounded-lg border border-gray-300"
-                  onError={(e) => {
-                    e.currentTarget.src = '';
-                    e.currentTarget.alt = 'Erro ao carregar imagem';
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Imagens do Produto</h2>
+          <ImageUpload
+            images={formData.images}
+            onImagesChange={(images) => setFormData(prev => ({ ...prev, images }))}
+            maxImages={10}
+          />
         </div>
 
         {/* Configurações */}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { createCreditCardPayment, createOrUpdateCustomer } from '@/lib/asaas';
+import { createShipment } from '@/lib/shipping';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +19,8 @@ export async function POST(request: NextRequest) {
       customer, // { name, email, cpf, phone }
       card, // { holderName, number, expiryMonth, expiryYear, ccv }
       address, // optional { postalCode, addressNumber, addressComplement }
+      shippingAddress, // { name, email, phone, street, number, etc }
+      shippingOption, // { carrier, service_type, cost, estimated_days }
       cardMode, // optional 'CREDIT' | 'DEBIT'
       installments // optional number (1-3)
     } = body;
@@ -100,6 +103,12 @@ export async function POST(request: NextRequest) {
         due_date: dueDateStr,
         description,
         invoice_url: payment.invoiceUrl,
+        // Campos de shipping
+        shipping_address: shippingAddress,
+        shipping_carrier: shippingOption?.carrier,
+        shipping_service: shippingOption?.service_type,
+        shipping_cost: shippingOption?.cost || 0,
+        shipping_status: 'pending'
       }).select();
 
       if (insertError) {
@@ -108,6 +117,41 @@ export async function POST(request: NextRequest) {
       }
 
       console.log('✅ Pagamento salvo no banco:', insertedPayment);
+
+      // Criar envio se dados de shipping foram fornecidos
+      if (shippingAddress && shippingOption && payment.status === 'CONFIRMED') {
+        try {
+          console.log('🚚 Criando envio para pagamento:', payment.id);
+          
+          const shipmentResult = await createShipment({
+            payment_id: insertedPayment[0].id,
+            address: shippingAddress,
+            carrier: shippingOption.carrier,
+            service_type: shippingOption.service_type,
+            weight: 1.0, // Peso padrão do cartão NFC
+            dimensions: { length: 20, width: 15, height: 5 },
+            declared_value: value
+          });
+
+          if (shipmentResult.success) {
+            console.log('✅ Envio criado com sucesso:', shipmentResult.tracking_code);
+            
+            // Atualizar pagamento com código de rastreamento
+            await supabase
+              .from('payments')
+              .update({
+                tracking_code: shipmentResult.tracking_code,
+                shipping_status: 'created'
+              })
+              .eq('id', insertedPayment[0].id);
+          } else {
+            console.error('❌ Erro ao criar envio:', shipmentResult.error);
+          }
+        } catch (shipmentError) {
+          console.error('❌ Erro ao processar envio:', shipmentError);
+          // Não falhar o pagamento por erro de envio
+        }
+      }
     } else {
       console.log('⚠️ Usuário não autenticado, pagamento não será salvo no banco');
     }

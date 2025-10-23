@@ -311,9 +311,9 @@ console.error('Erro ao excluir produto:', err);
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-16 w-16">
-                        {product.thumbnail_url ? (
+                        {product.thumbnail_url || (product.images && product.images.length > 0) ? (
                           <img
-                            src={product.thumbnail_url}
+                            src={product.thumbnail_url || product.images[0]}
                             alt={product.name}
                             className="h-16 w-16 rounded-lg object-cover"
                           />
