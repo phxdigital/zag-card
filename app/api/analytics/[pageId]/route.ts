@@ -227,17 +227,32 @@ async function getBrowserBreakdown(
 ): Promise<BrowserBreakdown[]> {
   try {
     const { data, error } = await supabase
-      .rpc('get_browser_breakdown', {
-        p_page_id: pageId,
-        p_start_date: startDate.toISOString().split('T')[0]
-      });
+      .from('page_visits')
+      .select('browser')
+      .eq('page_id', parseInt(pageId))
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .not('browser', 'is', null);
 
     if (error) {
       console.error('Error getting browser breakdown:', error);
       return [];
     }
 
-    return data || [];
+    // Aggregate browser data
+    const browserCounts: { [key: string]: number } = {};
+    
+    data?.forEach((visit: { browser: string }) => {
+      const browser = visit.browser || 'Unknown';
+      browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+    });
+
+    return Object.entries(browserCounts)
+      .map(([browser, count]) => ({
+        browser,
+        count
+      }))
+      .sort((a, b) => b.count - a.count);
   } catch (error) {
     console.error('Error getting browser breakdown:', error);
     return [];
