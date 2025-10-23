@@ -128,7 +128,7 @@ function validateHomepageData(data: Record<string, unknown>): boolean {
     typeof data.session_id === 'string' &&
     typeof data.timestamp === 'string' &&
     typeof data.user_agent === 'string' &&
-    ['homepage_view', 'page_view', 'conversion', 'heartbeat', 'session_end'].includes(data.type)
+    ['homepage_view', 'page_view', 'conversion', 'heartbeat', 'session_end'].includes(String(data.type))
   );
 }
 
