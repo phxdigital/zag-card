@@ -79,11 +79,11 @@ export default function ShippingAddressForm({
   // Validar CEP quando mudar
   useEffect(() => {
     if (formData.postal_code.length === 8) {
-      validateCEP();
+      handleCEPValidation();
     }
   }, [formData.postal_code]);
 
-  const validateCEP = async () => {
+  const handleCEPValidation = async () => {
     if (formData.postal_code.length !== 8) return;
     
     setValidatingCEP(true);
