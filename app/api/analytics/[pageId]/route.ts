@@ -41,8 +41,9 @@ function getDateRange(period: string): { startDate: Date; endDate: Date } {
 /**
  * Get analytics summary for a page
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getAnalyticsSummary(
-  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
+  supabase: any,
   pageId: string,
   startDate: Date,
   endDate: Date
