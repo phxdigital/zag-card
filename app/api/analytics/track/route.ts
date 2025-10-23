@@ -213,9 +213,12 @@ async function handleAnalyticsEvent(data: Record<string, unknown>, ip: string, g
           timestamp: data.timestamp,
           visited_at: data.timestamp,
           user_agent: data.user_agent,
-          device_type: data.device_info?.device_type || 'desktop',
-          browser: data.device_info?.browser || 'Unknown',
-          os: data.device_info?.os || 'Unknown',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          device_type: (data.device_info as any)?.device_type || 'desktop',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          browser: (data.device_info as any)?.browser || 'Unknown',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          os: (data.device_info as any)?.os || 'Unknown',
           ip_address: ip,
           country: geolocation?.country || null,
           city: geolocation?.city || null,
