@@ -155,8 +155,11 @@ async function processHomepageData(data: Record<string, unknown>, ip: string, ge
       utm_content: data.utm_content || null,
       utm_term: data.utm_term || null,
       user_agent: data.user_agent,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       device_type: (deviceInfo as any)?.device_type || 'unknown',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       browser: (deviceInfo as any)?.browser || 'unknown',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       os: (deviceInfo as any)?.os || 'unknown',
       ip_address: ip,
       country: geolocation?.country || null,
