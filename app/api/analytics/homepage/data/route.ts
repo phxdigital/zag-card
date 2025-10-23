@@ -290,7 +290,8 @@ async function getHomepageSummary(supabase: ReturnType<typeof import('@supabase/
 /**
  * Validate admin access
  */
-async function validateAdminAccess(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>): Promise<boolean> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function validateAdminAccess(supabase: any): Promise<boolean> {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
