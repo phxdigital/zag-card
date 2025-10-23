@@ -40,7 +40,7 @@ function getDateRange(period: string): { startDate: Date; endDate: Date } {
 /**
  * Get homepage traffic sources
  */
-async function getTrafficSources(supabase: any, startDate: Date, endDate: Date) {
+async function getTrafficSources(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
       .rpc('get_homepage_traffic_sources', {
@@ -63,7 +63,7 @@ async function getTrafficSources(supabase: any, startDate: Date, endDate: Date) 
 /**
  * Get UTM campaign performance
  */
-async function getUTMPerformance(supabase: any, startDate: Date, endDate: Date) {
+async function getUTMPerformance(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
       .rpc('get_homepage_utm_performance', {
@@ -86,7 +86,7 @@ async function getUTMPerformance(supabase: any, startDate: Date, endDate: Date) 
 /**
  * Get daily performance
  */
-async function getDailyPerformance(supabase: any, startDate: Date, endDate: Date) {
+async function getDailyPerformance(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
       .rpc('get_homepage_daily_performance', {
@@ -109,7 +109,7 @@ async function getDailyPerformance(supabase: any, startDate: Date, endDate: Date
 /**
  * Get conversion funnel
  */
-async function getConversionFunnel(supabase: any, startDate: Date, endDate: Date) {
+async function getConversionFunnel(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
       .rpc('get_homepage_conversion_funnel', {
@@ -132,7 +132,7 @@ async function getConversionFunnel(supabase: any, startDate: Date, endDate: Date
 /**
  * Get homepage summary metrics
  */
-async function getHomepageSummary(supabase: any, startDate: Date, endDate: Date) {
+async function getHomepageSummary(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
       .from('homepage_visits')
@@ -166,12 +166,12 @@ async function getHomepageSummary(supabase: any, startDate: Date, endDate: Date)
     }
 
     const totalVisits = data.length;
-    const uniqueVisitors = new Set(data.map((v: any) => v.session_id)).size;
-    const conversions = data.filter((v: any) => v.conversion_goal).length;
+    const uniqueVisitors = new Set(data.map((v: Record<string, unknown>) => v.session_id)).size;
+    const conversions = data.filter((v: Record<string, unknown>) => v.conversion_goal).length;
     const conversionRate = totalVisits > 0 ? (conversions / totalVisits) * 100 : 0;
-    const totalRevenue = data.reduce((sum: number, v: any) => sum + (v.conversion_value || 0), 0);
-    const avgSessionDuration = data.reduce((sum: number, v: any) => sum + (v.duration_seconds || 0), 0) / totalVisits;
-    const paidTraffic = data.filter((v: any) => v.traffic_source === 'paid').length;
+    const totalRevenue = data.reduce((sum: number, v: Record<string, unknown>) => sum + (v.conversion_value || 0), 0);
+    const avgSessionDuration = data.reduce((sum: number, v: Record<string, unknown>) => sum + (v.duration_seconds || 0), 0) / totalVisits;
+    const paidTraffic = data.filter((v: Record<string, unknown>) => v.traffic_source === 'paid').length;
     const paidTrafficPercent = totalVisits > 0 ? (paidTraffic / totalVisits) * 100 : 0;
 
     return {

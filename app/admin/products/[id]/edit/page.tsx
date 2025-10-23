@@ -34,7 +34,7 @@ interface Product {
   thumbnail_url?: string;
   requires_shipping: boolean;
   weight?: number;
-  dimensions?: any;
+  dimensions?: Record<string, unknown>;
   shipping_time: string;
   meta_title?: string;
   meta_description?: string;
@@ -143,7 +143,7 @@ export default function EditProductPage() {
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value

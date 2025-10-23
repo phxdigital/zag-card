@@ -42,7 +42,7 @@ function getDateRange(period: string): { startDate: Date; endDate: Date } {
  * Get analytics summary for a page
  */
 async function getAnalyticsSummary(
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
   pageId: string,
   startDate: Date,
   endDate: Date
@@ -76,14 +76,14 @@ async function getAnalyticsSummary(
 
     // Calculate basic metrics
     const totalVisits = basicMetrics.length;
-    const uniqueVisitors = new Set(basicMetrics.map((v: any) => v.session_id)).size;
-    const avgDuration = basicMetrics.reduce((sum: number, v: any) => sum + (v.duration_seconds || 0), 0) / totalVisits;
+    const uniqueVisitors = new Set(basicMetrics.map((v: Record<string, unknown>) => v.session_id)).size;
+    const avgDuration = basicMetrics.reduce((sum: number, v: Record<string, unknown>) => sum + (v.duration_seconds || 0), 0) / totalVisits;
     
     // Device breakdown
     const deviceBreakdown = {
-      mobile: basicMetrics.filter((v: any) => v.device_type === 'mobile').length,
-      desktop: basicMetrics.filter((v: any) => v.device_type === 'desktop').length,
-      tablet: basicMetrics.filter((v: any) => v.device_type === 'tablet').length
+      mobile: basicMetrics.filter((v: Record<string, unknown>) => v.device_type === 'mobile').length,
+      desktop: basicMetrics.filter((v: Record<string, unknown>) => v.device_type === 'desktop').length,
+      tablet: basicMetrics.filter((v: Record<string, unknown>) => v.device_type === 'tablet').length
     };
     
     const mobilePercent = totalVisits > 0 ? (deviceBreakdown.mobile / totalVisits) * 100 : 0;
@@ -121,7 +121,7 @@ async function getAnalyticsSummary(
  * Get daily visits data
  */
 async function getDailyVisits(
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
   pageId: string,
   startDate: Date,
   endDate: Date
@@ -149,7 +149,7 @@ async function getDailyVisits(
  * Get top clicked links
  */
 async function getTopLinks(
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
   pageId: string,
   startDate: Date,
   endDate: Date
@@ -178,7 +178,7 @@ async function getTopLinks(
  * Get browser breakdown
  */
 async function getBrowserBreakdown(
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
   pageId: string,
   startDate: Date,
   endDate: Date
@@ -206,7 +206,7 @@ async function getBrowserBreakdown(
  * Get country breakdown
  */
 async function getCountryBreakdown(
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
   pageId: string,
   startDate: Date,
   endDate: Date

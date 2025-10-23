@@ -63,7 +63,7 @@ function checkRateLimit(ip: string): boolean {
 /**
  * Get geolocation data from IP address
  */
-async function getGeolocation(ip: string): Promise<any> {
+async function getGeolocation(ip: string): Promise<Record<string, unknown>> {
   try {
     // Skip geolocation for localhost and private IPs
     if (ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.')) {

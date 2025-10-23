@@ -113,7 +113,7 @@ async function getGeolocation(ip: string): Promise<GeolocationData | null> {
 /**
  * Validate analytics data
  */
-function validateAnalyticsData(data: any): data is AnalyticsData {
+function validateAnalyticsData(data: Record<string, unknown>): data is AnalyticsData {
   return (
     data &&
     typeof data.page_id === 'string' &&
