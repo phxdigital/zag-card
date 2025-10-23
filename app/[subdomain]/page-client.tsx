@@ -448,7 +448,7 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                                                     alert('Não foi possível copiar o código PIX.');
                                                 });
                                             } else {
-                                                handleLinkClickWrapper(link.url, link.icon);
+                                                handleLinkClickWrapper(link.url, link.icon || undefined);
                                             }
                                         }}
                                         style={{
@@ -485,7 +485,7 @@ export default function PageClient({ config, logoUrl }: PageClientProps) {
                                         });
                                     } else {
                                         console.log('Não é PIX, chamando handleLinkClickWrapper');
-                                        handleLinkClickWrapper(link.url, link.icon);
+                                        handleLinkClickWrapper(link.url, link.icon || undefined);
                                     }
                                 }}
                                 style={{
