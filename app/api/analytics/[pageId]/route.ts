@@ -128,17 +128,36 @@ async function getDailyVisits(
 ): Promise<DailyVisit[]> {
   try {
     const { data, error } = await supabase
-      .rpc('get_daily_visits', {
-        p_page_id: parseInt(pageId),
-        p_start_date: startDate.toISOString().split('T')[0]
-      });
+      .from('page_visits')
+      .select('visited_at, session_id, duration_seconds')
+      .eq('page_id', parseInt(pageId))
+      .gte('visited_at', startDate.toISOString())
+      .order('visited_at', { ascending: true });
 
     if (error) {
       console.error('Error getting daily visits:', error);
       return [];
     }
 
-    return data || [];
+    // Group by date and calculate metrics
+    const dailyData: { [key: string]: { visits: number; uniqueVisitors: Set<string>; totalDuration: number } } = {};
+    
+    data?.forEach((visit: any) => {
+      const date = visit.visited_at.split('T')[0];
+      if (!dailyData[date]) {
+        dailyData[date] = { visits: 0, uniqueVisitors: new Set(), totalDuration: 0 };
+      }
+      dailyData[date].visits++;
+      dailyData[date].uniqueVisitors.add(visit.session_id);
+      dailyData[date].totalDuration += Number(visit.duration_seconds) || 0;
+    });
+
+    return Object.entries(dailyData).map(([date, metrics]) => ({
+      visit_date: date,
+      total_visits: metrics.visits,
+      unique_visitors: metrics.uniqueVisitors.size,
+      avg_duration: metrics.visits > 0 ? metrics.totalDuration / metrics.visits : 0
+    }));
   } catch (error) {
     console.error('Error getting daily visits:', error);
     return [];
