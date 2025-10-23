@@ -123,8 +123,7 @@ async function getAnalyticsSummary(
 async function getDailyVisits(
   supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
   pageId: string,
-  startDate: Date,
-  endDate: Date
+  startDate: Date
 ): Promise<DailyVisit[]> {
   try {
     const { data, error } = await supabase
@@ -190,9 +189,9 @@ async function getTopLinks(
     // Aggregate clicked links
     const linkCounts: { [key: string]: { text: string; count: number } } = {};
     
-    data?.forEach((visit: { clicked_links: any }) => {
+    data?.forEach((visit: { clicked_links: { link_id?: string; link_text?: string }[] | null }) => {
       if (visit.clicked_links && Array.isArray(visit.clicked_links)) {
-        visit.clicked_links.forEach((link: any) => {
+        visit.clicked_links.forEach((link: { link_id?: string; link_text?: string }) => {
           const key = link.link_id || link.link_text || 'unknown';
           if (!linkCounts[key]) {
             linkCounts[key] = { text: link.link_text || link.link_id || 'Unknown', count: 0 };
