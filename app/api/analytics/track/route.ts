@@ -175,7 +175,7 @@ async function processAnalyticsData(data: AnalyticsData, ip: string, geolocation
 /**
  * Handle different types of analytics events
  */
-async function handleAnalyticsEvent(data: AnalyticsData, ip: string, geolocation: GeolocationData | null) {
+async function handleAnalyticsEvent(data: Record<string, unknown>, ip: string, geolocation: GeolocationData | null) {
   
   switch (data.type) {
     case 'page_view':
