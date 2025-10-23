@@ -69,6 +69,7 @@ export default function EditProductPage() {
     thumbnail_url: '',
     requires_shipping: true,
     weight: 0,
+    dimensions: {} as Record<string, unknown>,
     shipping_time: '',
     meta_title: '',
     meta_description: ''
