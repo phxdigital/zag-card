@@ -87,17 +87,43 @@ async function getTrafficSources(supabase: ReturnType<typeof import('@supabase/s
 async function getUTMPerformance(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
-      .rpc('get_homepage_utm_performance', {
-        p_start_date: startDate.toISOString().split('T')[0],
-        p_end_date: endDate.toISOString().split('T')[0]
-      });
+      .from('homepage_visits')
+      .select('utm_source, utm_medium, utm_campaign, conversion_goal, conversion_value')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .not('utm_source', 'is', null);
 
     if (error) {
       console.error('Error getting UTM performance:', error);
       return [];
     }
 
-    return data || [];
+    // Aggregate UTM performance
+    const utmPerformance: { [key: string]: { visits: number; conversions: number; revenue: number } } = {};
+    
+    data?.forEach((visit: { utm_source: string; utm_medium?: string; utm_campaign?: string; conversion_goal?: boolean; conversion_value?: number }) => {
+      const key = `${visit.utm_source}_${visit.utm_medium || 'none'}_${visit.utm_campaign || 'none'}`;
+      
+      if (!utmPerformance[key]) {
+        utmPerformance[key] = { visits: 0, conversions: 0, revenue: 0 };
+      }
+      
+      utmPerformance[key].visits++;
+      if (visit.conversion_goal) {
+        utmPerformance[key].conversions++;
+        utmPerformance[key].revenue += visit.conversion_value || 0;
+      }
+    });
+
+    return Object.entries(utmPerformance)
+      .map(([campaign, data]) => ({
+        campaign,
+        visits: data.visits,
+        conversions: data.conversions,
+        conversion_rate: data.visits > 0 ? (data.conversions / data.visits) * 100 : 0,
+        revenue: data.revenue
+      }))
+      .sort((a, b) => b.visits - a.visits);
   } catch (error) {
     console.error('Error getting UTM performance:', error);
     return [];
@@ -110,17 +136,39 @@ async function getUTMPerformance(supabase: ReturnType<typeof import('@supabase/s
 async function getDailyPerformance(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
-      .rpc('get_homepage_daily_performance', {
-        p_start_date: startDate.toISOString().split('T')[0],
-        p_end_date: endDate.toISOString().split('T')[0]
-      });
+      .from('homepage_visits')
+      .select('visited_at, conversion_goal, conversion_value')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .order('visited_at', { ascending: true });
 
     if (error) {
       console.error('Error getting daily performance:', error);
       return [];
     }
 
-    return data || [];
+    // Group by date and calculate metrics
+    const dailyData: { [key: string]: { visits: number; conversions: number; revenue: number } } = {};
+    
+    data?.forEach((visit: { visited_at: string; conversion_goal?: boolean; conversion_value?: number }) => {
+      const date = visit.visited_at.split('T')[0];
+      if (!dailyData[date]) {
+        dailyData[date] = { visits: 0, conversions: 0, revenue: 0 };
+      }
+      dailyData[date].visits++;
+      if (visit.conversion_goal) {
+        dailyData[date].conversions++;
+        dailyData[date].revenue += visit.conversion_value || 0;
+      }
+    });
+
+    return Object.entries(dailyData).map(([date, metrics]) => ({
+      date,
+      visits: metrics.visits,
+      conversions: metrics.conversions,
+      conversion_rate: metrics.visits > 0 ? (metrics.conversions / metrics.visits) * 100 : 0,
+      revenue: metrics.revenue
+    }));
   } catch (error) {
     console.error('Error getting daily performance:', error);
     return [];
@@ -133,17 +181,38 @@ async function getDailyPerformance(supabase: ReturnType<typeof import('@supabase
 async function getConversionFunnel(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>, startDate: Date, endDate: Date) {
   try {
     const { data, error } = await supabase
-      .rpc('get_homepage_conversion_funnel', {
-        p_start_date: startDate.toISOString().split('T')[0],
-        p_end_date: endDate.toISOString().split('T')[0]
-      });
+      .from('homepage_visits')
+      .select('conversion_goal, conversion_value, traffic_source')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString());
 
     if (error) {
       console.error('Error getting conversion funnel:', error);
       return [];
     }
 
-    return data || [];
+    // Calculate funnel metrics
+    const totalVisits = data?.length || 0;
+    const conversions = data?.filter((visit: { conversion_goal?: boolean }) => visit.conversion_goal).length || 0;
+    const totalRevenue = data?.reduce((sum: number, visit: { conversion_value?: number }) => sum + (visit.conversion_value || 0), 0) || 0;
+    
+    return [
+      {
+        stage: 'Visits',
+        count: totalVisits,
+        percentage: 100
+      },
+      {
+        stage: 'Conversions',
+        count: conversions,
+        percentage: totalVisits > 0 ? (conversions / totalVisits) * 100 : 0
+      },
+      {
+        stage: 'Revenue',
+        count: totalRevenue,
+        percentage: conversions > 0 ? (totalRevenue / conversions) : 0
+      }
+    ];
   } catch (error) {
     console.error('Error getting conversion funnel:', error);
     return [];

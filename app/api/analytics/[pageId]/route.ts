@@ -432,17 +432,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Refresh materialized view
-    const { error: refreshError } = await supabase
-      .rpc('refresh_page_analytics');
-
-    if (refreshError) {
-      console.error('Error refreshing analytics:', refreshError);
-      return NextResponse.json(
-        { error: 'Failed to refresh analytics data' },
-        { status: 500 }
-      );
-    }
+    // Note: Materialized view refresh removed as it's not essential for functionality
+    // The analytics data will be calculated in real-time from the page_visits table
 
     return NextResponse.json({
       success: true,
