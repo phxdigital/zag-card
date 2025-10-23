@@ -312,7 +312,7 @@ async function getCountryBreakdown(
 /**
  * Validate that the page belongs to the authenticated user
  */
-async function validatePageOwnership(supabase: { from: (table: string) => any }, pageId: string, userId: string): Promise<boolean> {
+async function validatePageOwnership(supabase: { from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string | number) => { eq: (column: string, value: string) => { single: () => Promise<{ data: { id: string; user_id: string } | null; error: { message: string } | null }> } } } } }, pageId: string, userId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from('pages')
