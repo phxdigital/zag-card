@@ -247,10 +247,13 @@ async function getBrowserBreakdown(
       browserCounts[browser] = (browserCounts[browser] || 0) + 1;
     });
 
+    const totalVisits = data?.length || 0;
+    
     return Object.entries(browserCounts)
       .map(([browser, count]) => ({
         browser,
-        count
+        count,
+        percentage: totalVisits > 0 ? (count / totalVisits) * 100 : 0
       }))
       .sort((a, b) => b.count - a.count);
   } catch (error) {
