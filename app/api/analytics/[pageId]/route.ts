@@ -77,7 +77,7 @@ async function getAnalyticsSummary(
     // Calculate basic metrics
     const totalVisits = basicMetrics.length;
     const uniqueVisitors = new Set(basicMetrics.map((v: Record<string, unknown>) => v.session_id)).size;
-    const avgDuration = basicMetrics.reduce((sum: number, v: Record<string, unknown>) => sum + (v.duration_seconds || 0), 0) / totalVisits;
+    const avgDuration = basicMetrics.reduce((sum: number, v: Record<string, unknown>) => sum + (Number(v.duration_seconds) || 0), 0) / totalVisits;
     
     // Device breakdown
     const deviceBreakdown = {
