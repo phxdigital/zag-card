@@ -142,7 +142,7 @@ async function getDailyVisits(
     // Group by date and calculate metrics
     const dailyData: { [key: string]: { visits: number; uniqueVisitors: Set<string>; totalDuration: number } } = {};
     
-    data?.forEach((visit: any) => {
+    data?.forEach((visit: { visited_at: string; session_id: string; duration_seconds: number | null }) => {
       const date = visit.visited_at.split('T')[0];
       if (!dailyData[date]) {
         dailyData[date] = { visits: 0, uniqueVisitors: new Set(), totalDuration: 0 };
