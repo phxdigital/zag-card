@@ -129,7 +129,7 @@ async function getDailyVisits(
   try {
     const { data, error } = await supabase
       .rpc('get_daily_visits', {
-        p_page_id: pageId,
+        p_page_id: parseInt(pageId),
         p_start_date: startDate.toISOString().split('T')[0]
       });
 
