@@ -144,9 +144,12 @@ async function processAnalyticsData(data: Record<string, unknown>, ip: string, g
       utm_medium: data.utm_medium || null,
       utm_campaign: data.utm_campaign || null,
       user_agent: data.user_agent,
-      device_type: deviceInfo.device_type,
-      browser: deviceInfo.browser,
-      os: deviceInfo.os,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      device_type: (deviceInfo as any)?.device_type || 'desktop',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      browser: (deviceInfo as any)?.browser || 'Unknown',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      os: (deviceInfo as any)?.os || 'Unknown',
       ip_address: ip,
       country: geolocation?.country || null,
       city: geolocation?.city || null,
