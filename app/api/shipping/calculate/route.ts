@@ -4,7 +4,7 @@ import { calculateShipping } from '@/lib/shipping';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { origin, destination, weight, dimensions } = body;
+    const { origin, destination, weight, dimensions, products } = body;
 
     if (!origin || !destination || !weight) {
       return NextResponse.json(
@@ -17,14 +17,25 @@ export async function POST(request: NextRequest) {
       origin,
       destination,
       weight,
-      dimensions || { length: 20, width: 15, height: 5 }
+      dimensions || { length: 20, width: 15, height: 5 },
+      products
     );
 
-    return NextResponse.json({ success: true, options });
-  } catch (error) {
+    return NextResponse.json({ 
+      success: true, 
+      options,
+      count: options.length
+    });
+  } catch (error: unknown) {
     console.error('❌ Erro ao calcular frete:', error);
+    if (error instanceof Error && error.stack) {
+      console.error('Error stack:', error.stack);
+    }
     return NextResponse.json(
-      { error: 'Erro ao calcular frete' },
+      { 
+        error: 'Erro ao calcular frete',
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
+      },
       { status: 500 }
     );
   }

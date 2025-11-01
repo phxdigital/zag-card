@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CheckCircle, ExternalLink, ArrowLeft, Share2, Download, MessageCircle, Facebook, Twitter, Send, Linkedin, Mail, Copy, X } from 'lucide-react';
+import { CheckCircle, ExternalLink, ArrowLeft, Share2, Download, MessageCircle, Facebook, Twitter, Send, Linkedin, Mail, Copy, X, Loader2 } from 'lucide-react';
 
 interface SuccessPageProps {
     subdomain: string;
@@ -14,6 +14,82 @@ interface SuccessPageProps {
 export default function SuccessPage({ subdomain, isEdit = false }: SuccessPageProps) {
     const pageUrl = `https://${subdomain}.zagnfc.com.br`;
     const [showShareModal, setShowShareModal] = useState(false);
+    const qrCodeRef = useRef<HTMLDivElement>(null);
+    const [QRCode, setQRCode] = useState<((element: HTMLElement, text: string) => void) | null>(null);
+    
+    // Carregar biblioteca QR Code
+    useEffect(() => {
+        let mounted = true;
+        
+        import('qrcodejs2')
+            .then((mod) => {
+                if (!mounted) return;
+                
+                const factory = (() => {
+                    const maybeDefault = (mod as unknown as { default?: unknown }).default;
+                    if (typeof maybeDefault === 'function') return maybeDefault as unknown as (element: HTMLElement, text: string) => void;
+                    if (typeof (mod as unknown) === 'function') return mod as unknown as (element: HTMLElement, text: string) => void;
+                    return null;
+                })();
+                
+                if (factory) {
+                    setQRCode(() => factory);
+                }
+            })
+            .catch((err) => {
+                console.error('Erro ao carregar biblioteca QR Code:', err);
+            });
+        
+        return () => {
+            mounted = false;
+        };
+    }, []);
+    
+    // Gerar QR Code em background
+    const [qrCodeReady, setQrCodeReady] = useState(false);
+    
+    useEffect(() => {
+        if (!QRCode || !qrCodeRef.current || !subdomain) return;
+        
+        // Limpar conteúdo anterior
+        qrCodeRef.current.innerHTML = '';
+        
+        try {
+            // Gerar QR Code no elemento oculto
+            new QRCode(qrCodeRef.current, {
+                text: pageUrl,
+                width: 300,
+                height: 300,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: 2 // Nível H (High) de correção de erro
+            });
+            
+            // Aguardar um pouco para o QR Code ser renderizado
+            const checkInterval = setInterval(() => {
+                const qrElement = qrCodeRef.current?.querySelector('canvas') || qrCodeRef.current?.querySelector('img');
+                if (qrElement) {
+                    setQrCodeReady(true);
+                    clearInterval(checkInterval);
+                }
+            }, 100);
+            
+            // Timeout de segurança (máximo 3 segundos)
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                const qrElement = qrCodeRef.current?.querySelector('canvas') || qrCodeRef.current?.querySelector('img');
+                if (qrElement) {
+                    setQrCodeReady(true);
+                }
+            }, 3000);
+            
+            return () => {
+                clearInterval(checkInterval);
+            };
+        } catch (err) {
+            console.error('Erro ao gerar QR Code:', err);
+        }
+    }, [QRCode, subdomain, pageUrl]);
     
     const copyToClipboard = async () => {
         try {
@@ -51,30 +127,63 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
 
     const downloadQRCode = async () => {
         try {
-            // Usar a API do QR Server para gerar um QR Code real
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pageUrl)}`;
+            if (!qrCodeRef.current || !qrCodeReady) {
+                alert('QR Code ainda não está pronto. Aguarde alguns instantes.');
+                return;
+            }
             
-            // Baixar a imagem do QR Code
-            const response = await fetch(qrUrl);
-            const blob = await response.blob();
+            // Buscar o canvas ou imagem do QR Code gerado
+            const qrElement = qrCodeRef.current.querySelector('canvas') || qrCodeRef.current.querySelector('img');
             
-            // Criar link de download
-            const link = document.createElement('a');
-            link.download = `qr-code-${subdomain}.png`;
-            link.href = URL.createObjectURL(blob);
-            link.click();
+            if (!qrElement) {
+                alert('Não foi possível encontrar o QR Code. Tente recarregar a página.');
+                return;
+            }
             
-            // Limpar o URL do objeto
-            URL.revokeObjectURL(link.href);
+            let canvas: HTMLCanvasElement;
+            
+            if (qrElement instanceof HTMLCanvasElement) {
+                // Se já for um canvas, usar diretamente
+                canvas = qrElement;
+            } else if (qrElement instanceof HTMLImageElement) {
+                // Se for uma imagem, criar um novo canvas
+                canvas = document.createElement('canvas');
+                canvas.width = 300;
+                canvas.height = 300;
+                const ctx = canvas.getContext('2d');
+                
+                if (!ctx) {
+                    alert('Erro ao criar canvas para QR Code.');
+                    return;
+                }
+                
+                ctx.drawImage(qrElement, 0, 0, 300, 300);
+            } else {
+                alert('Formato de QR Code não suportado.');
+                return;
+            }
+            
+            // Converter canvas para blob e baixar
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    alert('Erro ao gerar imagem do QR Code.');
+                    return;
+                }
+                
+                const link = document.createElement('a');
+                link.download = `qr-code-${subdomain}.png`;
+                link.href = URL.createObjectURL(blob);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Limpar o URL do objeto
+                setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            }, 'image/png');
         } catch (err) {
-console.error('Erro ao gerar QR Code:', err);
-            alert('Erro ao gerar QR Code. Tente novamente.');
-        
-
-
-
-
-}
+            console.error('Erro ao baixar QR Code:', err);
+            alert('Erro ao baixar QR Code. Tente novamente.');
+        }
     };
 
     return (
@@ -139,6 +248,18 @@ console.error('Erro ao gerar QR Code:', err);
                             </div>
                         </div>
 
+                        {/* QR Code oculto para geração em background - fora da tela mas visível para o navegador */}
+                        <div 
+                            ref={qrCodeRef}
+                            style={{ 
+                                position: 'absolute',
+                                left: '-9999px',
+                                width: '300px',
+                                height: '300px',
+                                visibility: 'hidden'
+                            }}
+                        />
+
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Link
@@ -161,10 +282,20 @@ console.error('Erro ao gerar QR Code:', err);
 
                             <button
                                 onClick={downloadQRCode}
-                                className="inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors shadow-lg hover:shadow-xl"
+                                disabled={!qrCodeReady}
+                                className="inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Download className="w-5 h-5 mr-2" />
-                                Baixar QR Code
+                                {!qrCodeReady ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                        Gerando QR Code...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Download className="w-5 h-5 mr-2" />
+                                        Baixar QR Code
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>

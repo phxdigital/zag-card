@@ -109,7 +109,8 @@ export function PricingSection() {
         sessionStorage.setItem('card_checkout_data', JSON.stringify(payload));
         setModalOpen(false);
         setSelectedPlan(null);
-        window.location.href = '/checkout/card';
+        // Redirecionar para página de loading antes do checkout
+        window.location.href = '/loading-checkout?type=card';
         return;
       }
 
@@ -146,8 +147,8 @@ export function PricingSection() {
       if (data.payment && data.payment.pix) {
         // Armazenar dados do pagamento no sessionStorage
         sessionStorage.setItem('payment_data', JSON.stringify(data.payment));
-        // Redirecionar para página de checkout
-        window.location.href = '/checkout';
+        // Redirecionar para página de loading antes do checkout
+        window.location.href = '/loading-checkout?type=pix';
       } else if (data.payment && data.payment.invoiceUrl) {
         // Redirecionar para fatura
         window.location.href = data.payment.invoiceUrl;
@@ -165,7 +166,7 @@ export function PricingSection() {
     <section id="pricing" className="section bg-muted">
       <div className="container">
         <div className="section-header">
-          <h2>Planos Para os Profissionais</h2>
+          <h2>Soluções para Profissionais</h2>
           <p>Escolha o plano ideal para você ou sua equipe</p>
         </div>
 
@@ -207,7 +208,7 @@ export function PricingSection() {
                 disabled={loading !== null}
                 className={`pricing-button ${plan.popular ? 'primary' : 'outline'} ${loading === plan.id ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {loading === plan.id ? 'Processando...' : `Escolher ${plan.name}`}
+                {loading === plan.id ? 'Processando...' : 'Comprar agora'}
               </button>
               {plan.footnote && (
                 <div className="pricing-footnote">

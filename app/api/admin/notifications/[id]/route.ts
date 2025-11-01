@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
-export async function PATCH(request: Request) {
+export async function PATCH(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const { status } = body as { status: string };
-        const url = new URL(request.url);
-        const pathParts = url.pathname.split('/').filter(Boolean);
-        const id = pathParts[pathParts.length - 1];
 
         const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
@@ -47,6 +48,24 @@ export async function PATCH(request: Request) {
 
         console.log(`📝 Notificação ${id} atualizada para status: ${status}`);
 
+        // Se aprovado, atualizar production_status na tabela pages para "in_production"
+        if (status === 'approved' && notification.page_id) {
+            const { error: pageUpdateError } = await supabase
+                .from('pages')
+                .update({
+                    production_status: 'in_production',
+                    approved_at: new Date().toISOString(),
+                    production_started_at: new Date().toISOString()
+                })
+                .eq('id', notification.page_id);
+
+            if (pageUpdateError) {
+                console.error('❌ Erro ao atualizar status de produção:', pageUpdateError);
+            } else {
+                console.log(`✅ Status de produção atualizado para "in_production" na página ${notification.page_id}`);
+            }
+        }
+
         return NextResponse.json({ 
             success: true, 
             notification 
@@ -66,11 +85,12 @@ console.error('Erro ao atualizar notificação:', err);
     }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
-        const url = new URL(request.url);
-        const pathParts = url.pathname.split('/').filter(Boolean);
-        const id = pathParts[pathParts.length - 1];
+        const { id } = await params;
 
         const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });

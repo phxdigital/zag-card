@@ -855,12 +855,29 @@ export default function DashboardPage() {
     };
 
 
-    // Função para snap no valor 0 para sliders de rotação
+    // Função para snap nos valores comuns para sliders de rotação
     const handleRotationChange = (key: keyof PageConfig, value: number) => {
-        // Se o valor estiver entre -5 e 5, snap para 0
-        if (value >= -5 && value <= 5) {
+        // Trava em 0° (entre -15 e 15)
+        if (value >= -15 && value <= 15) {
             handleConfigChange(key, 0);
-        } else {
+        } 
+        // Trava em 90° (entre 75 e 105)
+        else if (value >= 75 && value <= 105) {
+            handleConfigChange(key, 90);
+        }
+        // Trava em -90° (entre -105 e -75)
+        else if (value >= -105 && value <= -75) {
+            handleConfigChange(key, -90);
+        }
+        // Trava em 180° (entre 165 e 180)
+        else if (value >= 165 && value <= 180) {
+            handleConfigChange(key, 180);
+        }
+        // Trava em -180° (entre -180 e -165)
+        else if (value >= -180 && value <= -165) {
+            handleConfigChange(key, -180);
+        }
+        else {
             handleConfigChange(key, value);
         }
     };
@@ -2293,6 +2310,32 @@ console.error('Erro ao verificar subdomínio:', err);
 
             }
 
+            // Verificar qualidade da imagem
+            const img: HTMLImageElement = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                if (ctx) {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Verificar resolução mínima (exemplo: 100x100 pixels)
+                    if (img.width < 200 || img.height < 200) {
+                        alert('⚠️ Atenção: A imagem parece ter baixa resolução. Para melhor qualidade, recomendamos usar imagens com pelo menos 200x200 pixels.');
+                    }
+                    
+                    // Verificar se a imagem é muito pequena em relação ao tamanho do arquivo
+                    const pixelsPerKB = (img.width * img.height) / (file.size / 1024);
+                    if (pixelsPerKB < 20) {
+                        alert('⚠️ Atenção: A qualidade da imagem pode estar comprometida. Recomendamos usar imagens com melhor resolução.');
+                    }
+                }
+            };
+            
+            img.src = URL.createObjectURL(file);
+
             const reader = new FileReader();
 
             reader.onload = async (event) => {
@@ -3469,7 +3512,7 @@ console.error('Erro ao carregar dados do usuário:', err);
 
                                     <div className="flex justify-between items-center mb-4">
 
-                                        <h3 className="text-center font-bold text-lg">Personalizar Frente</h3>
+                                        <h3 className="text-center font-bold text-lg flex-1">Personalizar Frente</h3>
 
                                         {logoDataUrl && (
 

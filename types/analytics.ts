@@ -58,6 +58,22 @@ export interface PageVisit {
   created_at: string;
 }
 
+// Button statistics
+export interface ButtonStats {
+  button_id: string;
+  button_text: string;
+  button_type: string;
+  click_count: number;
+}
+
+// Section statistics
+export interface SectionStats {
+  section_id: string;
+  total_time: number;
+  visit_count: number;
+  avg_time: number;
+}
+
 // Analytics summary data
 export interface AnalyticsSummary {
   totalVisits: number;
@@ -73,6 +89,8 @@ export interface AnalyticsSummary {
   topLinks: TopLink[];
   browserBreakdown: BrowserBreakdown[];
   countryBreakdown: CountryBreakdown[];
+  buttonStats: ButtonStats[];
+  sectionStats: SectionStats[];
 }
 
 // Daily visit data

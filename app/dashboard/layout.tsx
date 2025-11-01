@@ -58,13 +58,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       icon: BarChart3,
       current: pathname.startsWith('/dashboard/analytics')
     },
-    // Homepage Analytics - only for admins
-    ...(isAdmin ? [{
-      name: 'Homepage Analytics',
-      href: '/dashboard/analytics/homepage',
-      icon: BarChart3,
-      current: pathname === '/dashboard/analytics/homepage'
-    }] : []),
     {
       name: 'Loja',
       href: '/loja',
@@ -86,8 +79,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   ];
 
   const handleLogout = async () => {
-    // Implementar logout
-    window.location.href = '/login';
+    try {
+      await supabase.auth.signOut();
+      // Limpar localStorage e sessionStorage
+      localStorage.clear();
+      sessionStorage.clear();
+      // Redirecionar para login
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+      // Fallback: limpar storage e redirecionar mesmo com erro
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/login';
+    }
   };
 
   return (

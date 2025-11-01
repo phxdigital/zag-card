@@ -86,14 +86,6 @@ export function Header() {
             <div className="text-sm text-gray-600">Carregando...</div>
           ) : user ? (
             <>
-              {/* Desktop: Mostra nome do usuário */}
-              <div className="hidden md:block text-sm text-gray-700">
-                Olá, {userProfile?.name || user.email?.split('@')[0] || 'Usuário'}
-              </div>
-              {/* Mobile: Mostra nome do usuário e remove "Começar Agora" */}
-              <div className="md:hidden text-sm text-gray-700">
-                Olá, {userProfile?.name || user.email?.split('@')[0] || 'Usuário'}
-              </div>
               <Link href="/dashboard/pages" className="btn-primary">Minhas páginas</Link>
             </>
           ) : (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CookieBanner } from "./components/CookieBanner";
+import Script from "next/script";
 import "./globals.css";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -59,6 +60,12 @@ export default function RootLayout({
         {children}
         <CookieBanner />
         <SpeedInsights />
+        
+        {/* Homepage Analytics Tracking Script */}
+        <Script
+          src="/homepage-tracking.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

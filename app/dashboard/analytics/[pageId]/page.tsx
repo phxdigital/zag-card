@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -38,6 +38,20 @@ import {
 } from 'recharts';
 import { AnalyticsSummary, DailyVisit, BrowserBreakdown, CountryBreakdown } from '@/types/analytics';
 
+interface ButtonStats {
+  button_id: string;
+  button_text: string;
+  button_type: string;
+  click_count: number;
+}
+
+interface SectionStats {
+  section_id: string;
+  total_time: number;
+  visit_count: number;
+  avg_time: number;
+}
+
 interface PageDetailProps {
   params: Promise<{ pageId: string }>;
 }
@@ -45,6 +59,8 @@ interface PageDetailProps {
 export default function AnalyticsDetailPage({ params }: PageDetailProps) {
   const [pageId, setPageId] = useState<string>('');
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+  const [buttonStats, setButtonStats] = useState<ButtonStats[]>([]);
+  const [sectionStats, setSectionStats] = useState<SectionStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -60,7 +76,7 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
   }, [params]);
 
   // Fetch analytics data
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     if (!pageId) return;
     
     try {
@@ -78,6 +94,8 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
       
       const data = await response.json();
       setAnalytics(data.data);
+      setButtonStats(data.data.buttonStats || []);
+      setSectionStats(data.data.sectionStats || []);
     } catch (error) {
       console.error('Error fetching analytics:', error);
       setError('Failed to load analytics data');
@@ -85,7 +103,7 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [pageId, period]);
 
   // Load analytics when page ID or period changes
   useEffect(() => {
@@ -115,10 +133,27 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
   };
 
   const prepareDeviceData = (deviceBreakdown: { [key: string]: number }) => {
+    const total = deviceBreakdown.mobile + deviceBreakdown.desktop + deviceBreakdown.tablet;
+    
     return [
-      { name: 'Mobile', value: deviceBreakdown.mobile, color: '#3B82F6' },
-      { name: 'Desktop', value: deviceBreakdown.desktop, color: '#10B981' },
-      { name: 'Tablet', value: deviceBreakdown.tablet, color: '#F59E0B' }
+      { 
+        name: 'Mobile', 
+        value: deviceBreakdown.mobile, 
+        color: '#3B82F6',
+        percentage: total > 0 ? (deviceBreakdown.mobile / total * 100).toFixed(1) : '0.0'
+      },
+      { 
+        name: 'Desktop', 
+        value: deviceBreakdown.desktop, 
+        color: '#10B981',
+        percentage: total > 0 ? (deviceBreakdown.desktop / total * 100).toFixed(1) : '0.0'
+      },
+      { 
+        name: 'Tablet', 
+        value: deviceBreakdown.tablet, 
+        color: '#F59E0B',
+        percentage: total > 0 ? (deviceBreakdown.tablet / total * 100).toFixed(1) : '0.0'
+      }
     ];
   };
 
@@ -369,13 +404,24 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
                   cy="50%"
                   outerRadius={100}
                   dataKey="value"
-                  label={({ name, percentage }) => `${name} ${Number(percentage).toFixed(1)}%`}
+                  label={false}
+                  labelLine={false}
                 >
                   {deviceData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value, name, props) => [
+                    `${value} visitas (${props.payload.percentage}%)`, 
+                    name
+                  ]}
+                />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={36}
+                  formatter={(value) => `${value}`}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -450,6 +496,106 @@ export default function AnalyticsDetailPage({ params }: PageDetailProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {link.rate.toFixed(1)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Button Click Statistics */}
+        {buttonStats.length > 0 && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Estatísticas de Botões</h3>
+              <p className="text-sm text-gray-600">Botões mais clicados na sua página</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Botão
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tipo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Cliques
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {buttonStats.map((button, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <MousePointer className="h-4 w-4 text-gray-400 mr-2" />
+                          <span className="text-sm font-medium text-gray-900">
+                            {button.button_text}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {button.button_type}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {button.click_count.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Section Time Statistics */}
+        {sectionStats.length > 0 && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Tempo por Seção</h3>
+              <p className="text-sm text-gray-600">Tempo gasto pelos usuários em cada seção da página</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Seção
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tempo Total
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Visitas
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tempo Médio
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sectionStats.map((section, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                          <span className="text-sm font-medium text-gray-900 capitalize">
+                            {section.section_id}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {Math.floor(section.total_time / 60)}m {section.total_time % 60}s
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {section.visit_count.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {section.avg_time}s
                       </td>
                     </tr>
                   ))}

@@ -17,19 +17,46 @@ interface PaymentData {
   };
 }
 
+interface CheckoutData {
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    total: number;
+  };
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
+  const [checkoutData, setCheckoutData] = useState<CheckoutData | null>(null);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
 
   useEffect(() => {
     // Recuperar dados do pagamento do sessionStorage
-    const data = sessionStorage.getItem('payment_data');
-    if (data) {
-      setPaymentData(JSON.parse(data));
-    } else {
-      // Se não houver dados, redirecionar para homepage
+    const storedPaymentData = sessionStorage.getItem('payment_data');
+    if (storedPaymentData) {
+      try {
+        setPaymentData(JSON.parse(storedPaymentData));
+      } catch (e) {
+        console.error('Erro ao parsear payment_data:', e);
+      }
+    }
+    
+    // Recuperar dados do checkout do sessionStorage
+    const storedCheckoutData = sessionStorage.getItem('checkout_data');
+    if (storedCheckoutData) {
+      try {
+        setCheckoutData(JSON.parse(storedCheckoutData));
+      } catch (e) {
+        console.error('Erro ao parsear checkout_data:', e);
+      }
+    }
+    
+    // Se não houver payment_data, redirecionar para homepage
+    if (!storedPaymentData) {
       router.push('/');
     }
   }, [router]);
@@ -66,6 +93,7 @@ export default function CheckoutPage() {
     }
   };
 
+  // Mostrar loading enquanto não há paymentData
   if (!paymentData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -87,7 +115,7 @@ export default function CheckoutPage() {
               <QrCode className="h-12 w-12 text-blue-600" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">
             Pagamento via PIX
           </h1>
           <p className="text-gray-600">
@@ -101,7 +129,7 @@ export default function CheckoutPage() {
             <div>
               <p className="text-sm text-gray-600">Valor a pagar</p>
               <p className="text-3xl font-bold text-gray-900">
-                R$ {paymentData.value.toFixed(2).replace('.', ',')}
+                R$ {(checkoutData?.product.total || paymentData?.value || 0).toFixed(2).replace('.', ',')}
               </p>
             </div>
             <div className="text-right">
@@ -112,6 +140,23 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
+          
+          {/* Informações do produto se disponível */}
+          {checkoutData && (
+            <div className="border-t pt-4 mt-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Produto</h3>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-gray-900">{checkoutData.product.name}</p>
+                  <p className="text-sm text-gray-600">Quantidade: {checkoutData.product.quantity}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">Preço unitário</p>
+                  <p className="font-medium">R$ {checkoutData.product.price.toFixed(2).replace('.', ',')}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* QR Code */}
@@ -189,10 +234,10 @@ export default function CheckoutPage() {
         {/* Actions */}
         <div className="flex gap-4">
           <button
-            onClick={() => router.push('/dashboard')}
+          onClick={() => router.push('/delivery')}
             className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
           >
-            Ir para Dashboard
+            Ir para Entrega
           </button>
           <button
             onClick={() => router.push('/dashboard/payments')}

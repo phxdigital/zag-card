@@ -4,8 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies });
     
     // Verificar autenticação
     const { data: { session } } = await supabase.auth.getSession();
@@ -23,7 +22,7 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json({ pages: data });
   } catch (err) {
 return NextResponse.json({ error: 'Internal server error' 
 }, { status: 500 });
@@ -32,8 +31,7 @@ return NextResponse.json({ error: 'Internal server error'
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies });
     
     // Verificar autenticação
     const { data: { session } } = await supabase.auth.getSession();
@@ -78,7 +76,22 @@ console.error('JSON parse error:', err);
       return NextResponse.json({ error: 'Subdomain already exists' }, { status: 409 });
     }
 
-    // Criar nova página
+    // Buscar o último pagamento confirmado do usuário para vincular
+    let paymentId: string | null = null;
+    const { data: lastPayment } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .in('status', ['CONFIRMED', 'RECEIVED', 'APPROVED'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (lastPayment) {
+      paymentId = lastPayment.id;
+    }
+
+    // Criar nova página com payment_id vinculado
     const { data, error } = await supabase
       .from('pages')
       .insert({
@@ -86,7 +99,9 @@ console.error('JSON parse error:', err);
         config,
         logo_url,
         thumbnail_url,
-        user_id: session.user.id
+        user_id: session.user.id,
+        payment_id: paymentId, // Vincular com o pagamento
+        production_status: 'pending' // Status inicial: aguardando aprovação
       })
       .select()
       .single();

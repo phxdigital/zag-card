@@ -32,15 +32,19 @@ export default function ShippingOptions({
   const [options, setOptions] = useState<ShippingOption[]>([]);
   const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasAutoSelected, setHasAutoSelected] = useState(false);
 
   // Calcular opções de frete quando endereço ou produtos mudarem
   useEffect(() => {
-    if (address.postal_code.length === 8 && products.length > 0) {
+    if (address.postal_code && address.postal_code.length === 8 && products && products.length > 0) {
+      setHasAutoSelected(false); // Reset quando endereço/produtos mudarem
       calculateShippingOptions();
     }
   }, [address.postal_code, products]);
 
   const calculateShippingOptions = async () => {
+    if (!products || products.length === 0) return;
+    
     setCalculating(true);
     setError(null);
 
@@ -56,15 +60,45 @@ export default function ShippingOptions({
       // Calcular opções de frete
       const shippingOptions = await calculateShipping(
         '88010001', // CEP de origem (Florianópolis)
-        address.postal_code,
+        address.postal_code || '',
         totalWeight,
-        maxDimensions
+        maxDimensions,
+        products.map(p => ({
+          weight: p.weight,
+          dimensions: p.dimensions,
+          value: 0,
+          quantity: 1
+        }))
       );
 
-      setOptions(shippingOptions);
-    } catch (err) {
-      setError('Erro ao calcular opções de frete');
+      // Sistema escolhe automaticamente a opção com menor preço
+      // As opções já vêm ordenadas por preço (menor primeiro)
+      if (shippingOptions.length > 0) {
+        const bestOption = shippingOptions[0]; // Primeira opção = menor preço
+        setOptions([bestOption]); // Mostrar apenas a melhor opção
+        // Selecionar automaticamente apenas uma vez
+        if (!hasAutoSelected) {
+          onOptionSelect(bestOption);
+          setHasAutoSelected(true);
+        }
+      } else {
+        setOptions([]);
+      }
+    } catch (err: unknown) {
+      const errorMessage = (err instanceof Error ? err.message : String(err)) || 'Erro ao calcular opções de frete';
+      setError(errorMessage);
       console.error('Erro ao calcular frete:', err);
+      const errorDetails: Record<string, unknown> = {
+        message: err instanceof Error ? err.message : String(err),
+        origin,
+        destination,
+        weight: totalWeight,
+        dimensions: maxDimensions
+      };
+      if (err instanceof Error && err.stack) {
+        errorDetails.stack = err.stack;
+      }
+      console.error('Detalhes do erro:', errorDetails);
     } finally {
       setCalculating(false);
     }
@@ -129,8 +163,11 @@ export default function ShippingOptions({
       <div className="flex items-center gap-2 mb-4">
         <Truck className="h-5 w-5 text-blue-600" />
         <h3 className="text-lg font-semibold text-gray-900">
-          Opções de Frete
+          Opção de Frete Selecionada
         </h3>
+        <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 border border-green-200">
+          Melhor Preço
+        </span>
       </div>
 
       {/* Endereço de destino */}
@@ -138,7 +175,7 @@ export default function ShippingOptions({
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <MapPin className="h-4 w-4" />
           <span>
-            Entregando em: {address.city}/{address.state} - CEP: {address.postal_code}
+            Entregando em: {address.city || ''}/{address.state || ''} - CEP: {address.postal_code || ''}
           </span>
         </div>
       </div>
@@ -161,20 +198,22 @@ export default function ShippingOptions({
         </div>
       )}
 
-      {/* Opções de frete */}
+      {/* Opção de frete - Sistema escolhe automaticamente a melhor */}
       {options.length > 0 && (
         <div className="space-y-3">
           {options.map((option, index) => (
             <div
               key={`${option.carrier}-${option.service_type}`}
-              className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                selectedOption?.carrier === option.carrier && 
-                selectedOption?.service_type === option.service_type
-                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
-              onClick={() => onOptionSelect(option)}
+              className="relative border-2 border-blue-500 bg-blue-50 rounded-lg p-4 ring-2 ring-blue-200"
             >
+              {/* Badge de seleção automática */}
+              <div className="absolute top-2 right-2">
+                <div className="flex items-center gap-1 px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-full">
+                  <CheckCircle className="h-3 w-3" />
+                  Melhor Preço
+                </div>
+              </div>
+              
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">
@@ -217,17 +256,9 @@ export default function ShippingOptions({
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>Entrega estimada: {new Date(option.estimated_delivery).toLocaleDateString('pt-BR')}</span>
-                  <span>Peso: {products.reduce((sum, p) => sum + p.weight, 0).toFixed(1)}kg</span>
+                  <span>Peso: {products ? products.reduce((sum, p) => sum + p.weight, 0).toFixed(1) : '0.0'}kg</span>
                 </div>
               </div>
-
-              {/* Checkbox de seleção */}
-              {selectedOption?.carrier === option.carrier && 
-               selectedOption?.service_type === option.service_type && (
-                <div className="absolute top-4 right-4">
-                  <CheckCircle className="h-5 w-5 text-blue-600" />
-                </div>
-              )}
             </div>
           ))}
         </div>

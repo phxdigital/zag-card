@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { User } from '@supabase/supabase-js';
 import { isAdminEmail } from '@/lib/auth-config';
-import { Shield, LayoutDashboard, Package, ShoppingCart, FileText, LogOut, Menu, X, Globe } from 'lucide-react';
+import { Shield, LayoutDashboard, Package, FileText, LogOut, Menu, X, Globe } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -76,7 +76,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: 'Layouts/Cartões', href: '/admin', icon: FileText },
         { name: 'Páginas Web', href: '/admin/pages', icon: Globe },
         { name: 'Produtos', href: '/admin/products', icon: Package },
-        { name: 'Pedidos', href: '/admin/orders', icon: ShoppingCart },
         { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     ];
 

@@ -41,7 +41,7 @@ export default function MyPagesPage() {
       const response = await fetch('/api/pages');
       if (response.ok) {
         const data = await response.json();
-        setPages(data);
+        setPages(data.pages || []);
       }
     } catch (err) {
 console.error('Erro ao carregar páginas:', err);

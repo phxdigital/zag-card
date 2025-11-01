@@ -96,10 +96,7 @@ export function PaymentModal({ isOpen, onClose, onConfirm, planName, planValue, 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Finalizar Compra
-          </h2>
+        <div className="flex items-center justify-end p-6 border-b">
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -113,6 +110,11 @@ export function PaymentModal({ isOpen, onClose, onConfirm, planName, planValue, 
           <div className="flex items-center justify-center mb-4">
             <img src="/zag-site.png" alt="Zag" className="h-8 object-contain" />
           </div>
+          
+          <div className="font-bold text-gray-600 text-center mb-3" style={{ fontSize: '18px' }}>
+            Finalizar Compra
+          </div>
+          
           <div className="mb-6 p-4 bg-blue-50 rounded-lg">
             <h3 className="font-medium text-blue-900">{planName}</h3>
             <p className="text-2xl font-bold text-blue-900">

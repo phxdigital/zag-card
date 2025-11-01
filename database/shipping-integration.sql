@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS shipping_addresses (
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT NOT NULL,
+  document TEXT, -- CPF/CNPJ do destinatário (apenas números)
   
   -- Endereço completo
   street TEXT NOT NULL,

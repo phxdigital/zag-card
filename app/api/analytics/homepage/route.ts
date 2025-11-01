@@ -81,9 +81,9 @@ async function getGeolocation(ip: string): Promise<Record<string, unknown>> {
     const response = await fetch(`https://ipapi.co/${ip}/json/`);
     
     if (!response.ok) {
-      // If rate limited or error, return default values
+      // If rate limited or error, return default values silently
       if (response.status === 429) {
-        console.warn('Geolocation API rate limited, using default values');
+        // Silently handle rate limit - don't log as warning to avoid console spam
         return {
           ip,
           country: 'Unknown',
@@ -93,7 +93,15 @@ async function getGeolocation(ip: string): Promise<Record<string, unknown>> {
           isp: 'Unknown'
         };
       }
-      throw new Error(`Geolocation API error: ${response.status}`);
+      // For other errors, also return defaults silently instead of throwing
+      return {
+        ip,
+        country: 'Unknown',
+        city: 'Unknown',
+        region: 'Unknown',
+        timezone: 'UTC',
+        isp: 'Unknown'
+      };
     }
     
     const data = await response.json();
@@ -128,7 +136,7 @@ function validateHomepageData(data: Record<string, unknown>): boolean {
     typeof data.session_id === 'string' &&
     typeof data.timestamp === 'string' &&
     typeof data.user_agent === 'string' &&
-    ['homepage_view', 'page_view', 'conversion', 'heartbeat', 'session_end'].includes(String(data.type))
+    ['homepage_view', 'page_view', 'conversion', 'heartbeat', 'session_end', 'button_click', 'section_time'].includes(String(data.type))
   );
 }
 
@@ -174,22 +182,40 @@ async function processHomepageData(data: Record<string, unknown>, ip: string, ge
       keyword: data.keyword || null,
       landing_page: data.landing_page || null,
       conversion_goal: data.conversion_goal || null,
-      conversion_value: data.conversion_value || 0
+      conversion_value: data.conversion_value || 0,
+      // New fields for button and section tracking
+      type: data.type || 'homepage_view',
+      button_id: data.button_id || null,
+      button_text: data.button_text || null,
+      button_type: data.button_type || null,
+      section_id: data.section_id || null,
+      time_spent_seconds: data.time_spent_seconds || null
     };
     
     // Insert into database
-    const { error } = await supabase
+    const { data: insertedData, error } = await supabase
       .from('homepage_visits')
-      .insert(visitData);
+      .insert(visitData)
+      .select();
     
     if (error) {
       console.error('Database insert error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      console.error('Visit data attempted:', visitData);
       throw error;
     }
     
-    return { success: true };
-  } catch (error) {
+    return { success: true, data: insertedData };
+  } catch (error: unknown) {
     console.error('Process homepage analytics data error:', error);
+    if (error instanceof Error && error.stack) {
+      console.error('Error stack:', error.stack);
+    }
     throw error;
   }
 }
@@ -206,18 +232,27 @@ async function handleHomepageEvent(data: Record<string, unknown>, ip: string, ge
       
     case 'page_view':
       // Update existing session with page view
-      const { error: pageViewError } = await supabase
+      // First, get the most recent visit for this session
+      const { data: latestVisit } = await supabase
         .from('homepage_visits')
-        .update({
-          page_views: data.page_views || 1,
-          visited_at: data.timestamp
-        })
+        .select('id')
         .eq('session_id', data.session_id)
         .order('visited_at', { ascending: false })
-        .limit(1);
+        .limit(1)
+        .maybeSingle();
       
-      if (pageViewError) {
-        console.error('Page view update error:', pageViewError);
+      if (latestVisit?.id) {
+        const { error: pageViewError } = await supabase
+          .from('homepage_visits')
+          .update({
+            page_views: data.page_views || 1,
+            visited_at: data.timestamp
+          })
+          .eq('id', latestVisit.id);
+        
+        if (pageViewError) {
+          console.error('Page view update error:', pageViewError);
+        }
       }
       
       return { success: true };
@@ -248,45 +283,71 @@ async function handleHomepageEvent(data: Record<string, unknown>, ip: string, ge
       
     case 'heartbeat':
       // Update existing session with heartbeat
-      const { error: heartbeatError } = await supabase
+      // First, get the most recent visit for this session
+      const { data: latestHeartbeatVisit } = await supabase
         .from('homepage_visits')
-        .update({
-          duration_seconds: data.duration_seconds || 0,
-          visited_at: data.timestamp
-        })
+        .select('id')
         .eq('session_id', data.session_id)
         .order('visited_at', { ascending: false })
-        .limit(1);
+        .limit(1)
+        .maybeSingle();
       
-      if (heartbeatError) {
-        console.error('Heartbeat update error:', heartbeatError);
+      if (latestHeartbeatVisit?.id) {
+        const { error: heartbeatError } = await supabase
+          .from('homepage_visits')
+          .update({
+            duration_seconds: data.duration_seconds || 0,
+            visited_at: data.timestamp
+          })
+          .eq('id', latestHeartbeatVisit.id);
+        
+        if (heartbeatError) {
+          console.error('Heartbeat update error:', heartbeatError);
+        }
       }
       
       return { success: true };
       
     case 'session_end':
       // Update session with final data
-      const { error: sessionError } = await supabase
+      // First, get the most recent visit for this session
+      const { data: latestSessionVisit } = await supabase
         .from('homepage_visits')
-        .update({
-          duration_seconds: data.duration_seconds || 0,
-          page_views: data.page_views || 1
-        })
+        .select('id')
         .eq('session_id', data.session_id)
         .order('visited_at', { ascending: false })
-        .limit(1);
+        .limit(1)
+        .maybeSingle();
       
-      if (sessionError) {
-        console.error('Session end update error:', sessionError);
+      if (latestSessionVisit?.id) {
+        const { error: sessionError } = await supabase
+          .from('homepage_visits')
+          .update({
+            duration_seconds: data.duration_seconds || 0,
+            page_views: data.page_views || 1
+          })
+          .eq('id', latestSessionVisit.id);
+        
+        if (sessionError) {
+          console.error('Session end update error:', sessionError);
+        }
       }
       
       return { success: true };
       
+    case 'button_click':
+      // Store button click event
+      return await processHomepageData(data, ip, geolocation);
+      
+    case 'section_time':
+      // Store section time event
+      return await processHomepageData(data, ip, geolocation);
+      
     default:
-      throw new Error(`Unknown homepage analytics event type: ${data.type}`);
+      // For unknown types, try to store as generic event
+      console.warn(`Unknown homepage analytics event type: ${data.type}, storing as generic event`);
+      return await processHomepageData(data, ip, geolocation);
   }
-  
-  return { success: true };
 }
 
 /**
@@ -337,12 +398,26 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Homepage analytics tracking error:', error);
+    if (error instanceof Error && error.stack) {
+      console.error('Error stack:', error.stack);
+    }
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        name: error.name
+      });
+    } else if (typeof error === 'object' && error !== null) {
+      console.error('Error details:', error);
+    }
     
     // Return error response (don't expose internal details)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error?.message : undefined
+      },
       { status: 500 }
     );
   }

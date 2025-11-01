@@ -23,6 +23,10 @@ export default function NewProductPage() {
     is_active: true,
     is_featured: false,
     requires_shipping: true,
+    weight: '',
+    dimensions_length: '',
+    dimensions_width: '',
+    dimensions_height: '',
     images: [] as string[],
   });
   const [features, setFeatures] = useState<string[]>(['']);
@@ -112,6 +116,12 @@ export default function NewProductPage() {
         is_active: formData.is_active,
         is_featured: formData.is_featured,
         requires_shipping: formData.requires_shipping,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        dimensions: (formData.dimensions_length && formData.dimensions_width && formData.dimensions_height) ? {
+          length: parseFloat(formData.dimensions_length) || 0,
+          width: parseFloat(formData.dimensions_width) || 0,
+          height: parseFloat(formData.dimensions_height) || 0
+        } : null,
         features: features.filter(f => f.trim() !== ''),
         images: formData.images,
         thumbnail_url: formData.images.length > 0 ? formData.images[0] : null,
@@ -367,6 +377,88 @@ export default function NewProductPage() {
           />
         </div>
 
+        {/* Frete e Dimensões */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Frete e Dimensões</h2>
+          
+          <div className="space-y-4">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.requires_shipping}
+                onChange={(e) => setFormData({ ...formData, requires_shipping: e.target.checked })}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span className="ml-2 text-sm text-gray-700">Requer envio (produto físico)</span>
+            </label>
+
+            {formData.requires_shipping && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Peso (kg) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    value={formData.weight}
+                    onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                    placeholder="Ex: 0.05"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Peso em quilogramas (ex: 0.05 = 50g)</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Dimensões (cm) *
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Comprimento</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={formData.dimensions_length}
+                        onChange={(e) => setFormData({ ...formData, dimensions_length: e.target.value })}
+                        placeholder="20"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Largura</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={formData.dimensions_width}
+                        onChange={(e) => setFormData({ ...formData, dimensions_width: e.target.value })}
+                        placeholder="15"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Altura</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={formData.dimensions_height}
+                        onChange={(e) => setFormData({ ...formData, dimensions_height: e.target.value })}
+                        placeholder="1"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">Dimensões em centímetros (ex: 20x15x1)</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Configurações */}
         <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Configurações</h2>
@@ -390,16 +482,6 @@ export default function NewProductPage() {
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <span className="ml-2 text-sm text-gray-700">Produto em destaque (aparece primeiro)</span>
-            </label>
-
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.requires_shipping}
-                onChange={(e) => setFormData({ ...formData, requires_shipping: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <span className="ml-2 text-sm text-gray-700">Requer envio (produto físico)</span>
             </label>
           </div>
         </div>

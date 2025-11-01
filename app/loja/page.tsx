@@ -5,6 +5,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ImageGallery } from '@/components/ImageGallery';
+import { PaymentModal } from '@/components/PaymentModal';
 import '../homepage.css';
 import { 
   ShoppingCart, 
@@ -47,11 +48,14 @@ interface Product {
 interface ProductCardProps {
   product: Product;
   onImageClick: (product: Product, imageIndex: number) => void;
+  onBuyClick?: (product: Product, quantity: number) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onImageClick }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onImageClick, onBuyClick }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
 
   const images = product.images && product.images.length > 0 ? product.images : 
     (product.thumbnail_url ? [product.thumbnail_url] : []);
@@ -80,6 +84,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onImageClick }) => {
   const discountPercentage = product.compare_price 
     ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
     : 0;
+
+  const handleBuyNow = () => {
+    // Armazenar dados do produto no sessionStorage
+    const checkoutData = {
+      product: {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: quantity,
+        total: product.price * quantity
+      }
+    };
+    
+    sessionStorage.setItem('checkout_data', JSON.stringify(checkoutData));
+    
+    // Chamar callback para abrir modal de pagamento
+    if (onBuyClick) {
+      onBuyClick(product, quantity);
+    }
+  };
 
   return (
     <div 
@@ -199,57 +223,81 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onImageClick }) => {
         {product.features && product.features.length > 0 && (
           <div className="mb-3">
             <ul className="text-xs text-gray-600 space-y-1">
-              {product.features.slice(0, 3).map((feature, index) => (
+              {(showAllFeatures ? product.features : product.features.slice(0, 3)).map((feature, index) => (
                 <li key={index} className="flex items-center gap-1">
                   <div className="w-1 h-1 bg-blue-500 rounded-full flex-shrink-0" />
                   {feature}
                 </li>
               ))}
-              {product.features.length > 3 && (
-                <li className="text-blue-600 font-medium">
+              {product.features.length > 3 && !showAllFeatures && (
+                <li 
+                  className="text-blue-600 font-medium cursor-pointer hover:text-blue-800"
+                  onClick={() => setShowAllFeatures(true)}
+                >
                   +{product.features.length - 3} mais recursos
+                </li>
+              )}
+              {showAllFeatures && product.features.length > 3 && (
+                <li 
+                  className="text-blue-600 font-medium cursor-pointer hover:text-blue-800"
+                  onClick={() => setShowAllFeatures(false)}
+                >
+                  Mostrar menos
                 </li>
               )}
             </ul>
           </div>
         )}
 
-        {/* Status do estoque */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${
-              product.stock_quantity > 10 
-                ? 'bg-green-500' 
-                : product.stock_quantity > 0 
-                ? 'bg-yellow-500' 
-                : 'bg-red-500'
-            }`} />
-            <span className="text-xs text-gray-600">
-              {product.stock_quantity > 0 
-                ? `${product.stock_quantity} em estoque` 
-                : 'Fora de estoque'
-              }
-            </span>
-          </div>
-          
-          {product.requires_shipping && (
+        {/* Informações de entrega */}
+        {product.requires_shipping && (
+          <div className="flex items-center justify-center mb-3">
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Truck className="h-3 w-3" />
               {product.shipping_time}
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Seletor de Quantidade */}
+        <div className="mb-3">
+          <label className="block text-xs font-medium text-gray-700 mb-1">Quantidade</label>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+              disabled={quantity <= 1}
+            >
+              -
+            </button>
+            <span className="w-12 text-center font-medium">{quantity}</span>
+            <button
+              onClick={() => setQuantity(quantity + 1)}
+              className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+            >
+              +
+            </button>
+          </div>
         </div>
+
+        {/* Preço Total */}
+        {quantity > 1 && (
+          <div className="mb-3 p-2 bg-blue-50 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Total:</span>
+              <span className="text-lg font-bold text-blue-600">
+                {formatPrice(product.price * quantity)}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Botão de compra */}
         <button 
-          className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
-            product.stock_quantity > 0
-              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-          disabled={product.stock_quantity === 0}
+          onClick={handleBuyNow}
+          className="w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl"
         >
-          {product.stock_quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
+          Comprar
         </button>
       </div>
     </div>
@@ -266,6 +314,10 @@ export default function LojaPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedProductForPayment, setSelectedProductForPayment] = useState<Product | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const supabase = createClientComponentClient();
 
@@ -322,6 +374,116 @@ export default function LojaPage() {
     setSelectedProduct(product);
     setSelectedImageIndex(imageIndex);
     setGalleryOpen(true);
+  };
+
+  const handleBuyClick = (product: Product, quantity: number) => {
+    setSelectedProductForPayment(product);
+    setSelectedQuantity(quantity);
+    setPaymentModalOpen(true);
+  };
+
+  const handlePaymentConfirm = async (customerData: { name: string; cpf: string; phone: string; email: string; method: 'PIX' | 'CARD'; cardMode?: 'CREDIT' | 'DEBIT' }) => {
+    if (!selectedProductForPayment) return;
+
+    setPaymentLoading(true);
+
+    try {
+      const total = selectedProductForPayment.price * selectedQuantity;
+
+      if (customerData.method === 'CARD') {
+        // Ir para checkout de cartão com dados do cliente e do produto
+        const payload = {
+          planType: `product_${selectedProductForPayment.id}`,
+          value: total,
+          description: `${selectedProductForPayment.name}${selectedQuantity > 1 ? ` (Qtd: ${selectedQuantity})` : ''} - Zag NFC`,
+          customer: {
+            name: customerData.name,
+            cpf: customerData.cpf,
+            phone: customerData.phone,
+            email: customerData.email,
+          },
+          cardMode: customerData.cardMode || 'CREDIT',
+        };
+        
+        // Salvar dados do produto no sessionStorage
+        const checkoutData = {
+          product: {
+            id: selectedProductForPayment.id,
+            name: selectedProductForPayment.name,
+            price: selectedProductForPayment.price,
+            quantity: selectedQuantity,
+            total: total
+          }
+        };
+        sessionStorage.setItem('checkout_data', JSON.stringify(checkoutData));
+        sessionStorage.setItem('card_checkout_data', JSON.stringify(payload));
+        
+        setPaymentModalOpen(false);
+        setSelectedProductForPayment(null);
+        // Redirecionar para página de loading antes do checkout
+        window.location.href = '/loading-checkout?type=card';
+        return;
+      }
+
+      // Criar pagamento PIX
+      const response = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planType: `product_${selectedProductForPayment.id}`,
+          value: total,
+          description: `${selectedProductForPayment.name}${selectedQuantity > 1 ? ` (Qtd: ${selectedQuantity})` : ''} - Zag NFC`,
+          customerData: {
+            name: customerData.name,
+            cpf: customerData.cpf,
+            phone: customerData.phone,
+            email: customerData.email,
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao processar pagamento');
+      }
+
+      const data = await response.json();
+      
+      // Fechar modal
+      setPaymentModalOpen(false);
+      setSelectedProductForPayment(null);
+      
+      // Salvar dados do produto no sessionStorage
+      const checkoutData = {
+        product: {
+          id: selectedProductForPayment.id,
+          name: selectedProductForPayment.name,
+          price: selectedProductForPayment.price,
+          quantity: selectedQuantity,
+          total: total
+        }
+      };
+      sessionStorage.setItem('checkout_data', JSON.stringify(checkoutData));
+      
+      // Redirecionar para página de checkout com QR code PIX
+      if (data.payment && data.payment.pix) {
+        // Armazenar dados do pagamento no sessionStorage
+        sessionStorage.setItem('payment_data', JSON.stringify(data.payment));
+        // Redirecionar para página de loading antes do checkout
+        window.location.href = '/loading-checkout?type=pix';
+      } else if (data.payment && data.payment.invoiceUrl) {
+        // Redirecionar para fatura
+        window.location.href = data.payment.invoiceUrl;
+      }
+
+    } catch (err) {
+      console.error('Erro ao processar pagamento:', err);
+      alert('Erro ao processar pagamento. Tente novamente.');
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   if (loading) {
@@ -413,6 +575,7 @@ export default function LojaPage() {
                 key={product.id}
                 product={product}
                 onImageClick={handleImageClick}
+                onBuyClick={handleBuyClick}
               />
             ))}
           </div>
@@ -428,6 +591,21 @@ export default function LojaPage() {
           isOpen={galleryOpen}
           onClose={() => setGalleryOpen(false)}
           initialIndex={selectedImageIndex}
+        />
+      )}
+
+      {/* Payment Modal */}
+      {selectedProductForPayment && (
+        <PaymentModal
+          isOpen={paymentModalOpen}
+          onClose={() => {
+            setPaymentModalOpen(false);
+            setSelectedProductForPayment(null);
+          }}
+          onConfirm={handlePaymentConfirm}
+          planName={`${selectedProductForPayment.name}${selectedQuantity > 1 ? ` (Qtd: ${selectedQuantity})` : ''}`}
+          planValue={selectedProductForPayment.price * selectedQuantity}
+          loading={paymentLoading}
         />
       )}
     </div>

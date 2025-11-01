@@ -22,6 +22,18 @@ export async function POST(request: NextRequest) {
         const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
+        // Buscar page_id pelo subdomain para vincular
+        let pageId: string | null = null;
+        const { data: pageData } = await supabase
+            .from('pages')
+            .select('id')
+            .eq('subdomain', subdomain)
+            .single();
+
+        if (pageData) {
+            pageId = pageData.id;
+        }
+
         // Usar service role key para bypass de autenticação
         const { data: notification, error } = await supabase
             .from('admin_notifications')
@@ -30,7 +42,8 @@ export async function POST(request: NextRequest) {
                 action,
                 message,
                 pdf_data: pdfData,
-                status: 'pending'
+                status: 'pending',
+                page_id: pageId // Vincular com o design específico
             })
             .select()
             .single();

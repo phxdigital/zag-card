@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { AnalyticsSummary, DailyVisit, TopLink, BrowserBreakdown, CountryBreakdown } from '@/types/analytics';
 
@@ -71,14 +71,17 @@ async function getAnalyticsSummary(
         dailyVisits: [],
         topLinks: [],
         browserBreakdown: [],
-        countryBreakdown: []
+        countryBreakdown: [],
+        buttonStats: [],
+        sectionStats: []
       };
     }
 
     // Calculate basic metrics
     const totalVisits = basicMetrics.length;
     const uniqueVisitors = new Set(basicMetrics.map((v: Record<string, unknown>) => v.session_id)).size;
-    const avgDuration = basicMetrics.reduce((sum: number, v: Record<string, unknown>) => sum + (Number(v.duration_seconds) || 0), 0) / totalVisits;
+    const avgDuration = totalVisits > 0 ? 
+      basicMetrics.reduce((sum: number, v: Record<string, unknown>) => sum + (Number(v.duration_seconds) || 0), 0) / totalVisits : 0;
     
     // Device breakdown
     const deviceBreakdown = {
@@ -100,6 +103,12 @@ async function getAnalyticsSummary(
     
     // Get country breakdown
     const countryBreakdown = await getCountryBreakdown(supabase, pageId, startDate, endDate);
+    
+    // Get button statistics
+    const buttonStats = await getButtonStats(supabase, pageId, startDate, endDate);
+    
+    // Get section statistics
+    const sectionStats = await getSectionStats(supabase, pageId, startDate, endDate);
 
     return {
       totalVisits,
@@ -110,7 +119,9 @@ async function getAnalyticsSummary(
       dailyVisits,
       topLinks,
       browserBreakdown,
-      countryBreakdown
+      countryBreakdown,
+      buttonStats,
+      sectionStats
     };
   } catch (error) {
     console.error('Error getting analytics summary:', error);
@@ -290,7 +301,7 @@ async function getCountryBreakdown(
     const countryCounts: { [key: string]: number } = {};
     
     data?.forEach((visit: { country: string }) => {
-      const country = visit.country || 'Unknown';
+      const country = visit.country || 'Local';
       countryCounts[country] = (countryCounts[country] || 0) + 1;
     });
 
@@ -306,6 +317,114 @@ async function getCountryBreakdown(
       .slice(0, 10);
   } catch (error) {
     console.error('Error getting country breakdown:', error);
+    return [];
+  }
+}
+
+/**
+ * Get button click statistics
+ */
+async function getButtonStats(
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
+  pageId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<Array<{ button_id: string; button_text: string; button_type: string; click_count: number }>> {
+  try {
+    const { data, error } = await supabase
+      .from('page_visits')
+      .select('button_id, button_text, button_type')
+      .eq('page_id', parseInt(pageId))
+      .eq('type', 'button_click')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .not('button_id', 'is', null);
+
+    if (error) {
+      console.error('Error getting button stats:', error);
+      return [];
+    }
+
+    // Aggregate button data
+    const buttonCounts: { [key: string]: { button_text: string; button_type: string; count: number } } = {};
+    
+    data?.forEach((visit: { button_id: string; button_text: string; button_type: string }) => {
+      const key = visit.button_id;
+      if (!buttonCounts[key]) {
+        buttonCounts[key] = {
+          button_text: visit.button_text,
+          button_type: visit.button_type,
+          count: 0
+        };
+      }
+      buttonCounts[key].count++;
+    });
+
+    return Object.entries(buttonCounts)
+      .map(([button_id, data]) => ({
+        button_id,
+        button_text: data.button_text,
+        button_type: data.button_type,
+        click_count: data.count
+      }))
+      .sort((a, b) => b.click_count - a.click_count)
+      .slice(0, 10);
+  } catch (error) {
+    console.error('Error getting button stats:', error);
+    return [];
+  }
+}
+
+/**
+ * Get section time statistics
+ */
+async function getSectionStats(
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
+  pageId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<Array<{ section_id: string; total_time: number; visit_count: number; avg_time: number }>> {
+  try {
+    const { data, error } = await supabase
+      .from('page_visits')
+      .select('section_id, time_spent_seconds')
+      .eq('page_id', parseInt(pageId))
+      .eq('type', 'section_time')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .not('section_id', 'is', null);
+
+    if (error) {
+      console.error('Error getting section stats:', error);
+      return [];
+    }
+
+    // Aggregate section data
+    const sectionData: { [key: string]: { total_time: number; visit_count: number } } = {};
+    
+    data?.forEach((visit: { section_id: string; time_spent_seconds: number }) => {
+      const sectionId = visit.section_id;
+      if (!sectionData[sectionId]) {
+        sectionData[sectionId] = {
+          total_time: 0,
+          visit_count: 0
+        };
+      }
+      sectionData[sectionId].total_time += visit.time_spent_seconds || 0;
+      sectionData[sectionId].visit_count++;
+    });
+
+    return Object.entries(sectionData)
+      .map(([section_id, data]) => ({
+        section_id,
+        total_time: data.total_time,
+        visit_count: data.visit_count,
+        avg_time: data.visit_count > 0 ? Math.round(data.total_time / data.visit_count) : 0
+      }))
+      .sort((a, b) => b.total_time - a.total_time)
+      .slice(0, 10);
+  } catch (error) {
+    console.error('Error getting section stats:', error);
     return [];
   }
 }
@@ -354,7 +473,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Create Supabase client
-    const supabase = createServerComponentClient({ cookies });
+    const supabase = createRouteHandlerClient({ cookies });
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -410,7 +529,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { pageId } = await params;
     
     // Create Supabase client
-    const supabase = createServerComponentClient({ cookies });
+    const supabase = createRouteHandlerClient({ cookies });
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();

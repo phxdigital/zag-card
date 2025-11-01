@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Download, Eye, Calendar, User, FileText, AlertCircle, CheckCircle, Trash2, FileStack, Loader } from 'lucide-react';
+import { Download, Eye, Calendar, User, FileText, AlertCircle, CheckCircle, Trash2, FileStack, Loader, Package, Truck, MapPin } from 'lucide-react';
 
 interface Notification {
     id: string;
@@ -12,17 +12,57 @@ interface Notification {
     created_at: string;
     pdf_data?: string;
     status: 'pending' | 'approved' | 'rejected';
+    production_status?: string | null;
+    page_id?: string | null;
 }
 
 export default function AdminPanel() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
+    const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'in_production' | 'ready_to_ship' | 'shipped' | 'delivered'>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [merging, setMerging] = useState(false);
     const itemsPerPage = 10;
+    
+    // Estados para controle de envio
+    interface ShippingAddress {
+      name: string;
+      street: string;
+      number: string;
+      complement?: string;
+      neighborhood: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      phone: string;
+    }
+    
+    interface ShippingData {
+      tracking_code?: string;
+      shipment?: {
+        melhor_envio_id?: number;
+      };
+      shipping?: {
+        label_url?: string;
+      };
+      address?: ShippingAddress;
+    }
+    
+    interface ShippingOptionData {
+      id: number;
+      name: string;
+      company: { name: string };
+      price: number;
+      delivery_time?: number;
+      delivery_range?: { min: number; max: number };
+    }
+    
+    const [shippingData, setShippingData] = useState<Record<string, ShippingData>>({});
+    const [shippingOptions, setShippingOptions] = useState<Record<string, ShippingOptionData[]>>({});
+    const [loadingShipping, setLoadingShipping] = useState<Record<string, boolean>>({});
+    const [showShippingModal, setShowShippingModal] = useState<string | null>(null);
 
     useEffect(() => {
         loadNotifications();
@@ -53,14 +93,99 @@ export default function AdminPanel() {
             });
 
             if (response.ok) {
-                setNotifications(prev => 
-                    prev.map(notif => 
-                        notif.id === id ? { ...notif, status } : notif
-                    )
-                );
+                // Recarregar notificações para pegar o production_status atualizado
+                await loadNotifications();
             }
         } catch (err) {
             console.error('Erro ao atualizar status:', err);
+        }
+    };
+
+    const markAsReady = async (id: string) => {
+        try {
+            const response = await fetch(`/api/admin/notifications/${id}/ready`, {
+                method: 'PATCH',
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert('Pedido marcado como pronto para envio!');
+                // Recarregar notificações para pegar o production_status atualizado
+                await loadNotifications();
+            } else {
+                const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+                alert(errorData.error || 'Erro ao marcar pedido como pronto');
+            }
+        } catch (err) {
+            console.error('Erro ao marcar como pronto:', err);
+            alert('Erro ao marcar pedido como pronto');
+        }
+    };
+
+    const loadShippingInfo = async (notificationId: string) => {
+        setLoadingShipping(prev => ({ ...prev, [notificationId]: true }));
+        try {
+            const response = await fetch(`/api/admin/notifications/${notificationId}/shipping`);
+            if (response.ok) {
+                const data = await response.json();
+                setShippingData(prev => ({ ...prev, [notificationId]: data }));
+                return data;
+            }
+        } catch (err) {
+            console.error('Erro ao carregar informações de envio:', err);
+        } finally {
+            setLoadingShipping(prev => ({ ...prev, [notificationId]: false }));
+        }
+        return null;
+    };
+
+    const loadShippingOptions = async (notificationId: string) => {
+        setLoadingShipping(prev => ({ ...prev, [notificationId]: true }));
+        try {
+            const response = await fetch(`/api/admin/notifications/${notificationId}/shipping-options`);
+            if (response.ok) {
+                const data = await response.json();
+                setShippingOptions(prev => ({ ...prev, [notificationId]: data.options || [] }));
+                setShowShippingModal(notificationId);
+            } else {
+                const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+                alert(errorData.error || 'Erro ao buscar opções de frete');
+            }
+        } catch (err) {
+            console.error('Erro ao buscar opções de frete:', err);
+            alert('Erro ao buscar opções de frete');
+        } finally {
+            setLoadingShipping(prev => ({ ...prev, [notificationId]: false }));
+        }
+    };
+
+    const createShipment = async (notificationId: string, serviceId: number) => {
+        setLoadingShipping(prev => ({ ...prev, [notificationId]: true }));
+        try {
+            const response = await fetch(`/api/admin/notifications/${notificationId}/create-shipment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ serviceId }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert(`Envio criado com sucesso! Código de rastreamento: ${data.shipment.tracking}`);
+                setShowShippingModal(null);
+                // Recarregar informações
+                await loadShippingInfo(notificationId);
+                await loadNotifications();
+            } else {
+                const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+                alert(errorData.error || 'Erro ao criar envio');
+            }
+        } catch (err) {
+            console.error('Erro ao criar envio:', err);
+            alert('Erro ao criar envio');
+        } finally {
+            setLoadingShipping(prev => ({ ...prev, [notificationId]: false }));
         }
     };
 
@@ -235,7 +360,14 @@ export default function AdminPanel() {
 
     // Filtrar por status e busca
     const filteredNotifications = notifications
-        .filter(notif => notif.status === filter)
+        .filter(notif => {
+            if (filter === 'all') return true;
+            if (filter === 'pending' || filter === 'approved' || filter === 'rejected') {
+                return notif.status === filter;
+            }
+            // Filtros por status de produção
+            return notif.production_status === filter;
+        })
         .filter(notif => 
             searchTerm === '' || 
             notif.subdomain.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -280,6 +412,50 @@ export default function AdminPanel() {
         }
     };
 
+    const getProductionStatusText = (productionStatus: string | null | undefined) => {
+        if (!productionStatus) return null;
+        switch (productionStatus) {
+            case 'pending':
+                return 'Aguardando aprovação';
+            case 'approved':
+                return 'Aprovado';
+            case 'in_production':
+                return 'Em produção';
+            case 'ready_to_ship':
+                return 'Aguardando envio';
+            case 'shipped':
+                return 'Enviado';
+            case 'delivered':
+                return 'Entregue';
+            case 'cancelled':
+                return 'Cancelado';
+            default:
+                return productionStatus;
+        }
+    };
+
+    const getProductionStatusColor = (productionStatus: string | null | undefined) => {
+        if (!productionStatus) return 'bg-gray-100 text-gray-800';
+        switch (productionStatus) {
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'approved':
+                return 'bg-blue-100 text-blue-800';
+            case 'in_production':
+                return 'bg-purple-100 text-purple-800';
+            case 'ready_to_ship':
+                return 'bg-cyan-100 text-cyan-800';
+            case 'shipped':
+                return 'bg-indigo-100 text-indigo-800';
+            case 'delivered':
+                return 'bg-green-100 text-green-800';
+            case 'cancelled':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -309,37 +485,94 @@ export default function AdminPanel() {
                     </div>
 
                     {/* Filtros de Status */}
-                    <div className="flex flex-wrap gap-2">
-                        <button
-                            onClick={() => setFilter('pending')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                filter === 'pending' 
-                                    ? 'bg-yellow-100 text-yellow-700' 
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Pendentes ({notifications.filter(n => n.status === 'pending').length})
-                        </button>
-                        <button
-                            onClick={() => setFilter('approved')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                filter === 'approved' 
-                                    ? 'bg-green-100 text-green-700' 
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Aprovadas ({notifications.filter(n => n.status === 'approved').length})
-                        </button>
-                        <button
-                            onClick={() => setFilter('rejected')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                filter === 'rejected' 
-                                    ? 'bg-red-100 text-red-700' 
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Rejeitadas ({notifications.filter(n => n.status === 'rejected').length})
-                        </button>
+                    <div className="space-y-3">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Filtros por Aprovação:</div>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => setFilter('all')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    filter === 'all' 
+                                        ? 'bg-blue-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Todos ({notifications.length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('pending')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    filter === 'pending' 
+                                        ? 'bg-yellow-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Pendentes ({notifications.filter(n => n.status === 'pending').length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('approved')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    filter === 'approved' 
+                                        ? 'bg-green-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Aprovadas ({notifications.filter(n => n.status === 'approved').length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('rejected')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    filter === 'rejected' 
+                                        ? 'bg-red-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Rejeitadas ({notifications.filter(n => n.status === 'rejected').length})
+                            </button>
+                        </div>
+                        
+                        <div className="text-sm font-medium text-gray-700 mb-2 mt-4">Filtros por Produção/Entrega:</div>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => setFilter('in_production')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    filter === 'in_production' 
+                                        ? 'bg-purple-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Em Produção ({notifications.filter(n => n.production_status === 'in_production').length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('ready_to_ship')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    filter === 'ready_to_ship' 
+                                        ? 'bg-cyan-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Pronto para Envio ({notifications.filter(n => n.production_status === 'ready_to_ship').length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('shipped')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    filter === 'shipped' 
+                                        ? 'bg-indigo-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Enviados ({notifications.filter(n => n.production_status === 'shipped').length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('delivered')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    filter === 'delivered' 
+                                        ? 'bg-green-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Entregues ({notifications.filter(n => n.production_status === 'delivered').length})
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -488,6 +721,11 @@ export default function AdminPanel() {
                                                 {notification.status === 'pending' ? 'Pendente' : 
                                                  notification.status === 'approved' ? 'Aprovado' : 'Rejeitado'}
                                             </span>
+                                            {notification.production_status && (
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getProductionStatusColor(notification.production_status)}`}>
+                                                    {getProductionStatusText(notification.production_status)}
+                                                </span>
+                                            )}
                                         </div>
                                         
                                         <p className="text-gray-700 mb-4">{notification.message}</p>
@@ -561,7 +799,7 @@ export default function AdminPanel() {
                                                 </button>
                                             </div>
                                         
-                                            {/* Grupo Direito: Aprovar/Rejeitar (apenas pendentes) */}
+                                            {/* Grupo Direito: Ações de status */}
                                         {notification.status === 'pending' && (
                                                 <div className="flex items-center gap-2">
                                                 <button
@@ -580,7 +818,249 @@ export default function AdminPanel() {
                                                 </button>
                                             </div>
                                         )}
+                                        {notification.status === 'approved' && notification.production_status === 'in_production' && (
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => markAsReady(notification.id)}
+                                                    className="flex items-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                                >
+                                                    <Package className="w-4 h-4" />
+                                                    <span>Marcar como Pronto</span>
+                                                </button>
+                                            </div>
+                                        )}
+                                        {notification.status === 'approved' && notification.production_status === 'ready_to_ship' && (
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={async () => {
+                                                        // Verificar se já tem envio criado
+                                                        const data = await loadShippingInfo(notification.id);
+                                                        
+                                                        if (data?.tracking_code) {
+                                                            // Verificar se é um código mock temporário (começa com "ME" e não tem melhor_envio_id configurado)
+                                                            const isMockCode = data.tracking_code.startsWith('ME') && 
+                                                                               data.tracking_code.length > 10 && 
+                                                                               !data.shipment?.melhor_envio_id;
+                                                            
+                                                            if (isMockCode) {
+                                                                // Código mock - criar envio real diretamente
+                                                                loadShippingOptions(notification.id);
+                                                            } else if (data.shipment?.melhor_envio_id) {
+                                                                // Já tem envio real criado - mostrar mensagem informativa
+                                                                alert(`Pedido já possui envio criado no Melhor Envio!\n\nCódigo de rastreamento: ${data.tracking_code}\n\nClique em "Ver Endereço" para:\n- Ver detalhes do envio\n- Baixar etiqueta\n- Solicitar coleta`);
+                                                            } else {
+                                                                // Tem código mas sem envio no Melhor Envio - permitir criar
+                                                                const choice = confirm(
+                                                                    `Pedido possui código de rastreamento: ${data.tracking_code}\n\n` +
+                                                                    `Este código não está vinculado a um envio no Melhor Envio.\n\n` +
+                                                                    `Deseja criar um novo envio no Melhor Envio?`
+                                                                );
+                                                                
+                                                                if (choice) {
+                                                                    loadShippingOptions(notification.id);
+                                                                }
+                                                            }
+                                                        } else {
+                                                            // Não tem envio - criar novo
+                                                            loadShippingOptions(notification.id);
+                                                        }
+                                                    }}
+                                                    disabled={loadingShipping[notification.id]}
+                                                    className="flex items-center space-x-1 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm disabled:opacity-50"
+                                                >
+                                                    {loadingShipping[notification.id] ? (
+                                                        <>
+                                                            <Loader className="w-4 h-4 animate-spin" />
+                                                            <span>Carregando...</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Truck className="w-4 h-4" />
+                                                            <span>Criar Envio</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
+                                        {notification.status === 'approved' && (notification.production_status === 'shipped' || notification.production_status === 'ready_to_ship') && (
+                                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                                <button
+                                                    onClick={() => loadShippingInfo(notification.id)}
+                                                    className="flex items-center space-x-1 px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm"
+                                                >
+                                                    <MapPin className="w-4 h-4" />
+                                                    <span>Ver Endereço</span>
+                                                </button>
+                                                {notification.production_status === 'shipped' && shippingData[notification.id]?.shipment?.melhor_envio_id && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!confirm('Solicitar coleta para este envio?')) return;
+                                                            
+                                                            try {
+                                                                const response = await fetch('/api/admin/shipments/request-pickup', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({
+                                                                        shipmentIds: [shippingData[notification.id]?.shipment?.melhor_envio_id].filter((id): id is number => id !== undefined)
+                                                                    })
+                                                                });
+                                                                
+                                                                const data = await response.json();
+                                                                
+                                                                if (data.success) {
+                                                                    alert(data.message || 'Coleta solicitada com sucesso!');
+                                                                } else {
+                                                                    alert(data.error || 'Erro ao solicitar coleta');
+                                                                }
+                                                            } catch (err) {
+                                                                console.error('Erro ao solicitar coleta:', err);
+                                                                alert('Erro ao solicitar coleta. Tente novamente.');
+                                                            }
+                                                        }}
+                                                        className="flex items-center space-x-1 px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-sm"
+                                                        title="Solicitar coleta do envio"
+                                                    >
+                                                        <Truck className="w-4 h-4" />
+                                                        <span>Solicitar Coleta</span>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                         </div>
+                                        
+                                        {/* Seção de Informações de Envio */}
+                                        {(notification.production_status === 'ready_to_ship' || notification.production_status === 'shipped') && (
+                                            <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                                                {!shippingData[notification.id] && !loadingShipping[notification.id] && (
+                                                    <button
+                                                        onClick={() => loadShippingInfo(notification.id)}
+                                                        className="text-sm text-blue-600 hover:text-blue-700"
+                                                    >
+                                                        Carregar informações de envio
+                                                    </button>
+                                                )}
+                                                {loadingShipping[notification.id] && (
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <Loader className="w-4 h-4 animate-spin" />
+                                                        <span>Carregando informações de envio...</span>
+                                                    </div>
+                                                )}
+                                                {shippingData[notification.id] && (
+                                                    <div className="space-y-2">
+                                                        {shippingData[notification.id]?.address && (
+                                                            <div className="text-sm">
+                                                                <p className="font-semibold text-gray-700 mb-1">Endereço de Entrega:</p>
+                                                                <p className="text-gray-600">
+                                                                    {shippingData[notification.id]?.address?.name}<br />
+                                                                    {shippingData[notification.id]?.address?.street}, {shippingData[notification.id]?.address?.number}
+                                                                    {shippingData[notification.id]?.address?.complement && ` - ${shippingData[notification.id].address.complement}`}
+                                                                    <br />
+                                                                    {shippingData[notification.id]?.address?.neighborhood}, {shippingData[notification.id]?.address?.city} - {shippingData[notification.id]?.address?.state}
+                                                                    <br />
+                                                                    CEP: {shippingData[notification.id]?.address?.postal_code}
+                                                                    <br />
+                                                                    Telefone: {shippingData[notification.id]?.address?.phone}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                                {shippingData[notification.id].tracking_code && (
+                                                            <div className="text-sm mb-3">
+                                                                <p className="font-semibold text-gray-700 mb-1">Código de Rastreamento:</p>
+                                                                <p className="text-gray-900 font-mono bg-gray-100 p-2 rounded">{shippingData[notification.id].tracking_code}</p>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* Botões de Ação para Envios */}
+                                                        <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                                            {shippingData[notification.id].shipping?.label_url && (
+                                                                <a
+                                                                    href={shippingData[notification.id].shipping.label_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+                                                                >
+                                                                    <Download className="w-4 h-4" />
+                                                                    Baixar Etiqueta
+                                                                </a>
+                                                            )}
+                                                            
+                                                            {/* Gerar Etiqueta - se tiver shipment_id do Melhor Envio */}
+                                                            {shippingData[notification.id].shipment?.melhor_envio_id && !shippingData[notification.id].shipping?.label_url && (
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        try {
+                                                                            const response = await fetch(`/api/admin/shipments/${shippingData[notification.id].shipment.melhor_envio_id}/label`, {
+                                                                                method: 'GET'
+                                                                            });
+                                                                            
+                                                                            if (response.ok) {
+                                                                                const blob = await response.blob();
+                                                                                const url = window.URL.createObjectURL(blob);
+                                                                                const link = document.createElement('a');
+                                                                                link.href = url;
+                                                                                link.download = `etiqueta-${notification.subdomain}.pdf`;
+                                                                                document.body.appendChild(link);
+                                                                                link.click();
+                                                                                document.body.removeChild(link);
+                                                                                window.URL.revokeObjectURL(url);
+                                                                                alert('Etiqueta gerada com sucesso!');
+                                                                                // Recarregar informações para atualizar label_url
+                                                                                await loadShippingInfo(notification.id);
+                                                                            } else {
+                                                                                const errorData = await response.json().catch(() => ({ error: 'Erro ao gerar etiqueta' }));
+                                                                                alert(errorData.error || 'Erro ao gerar etiqueta');
+                                                                            }
+                                                                        } catch (err) {
+                                                                            console.error('Erro ao gerar etiqueta:', err);
+                                                                            alert('Erro ao gerar etiqueta. Tente novamente.');
+                                                                        }
+                                                                    }}
+                                                                    className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                                                >
+                                                                    <Download className="w-4 h-4" />
+                                                                    Gerar Etiqueta
+                                                                </button>
+                                                            )}
+                                                            
+                                                            {/* Solicitar Coleta - se tiver shipment_id do Melhor Envio */}
+                                                            {shippingData[notification.id].shipment?.melhor_envio_id && notification.production_status === 'shipped' && (
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        if (!confirm('Solicitar coleta para este envio?')) return;
+                                                                        
+                                                                        try {
+                                                                            const response = await fetch('/api/admin/shipments/request-pickup', {
+                                                                                method: 'POST',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({
+                                                                                    shipmentIds: [shippingData[notification.id].shipment.melhor_envio_id]
+                                                                                })
+                                                                            });
+                                                                            
+                                                                            const data = await response.json();
+                                                                            
+                                                                            if (data.success) {
+                                                                                alert(data.message || 'Coleta solicitada com sucesso!');
+                                                                            } else {
+                                                                                alert(data.error || 'Erro ao solicitar coleta');
+                                                                            }
+                                                                        } catch (err) {
+                                                                            console.error('Erro ao solicitar coleta:', err);
+                                                                            alert('Erro ao solicitar coleta. Tente novamente.');
+                                                                        }
+                                                                    }}
+                                                                    className="flex items-center gap-1 px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-sm"
+                                                                    title="Solicitar coleta do envio"
+                                                                >
+                                                                    <Truck className="w-4 h-4" />
+                                                                    Solicitar Coleta
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
 
                                         {/* Linha 2: Excluir (canto direito) */}
                                         <div className="flex justify-end">
@@ -666,6 +1146,70 @@ export default function AdminPanel() {
                             >
                                 Próximo →
                             </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal de Seleção de Serviço de Frete */}
+                {showShippingModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900">Escolher Serviço de Frete</h3>
+                                <button
+                                    onClick={() => setShowShippingModal(null)}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            
+                            {loadingShipping[showShippingModal] ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader className="w-8 h-8 animate-spin text-blue-600" />
+                                    <span className="ml-3 text-gray-600">Carregando opções de frete...</span>
+                                </div>
+                            ) : shippingOptions[showShippingModal] && shippingOptions[showShippingModal].length > 0 ? (
+                                <div className="space-y-3">
+                                    {shippingOptions[showShippingModal].map((option) => (
+                                        <div
+                                            key={option.id}
+                                            className="border rounded-lg p-4 hover:border-blue-500 transition-colors cursor-pointer"
+                                            onClick={() => createShipment(showShippingModal, option.id)}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-gray-900">{option.name}</p>
+                                                    <p className="text-sm text-gray-600">{option.company}</p>
+                                                    {option.delivery_range && (
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            Entrega: {option.delivery_range.min} a {option.delivery_range.max} dias úteis
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="text-right ml-4">
+                                                    <p className="font-bold text-lg text-blue-600">
+                                                        R$ {option.price.toFixed(2).replace('.', ',')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-600">Nenhuma opção de frete disponível</p>
+                                </div>
+                            )}
+                            
+                            <div className="mt-6 flex justify-end">
+                                <button
+                                    onClick={() => setShowShippingModal(null)}
+                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

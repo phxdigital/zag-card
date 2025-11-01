@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MapPin, Search, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { validateCEP } from '@/lib/shipping';
 
@@ -8,6 +8,7 @@ interface ShippingAddress {
   name: string;
   email: string;
   phone: string;
+  document?: string; // CPF/CNPJ do destinatário
   street: string;
   number: string;
   complement?: string;
@@ -28,6 +29,7 @@ interface ShippingAddressFormProps {
     name: string;
     email: string;
     phone: string;
+    document?: string; // CPF/CNPJ do pagamento
     postalCode: string;
     addressNumber: string;
     addressComplement: string;
@@ -40,10 +42,20 @@ export default function ShippingAddressForm({
   loading = false,
   autoFillFromPayment
 }: ShippingAddressFormProps) {
+  // Usar ref para manter referência estável de onAddressChange
+  const onAddressChangeRef = useRef(onAddressChange);
+  useEffect(() => {
+    onAddressChangeRef.current = onAddressChange;
+  }, [onAddressChange]);
+
+  // Flag para indicar se o usuário escolheu limpar os dados manualmente
+  const userClearedDataRef = useRef(false);
+
   const [formData, setFormData] = useState<ShippingAddress>({
     name: '',
     email: '',
     phone: '',
+    document: '', // CPF/CNPJ
     street: '',
     number: '',
     complement: '',
@@ -57,46 +69,95 @@ export default function ShippingAddressForm({
     ...initialData
   });
 
-  // Auto-preenchimento quando dados de pagamento são fornecidos
+  // Auto-preenchimento quando dados de pagamento são fornecidos (apenas uma vez, se não foi limpo manualmente)
   useEffect(() => {
-    if (autoFillFromPayment && !formData.name) {
+    if (autoFillFromPayment && !formData.name && !userClearedDataRef.current) {
       setFormData(prev => ({
         ...prev,
         name: autoFillFromPayment.name,
         email: autoFillFromPayment.email,
         phone: autoFillFromPayment.phone,
+        document: autoFillFromPayment.document || prev.document || '',
         postal_code: autoFillFromPayment.postalCode,
         number: autoFillFromPayment.addressNumber,
         complement: autoFillFromPayment.addressComplement
       }));
     }
-  }, [autoFillFromPayment, formData.name]);
+  }, [autoFillFromPayment]); // Removido formData.name das dependências
+
+  // Atualizar formulário quando initialData mudar (usar useRef para evitar loops)
+  const initialDataRef = useRef(initialData);
+  const hasInitializedRef = useRef(false);
+  
+  useEffect(() => {
+    // Verificar se initialData realmente mudou comparando valores
+    const currentKeys = Object.keys(initialData || {});
+    const prevKeys = Object.keys(initialDataRef.current || {});
+    
+    const hasChanged = currentKeys.length !== prevKeys.length || 
+      currentKeys.some(key => {
+        const keyName = key as keyof ShippingAddress;
+        return initialData[keyName] !== initialDataRef.current[keyName];
+      });
+    
+    // Não preencher automaticamente se o usuário escolheu limpar manualmente
+    if (hasChanged && initialData && Object.keys(initialData).length > 0 && !hasInitializedRef.current && !userClearedDataRef.current) {
+      setFormData(prev => {
+        // Só atualiza se os dados realmente mudaram e se os campos estão vazios
+        const hasChanges = Object.keys(initialData).some(key => {
+          const keyName = key as keyof ShippingAddress;
+          const newValue = initialData[keyName];
+          const oldValue = prev[keyName];
+          // Só atualiza se o novo valor existe e o campo atual está vazio
+          return newValue && newValue !== '' && (!oldValue || oldValue === '');
+        });
+        
+        if (hasChanges) {
+          hasInitializedRef.current = true;
+          return {
+            ...prev,
+            ...initialData
+          };
+        }
+        return prev;
+      });
+      initialDataRef.current = initialData;
+    }
+  }, [initialData]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validatingCEP, setValidatingCEP] = useState(false);
   const [cepValid, setCepValid] = useState<boolean | null>(null);
 
-  // Validar CEP quando mudar
+  // Validar CEP quando mudar (com debounce para evitar múltiplas chamadas)
   useEffect(() => {
-    if (formData.postal_code.length === 8) {
-      handleCEPValidation();
-    }
-  }, [formData.postal_code]);
+    const cleanCEP = formData.postal_code.replace(/\D/g, '');
+    if (cleanCEP.length === 8 && !validatingCEP) {
+      const timeoutId = setTimeout(() => {
+        handleCEPValidation(cleanCEP);
+      }, 500); // Aguardar 500ms após parar de digitar
 
-  const handleCEPValidation = async () => {
-    if (formData.postal_code.length !== 8) return;
+      return () => clearTimeout(timeoutId);
+    } else if (cleanCEP.length < 8) {
+      setCepValid(null);
+      setErrors(prev => ({ ...prev, postal_code: '' }));
+    }
+  }, [formData.postal_code, validatingCEP]);
+
+  const handleCEPValidation = async (cep: string) => {
+    if (cep.length !== 8 || validatingCEP) return;
     
     setValidatingCEP(true);
     try {
-      const result = await validateCEP(formData.postal_code);
+      const result = await validateCEP(cep);
       
       if (result.valid && result.address) {
         setFormData(prev => ({
           ...prev,
-          street: result.address!.street,
-          neighborhood: result.address!.neighborhood,
-          city: result.address!.city,
-          state: result.address!.state
+          street: result.address!.street || prev.street,
+          neighborhood: result.address!.neighborhood || prev.neighborhood,
+          city: result.address!.city || prev.city,
+          state: result.address!.state || prev.state
         }));
         setCepValid(true);
         setErrors(prev => ({ ...prev, postal_code: '' }));
@@ -141,7 +202,7 @@ export default function ShippingAddressForm({
     }
   };
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
@@ -158,6 +219,25 @@ export default function ShippingAddressForm({
       newErrors.phone = 'Telefone é obrigatório';
     } else if (!/^\d{10,11}$/.test(formData.phone.replace(/\D/g, ''))) {
       newErrors.phone = 'Telefone deve ter 10 ou 11 dígitos';
+    }
+
+    if (!formData.document?.trim()) {
+      newErrors.document = 'CPF/CNPJ é obrigatório';
+    } else {
+      const cleanDocument = formData.document.replace(/\D/g, '');
+      if (cleanDocument.length === 11) {
+        // Validar CPF básico (11 dígitos)
+        if (!/^\d{11}$/.test(cleanDocument)) {
+          newErrors.document = 'CPF inválido';
+        }
+      } else if (cleanDocument.length === 14) {
+        // Validar CNPJ básico (14 dígitos)
+        if (!/^\d{14}$/.test(cleanDocument)) {
+          newErrors.document = 'CNPJ inválido';
+        }
+      } else {
+        newErrors.document = 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos';
+      }
     }
 
     if (!formData.street.trim()) {
@@ -182,20 +262,37 @@ export default function ShippingAddressForm({
 
     if (!formData.postal_code.trim()) {
       newErrors.postal_code = 'CEP é obrigatório';
-    } else if (formData.postal_code.length !== 8) {
+    } else if (formData.postal_code.replace(/\D/g, '').length !== 8) {
       newErrors.postal_code = 'CEP deve ter 8 dígitos';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
-  // Notificar mudanças no endereço
+  // Notificar mudanças no endereço apenas quando campos obrigatórios estiverem preenchidos
   useEffect(() => {
-    if (validateForm()) {
-      onAddressChange(formData);
-    }
-  }, [formData, onAddressChange]);
+    // Usar debounce para evitar múltiplas chamadas
+    const timeoutId = setTimeout(() => {
+      const hasRequiredFields = 
+        formData.name.trim() && 
+        formData.email.trim() && 
+        formData.phone.trim() && 
+        formData.document?.trim() &&
+        formData.street.trim() && 
+        formData.number.trim() && 
+        formData.neighborhood.trim() && 
+        formData.city.trim() && 
+        formData.state.trim() && 
+        formData.postal_code.replace(/\D/g, '').length === 8;
+      
+      if (hasRequiredFields) {
+        onAddressChangeRef.current(formData);
+      }
+    }, 300); // Debounce de 300ms
+
+    return () => clearTimeout(timeoutId);
+  }, [formData]); // Removido onAddressChange das dependências
 
   return (
     <div className="space-y-6">
@@ -218,21 +315,25 @@ export default function ShippingAddressForm({
             </div>
             <button
               type="button"
-              onClick={() => setFormData({
-                name: '',
-                email: '',
-                phone: '',
-                street: '',
-                number: '',
-                complement: '',
-                neighborhood: '',
-                city: '',
-                state: '',
-                postal_code: '',
-                country: 'BR',
-                reference: '',
-                instructions: ''
-              })}
+              onClick={() => {
+                userClearedDataRef.current = true; // Marcar que usuário escolheu limpar
+                setFormData({
+                  name: '',
+                  email: '',
+                  phone: '',
+                  document: '',
+                  street: '',
+                  number: '',
+                  complement: '',
+                  neighborhood: '',
+                  city: '',
+                  state: '',
+                  postal_code: '',
+                  country: 'BR',
+                  reference: '',
+                  instructions: ''
+                });
+              }}
               className="text-xs text-green-700 hover:text-green-900 underline"
             >
               Limpar e preencher manualmente
@@ -261,6 +362,36 @@ export default function ShippingAddressForm({
             disabled={loading}
           />
           {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            CPF/CNPJ *
+          </label>
+          <input
+            type="text"
+            value={formData.document || ''}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              // Formatar como CPF (11 dígitos) ou CNPJ (14 dígitos)
+              let formatted = value;
+              if (value.length <= 11) {
+                // CPF: 000.000.000-00
+                formatted = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+              } else {
+                // CNPJ: 00.000.000/0000-00
+                formatted = value.slice(0, 14).replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+              }
+              handleInputChange('document', formatted);
+            }}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.document ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="000.000.000-00 ou 00.000.000/0000-00"
+            disabled={loading}
+            maxLength={18}
+          />
+          {errors.document && <p className="text-red-500 text-sm mt-1">{errors.document}</p>}
         </div>
 
         <div>

@@ -13,10 +13,10 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Buscar notificações do Supabase (SEM pdf_data para evitar timeout)
+        // Buscar notificações do Supabase
         const { data: notifications, error } = await supabase
             .from('admin_notifications')
-            .select('id, subdomain, action, message, status, created_at, updated_at')
+            .select('id, subdomain, action, message, status, created_at, updated_at, page_id')
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -27,9 +27,56 @@ export async function GET() {
             );
         }
 
+        // Buscar production_status para cada notificação
+        // Tentar por page_id primeiro, depois por subdomain
+        const notificationsWithStatus = await Promise.all(
+            (notifications || []).map(async (notification) => {
+                let pageData = null;
+                
+                // Tentar buscar por page_id
+                if (notification.page_id) {
+                    const result = await supabase
+                        .from('pages')
+                        .select('production_status, payment_id')
+                        .eq('id', notification.page_id)
+                        .single();
+                    
+                    pageData = result.data;
+                }
+                
+                // Se não encontrou por page_id, tentar por subdomain
+                if (!pageData && notification.subdomain) {
+                    const result = await supabase
+                        .from('pages')
+                        .select('production_status, payment_id, id')
+                        .eq('subdomain', notification.subdomain)
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+                    
+                    pageData = result.data;
+                    
+                    // Se encontrou por subdomain e não tem page_id, atualizar a notificação
+                    if (pageData && !notification.page_id) {
+                        await supabase
+                            .from('admin_notifications')
+                            .update({ page_id: pageData.id })
+                            .eq('id', notification.id);
+                        
+                        notification.page_id = pageData.id;
+                    }
+                }
+                
+                return {
+                    ...notification,
+                    production_status: pageData?.production_status || null
+                };
+            })
+        );
+
         return NextResponse.json({ 
             success: true, 
-            notifications: notifications || []
+            notifications: notificationsWithStatus
         });
     } catch (err) {
 console.error('Erro ao buscar notificações:', err);

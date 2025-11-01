@@ -12,6 +12,7 @@ export interface ShippingAddress {
   name: string;
   email: string;
   phone: string;
+  document?: string; // CPF/CNPJ do destinatário
   street: string;
   number: string;
   complement?: string;
@@ -31,6 +32,8 @@ export interface ShippingOption {
   estimated_days: number;
   estimated_delivery: string;
   description: string;
+  melhor_envio_id?: number; // ID do serviço do Melhor Envio
+  melhor_envio_service?: number; // ID do serviço para criar envio
 }
 
 export interface ShipmentData {
@@ -45,6 +48,7 @@ export interface ShipmentData {
     height: number;
   };
   declared_value: number;
+  expected_cost?: number; // Custo esperado do shippingOption (usado quando criar envio mock)
 }
 
 export interface TrackingEvent {
@@ -100,16 +104,79 @@ export async function validateCEP(postalCode: string): Promise<{
 // CÁLCULO DE FRETE
 // ============================================
 
-export async function calculateShipping(
+// Função interna para cálculo no servidor
+async function calculateShippingServer(
   origin: string,
   destination: string,
   weight: number,
-  dimensions: { length: number; width: number; height: number }
+  dimensions: { length: number; width: number; height: number },
+  products?: Array<{
+    weight: number;
+    dimensions: { length: number; width: number; height: number };
+    value?: number;
+    quantity?: number;
+  }>
 ): Promise<ShippingOption[]> {
   try {
-    const supabase = createClientComponentClient();
+    // Tentar usar Melhor Envio primeiro (se configurado)
+    // Carregar variáveis de ambiente
+    const { loadEnv, getEnv } = await import('./env-loader');
+    loadEnv();
     
-    // Buscar configurações de frete ativas
+    const melhorEnvioToken = getEnv('MELHOR_ENVIO_TOKEN');
+    
+    if (melhorEnvioToken) {
+      try {
+        const { calculateMelhorEnvioShipping } = await import('./melhor-envio');
+        
+        const productsForCalculation = products || [{
+          weight,
+          dimensions,
+          value: 0,
+          quantity: 1
+        }];
+
+        const melhorEnvioOptions = await calculateMelhorEnvioShipping(
+          origin,
+          destination,
+          productsForCalculation
+        );
+
+        // Converter opções do Melhor Envio para nosso formato
+        const options: ShippingOption[] = melhorEnvioOptions.map(option => ({
+          carrier: 'melhor_envio',
+          service_type: option.name,
+          cost: parseFloat(option.price),
+          estimated_days: option.delivery_range?.max || option.delivery_time || 7,
+          estimated_delivery: calculateEstimatedDelivery(option.delivery_range?.max || option.delivery_time || 7),
+          description: `${option.company.name} - ${option.name}`,
+          melhor_envio_id: option.id, // Salvar ID para criar envio depois
+          melhor_envio_service: option.id
+        }));
+
+        if (options.length > 0) {
+          return options.sort((a, b) => a.cost - b.cost);
+        }
+      } catch (melhorEnvioError) {
+        console.warn('⚠️ Erro ao calcular frete via Melhor Envio, usando método alternativo:', melhorEnvioError);
+      }
+    }
+
+    // Fallback: usar configurações do banco (método anterior)
+    // No servidor, precisamos criar um cliente diferente
+    let supabase;
+    if (typeof window === 'undefined') {
+      // No servidor, usar createServerComponentClient ou importar diretamente
+      const { createClient } = await import('@supabase/supabase-js');
+      supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      );
+    } else {
+      // No cliente, usar createClientComponentClient
+      supabase = createClientComponentClient();
+    }
+    
     const { data: configs, error } = await supabase
       .from('shipping_configs')
       .select('*')
@@ -126,7 +193,6 @@ export async function calculateShipping(
         config.min_cost
       );
 
-      // Verificar se o destino está nas regiões permitidas
       if (config.allowed_states && config.allowed_states.length > 0) {
         const destinationState = await getStateFromCEP(destination);
         if (!config.allowed_states.includes(destinationState)) {
@@ -134,7 +200,6 @@ export async function calculateShipping(
         }
       }
 
-      // Verificar se o destino não está nas regiões excluídas
       if (config.excluded_states && config.excluded_states.length > 0) {
         const destinationState = await getStateFromCEP(destination);
         if (config.excluded_states.includes(destinationState)) {
@@ -142,25 +207,85 @@ export async function calculateShipping(
         }
       }
 
-      const estimatedDelivery = new Date();
-      estimatedDelivery.setDate(estimatedDelivery.getDate() + config.max_days);
+      const estimatedDelivery = calculateEstimatedDelivery(config.max_days);
 
       options.push({
         carrier: config.carrier,
         service_type: config.service_type,
         cost: cost,
         estimated_days: config.max_days,
-        estimated_delivery: estimatedDelivery.toISOString().split('T')[0],
+        estimated_delivery: estimatedDelivery,
         description: getServiceDescription(config.carrier, config.service_type)
       });
     }
 
-    // Ordenar por custo
     return options.sort((a, b) => a.cost - b.cost);
   } catch (error) {
     console.error('Erro ao calcular frete:', error);
     return [];
   }
+}
+
+// Função pública que pode ser usada no cliente ou servidor
+export async function calculateShipping(
+  origin: string,
+  destination: string,
+  weight: number,
+  dimensions: { length: number; width: number; height: number },
+  products?: Array<{
+    weight: number;
+    dimensions: { length: number; width: number; height: number };
+    value?: number;
+    quantity?: number;
+  }>
+): Promise<ShippingOption[]> {
+  // Se estiver no servidor, usar função interna diretamente
+  if (typeof window === 'undefined') {
+    return calculateShippingServer(origin, destination, weight, dimensions, products);
+  }
+
+  // Se estiver no cliente, chamar API no servidor
+  try {
+    const response = await fetch('/api/shipping/calculate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        origin,
+        destination,
+        weight,
+        dimensions,
+        products: products || [{
+          weight,
+          dimensions,
+          value: 0,
+          quantity: 1
+        }]
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.options && data.options.length > 0) {
+        return data.options.sort((a: ShippingOption, b: ShippingOption) => a.cost - b.cost);
+      }
+    } else {
+      const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+      console.warn('⚠️ API de cálculo de frete retornou erro:', errorData);
+    }
+  } catch (apiError) {
+    console.warn('⚠️ Erro ao chamar API de cálculo de frete:', apiError);
+  }
+
+  // Se API falhar, retornar array vazio
+  return [];
+}
+
+function calculateEstimatedDelivery(days: number): string {
+  const estimatedDelivery = new Date();
+  estimatedDelivery.setDate(estimatedDelivery.getDate() + days);
+  return estimatedDelivery.toISOString().split('T')[0];
 }
 
 // ============================================
@@ -176,32 +301,76 @@ export async function createShipment(shipmentData: ShipmentData): Promise<{
     const supabase = createClientComponentClient();
 
     // Salvar endereço de entrega
-    const { data: addressData, error: addressError } = await supabase
+    // Preparar dados para inserção (sem document primeiro)
+    interface AddressInsertData {
+      payment_id: string;
+      name: string;
+      email: string;
+      phone: string;
+      street: string;
+      number: string;
+      complement?: string;
+      neighborhood: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      country?: string;
+      reference?: string;
+      instructions?: string;
+      document?: string;
+    }
+    
+    const addressInsertData: AddressInsertData = {
+      payment_id: shipmentData.payment_id,
+      name: shipmentData.address.name,
+      email: shipmentData.address.email,
+      phone: shipmentData.address.phone,
+      street: shipmentData.address.street,
+      number: shipmentData.address.number,
+      complement: shipmentData.address.complement,
+      neighborhood: shipmentData.address.neighborhood,
+      city: shipmentData.address.city,
+      state: shipmentData.address.state,
+      postal_code: shipmentData.address.postal_code,
+      country: shipmentData.address.country || 'BR',
+      reference: shipmentData.address.reference,
+      instructions: shipmentData.address.instructions
+    };
+
+    // Adicionar document se disponível (só se a coluna existir no banco)
+    if (shipmentData.address.document) {
+      addressInsertData.document = shipmentData.address.document.replace(/\D/g, '');
+    }
+
+    // Tentar inserir com document primeiro, se der erro relacionado à coluna, tentar sem
+    let { data: addressData, error: addressError } = await supabase
       .from('shipping_addresses')
-      .insert({
-        payment_id: shipmentData.payment_id,
-        name: shipmentData.address.name,
-        email: shipmentData.address.email,
-        phone: shipmentData.address.phone,
-        street: shipmentData.address.street,
-        number: shipmentData.address.number,
-        complement: shipmentData.address.complement,
-        neighborhood: shipmentData.address.neighborhood,
-        city: shipmentData.address.city,
-        state: shipmentData.address.state,
-        postal_code: shipmentData.address.postal_code,
-        country: shipmentData.address.country || 'BR',
-        reference: shipmentData.address.reference,
-        instructions: shipmentData.address.instructions
-      })
+      .insert(addressInsertData)
       .select()
       .single();
 
-    if (addressError) throw addressError;
+    // Se erro relacionado à coluna document, tentar sem document
+    if (addressError && addressError.message?.includes('column "document"')) {
+      delete addressInsertData.document;
+      const retryResult = await supabase
+        .from('shipping_addresses')
+        .insert(addressInsertData)
+        .select()
+        .single();
+      addressData = retryResult.data;
+      addressError = retryResult.error;
+      console.warn('⚠️ Coluna document não existe no banco. Executando INSERT sem document. Execute o script: database/add-document-column.sql');
+    }
+
+    if (addressError) {
+      console.error('❌ Erro ao salvar endereço de entrega:', addressError);
+      throw addressError;
+    }
 
     // Criar envio baseado na transportadora
     let trackingCode: string;
     let shippingCost: number;
+    let melhorEnvioResult: { tracking_code: string; cost: number; label_url?: string; shipment_id?: number } | undefined;
 
     switch (shipmentData.carrier) {
       case 'correios':
@@ -211,7 +380,7 @@ export async function createShipment(shipmentData: ShipmentData): Promise<{
         break;
       
       case 'melhor_envio':
-        const melhorEnvioResult = await createMelhorEnvioShipment(shipmentData);
+        melhorEnvioResult = await createMelhorEnvioShipment(shipmentData);
         trackingCode = melhorEnvioResult.tracking_code;
         shippingCost = melhorEnvioResult.cost;
         break;
@@ -227,19 +396,49 @@ export async function createShipment(shipmentData: ShipmentData): Promise<{
     }
 
     // Salvar informações do envio
+    // Para Melhor Envio, buscar label_url e shipment_id se disponíveis
+    let labelUrl: string | undefined;
+    let shipmentId: number | undefined;
+    
+    if (shipmentData.carrier === 'melhor_envio' && melhorEnvioResult) {
+      labelUrl = melhorEnvioResult.label_url;
+      shipmentId = melhorEnvioResult.shipment_id;
+    }
+
+    interface ShipmentInsertData {
+      payment_id: string;
+      carrier: string;
+      service_type: string;
+      tracking_code: string;
+      status: string;
+      shipping_cost: number;
+      declared_value: number;
+      weight: number;
+      dimensions: { length: number; width: number; height: number };
+      label_url?: string;
+      melhor_envio_id?: number;
+    }
+    
+    const shipmentInsertData: ShipmentInsertData = {
+      payment_id: shipmentData.payment_id,
+      carrier: shipmentData.carrier,
+      service_type: shipmentData.service_type,
+      tracking_code: trackingCode,
+      status: shipmentData.carrier === 'melhor_envio' ? 'shipped' : 'created',
+      shipping_cost: shippingCost,
+      declared_value: shipmentData.declared_value,
+      weight: shipmentData.weight,
+      dimensions: shipmentData.dimensions
+    };
+
+    // Adicionar label_url se disponível (campo pode não existir na tabela)
+    if (labelUrl) {
+      shipmentInsertData.label_url = labelUrl;
+    }
+
     const { data: shipmentDataResult, error: shipmentError } = await supabase
       .from('shipments')
-      .insert({
-        payment_id: shipmentData.payment_id,
-        carrier: shipmentData.carrier,
-        service_type: shipmentData.service_type,
-        tracking_code: trackingCode,
-        status: 'created',
-        shipping_cost: shippingCost,
-        declared_value: shipmentData.declared_value,
-        weight: shipmentData.weight,
-        dimensions: shipmentData.dimensions
-      })
+      .insert(shipmentInsertData)
       .select()
       .single();
 
@@ -333,13 +532,194 @@ async function createCorreiosShipment(data: ShipmentData): Promise<{
 async function createMelhorEnvioShipment(data: ShipmentData): Promise<{
   tracking_code: string;
   cost: number;
+  label_url?: string;
+  shipment_id?: number;
 }> {
-  // Implementação da API do Melhor Envio
-  // Por enquanto, retorna dados mock
-  return {
-    tracking_code: `ME${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
-    cost: 12.00
-  };
+  try {
+    const { createMelhorEnvioShipment: createME, generateMelhorEnvioLabel } = await import('./melhor-envio');
+    
+    // Buscar CEP de origem do banco ou usar padrão
+    const supabase = createClientComponentClient();
+    const { data: config } = await supabase
+      .from('shipping_configs')
+      .select('origin_postal_code')
+      .eq('carrier', 'melhor_envio')
+      .eq('is_active', true)
+      .limit(1)
+      .single();
+
+    const originCEP = config?.origin_postal_code || '88010001';
+
+    // Extrair dados de endereço de origem (precisa estar configurado)
+    // Por enquanto, vamos precisar que seja passado ou buscar do banco
+    const originAddress = await getOriginAddress(originCEP, supabase);
+
+    if (!originAddress) {
+      console.warn('⚠️ Endereço de origem não configurado. Usando envio mock temporário.');
+      // Se o endereço de origem não estiver configurado, criar um envio mock temporário
+      // Isso permite que o sistema funcione mesmo sem configuração completa do Melhor Envio
+      // Em produção, você deve configurar as variáveis de ambiente:
+      // SHIPPING_ORIGIN_NAME, SHIPPING_ORIGIN_PHONE, SHIPPING_ORIGIN_EMAIL, SHIPPING_ORIGIN_DOCUMENT
+      return {
+        tracking_code: `ME${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+        cost: data.expected_cost || 0, // Usar custo esperado se disponível
+      };
+    }
+
+    // Criar envio no Melhor Envio
+    const shipment = await createME({
+      serviceId: parseInt(data.service_type) || 0, // Deve ser o ID do serviço do Melhor Envio
+      from: {
+        name: originAddress.name,
+        phone: originAddress.phone,
+        email: originAddress.email,
+        document: originAddress.document,
+        address: originAddress.street,
+        complement: originAddress.complement || '',
+        number: originAddress.number,
+        district: originAddress.neighborhood,
+        city: originAddress.city,
+        state: originAddress.state,
+        postalCode: originCEP,
+      },
+      to: {
+        name: data.address.name,
+        phone: data.address.phone,
+        email: data.address.email,
+        document: (data.address.document || '').replace(/\D/g, ''), // CPF/CNPJ do destinatário (apenas números)
+        address: data.address.street,
+        complement: data.address.complement || '',
+        number: data.address.number,
+        district: data.address.neighborhood,
+        city: data.address.city,
+        state: data.address.state,
+        postalCode: data.address.postal_code,
+      },
+      products: [{
+        name: 'Zag NFC Card',
+        quantity: 1,
+        unitaryValue: data.declared_value || 0,
+      }],
+      volumes: [{
+        height: data.dimensions.height,
+        width: data.dimensions.width,
+        length: data.dimensions.length,
+        weight: data.weight,
+      }],
+    });
+
+    // FAZER CHECKOUT AUTOMÁTICO - "Comprar" o frete automaticamente
+    let checkoutResult = null;
+    let finalTrackingCode = shipment.tracking;
+    
+    try {
+      const { purchaseMelhorEnvioCart } = await import('./melhor-envio');
+      console.log('🛒 Fazendo checkout automático do carrinho Melhor Envio...');
+      checkoutResult = await purchaseMelhorEnvioCart();
+      console.log('✅ Checkout realizado com sucesso:', checkoutResult);
+      
+      // Buscar tracking_code atualizado após checkout
+      if (checkoutResult?.orders && checkoutResult.orders.length > 0) {
+        // Procurar o order correspondente ao shipment.id
+        interface CheckoutOrder {
+          id: number;
+          service_id: number;
+          tracking?: string;
+        }
+        
+        const matchingOrder = checkoutResult.orders.find((order: CheckoutOrder) => 
+          order.id === shipment.id || order.service_id === parseInt(data.service_type) || 0
+        );
+        if (matchingOrder?.tracking) {
+          finalTrackingCode = matchingOrder.tracking;
+          console.log('✅ Tracking code atualizado após checkout:', finalTrackingCode);
+        }
+      }
+    } catch (checkoutError) {
+      console.warn('⚠️ Erro ao fazer checkout automático:', checkoutError);
+      console.warn('⚠️ O envio foi criado, mas precisa fazer checkout manualmente na plataforma Melhor Envio');
+      // Continuar sem checkout - envio ficará pendente
+    }
+
+    // Gerar etiqueta (após checkout, a etiqueta deve ficar ativa)
+    let labelUrl: string | undefined;
+    try {
+      // Aguardar um pouco para o checkout processar (se foi feito)
+      if (checkoutResult?.purchased) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      const label = await generateMelhorEnvioLabel(shipment.id);
+      labelUrl = label.url;
+      console.log('✅ Etiqueta gerada com sucesso:', labelUrl);
+    } catch (labelError) {
+      console.warn('⚠️ Erro ao gerar etiqueta:', labelError);
+      if (!checkoutResult?.purchased) {
+        console.warn('⚠️ Etiqueta não pode ser gerada sem checkout. Faça checkout na plataforma Melhor Envio.');
+      }
+    }
+
+    return {
+      tracking_code: finalTrackingCode,
+      cost: parseFloat(data.service_type) || 0, // Custo já foi calculado antes
+      label_url: labelUrl,
+      shipment_id: shipment.id,
+    };
+  } catch (error) {
+    console.error('❌ Erro ao criar envio no Melhor Envio:', error);
+    throw error;
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getOriginAddress(postalCode: string, supabase: any): Promise<{
+  name: string;
+  phone: string;
+  email: string;
+  document: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+} | null> {
+  // Buscar informações da empresa/remetente
+  // Por enquanto retorna null - precisa ser configurado
+  // Você pode criar uma tabela shipping_origin_addresses ou usar env vars
+  const originName = process.env.SHIPPING_ORIGIN_NAME || '';
+  const originPhone = process.env.SHIPPING_ORIGIN_PHONE || '';
+  const originEmail = process.env.SHIPPING_ORIGIN_EMAIL || '';
+  const originDocument = process.env.SHIPPING_ORIGIN_DOCUMENT || '';
+
+  if (!originName || !originPhone || !originEmail || !originDocument) {
+    return null;
+  }
+
+  // Buscar endereço pelo CEP
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${postalCode}/json/`);
+    const addressData = await response.json();
+    
+    if (addressData.erro) {
+      return null;
+    }
+
+    return {
+      name: originName,
+      phone: originPhone,
+      email: originEmail,
+      document: originDocument,
+      street: addressData.logradouro || '',
+      number: process.env.SHIPPING_ORIGIN_NUMBER || '1',
+      complement: process.env.SHIPPING_ORIGIN_COMPLEMENT || '',
+      neighborhood: addressData.bairro || '',
+      city: addressData.localidade || '',
+      state: addressData.uf || '',
+    };
+  } catch {
+    return null;
+  }
 }
 
 async function createJadlogShipment(data: ShipmentData): Promise<{

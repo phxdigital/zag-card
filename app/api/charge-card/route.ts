@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       description: description || `Plano ${planType} - Zag NFC${cardMode ? ` (${cardMode === 'DEBIT' ? 'Débito' : 'Crédito'})` : ''}`,
       externalReference: `${(user?.id || 'guest')}_${planType}_${Date.now()}`,
       installmentCount: safeInstallments,
-      installmentValue: safeInstallments > 1 ? perInstallment : undefined,
+      installmentValue: perInstallment,
       remoteIp,
       creditCard: {
         holderName: card.holderName,
@@ -82,8 +82,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Persistir pagamento se autenticado
-    if (user) {
+    // Variável para armazenar o pagamento inserido
+    interface PaymentData {
+      id: string;
+      user_id: string;
+      amount: number;
+      description: string;
+      plan_type: string;
+      status: string;
+      created_at: string;
+    }
+    let insertedPayment: PaymentData[] | null = null;
+
+    // Salvar cobrança no banco de dados (apenas se usuário real E planType válido)
+    // Plan types válidos: 'para_mim', 'para_equipe', 'para_negocio'
+    const validPlanTypes = ['para_mim', 'para_equipe', 'para_negocio'];
+    const isValidPlanType = validPlanTypes.includes(planType);
+
+    // Persistir pagamento se autenticado E planType válido
+    if (user && isValidPlanType) {
       console.log('💳 Salvando pagamento no banco:', {
         user_id: user.id,
         asaas_payment_id: payment.id,
@@ -92,7 +109,7 @@ export async function POST(request: NextRequest) {
         status: payment.status
       });
       
-      const { data: insertedPayment, error: insertError } = await supabase.from('payments').insert({
+      const { data: paymentData, error: insertError } = await supabase.from('payments').insert({
         user_id: user.id,
         asaas_payment_id: payment.id,
         asaas_customer_id: asaasCustomer.id,
@@ -116,10 +133,11 @@ export async function POST(request: NextRequest) {
         throw new Error(`Erro ao salvar pagamento: ${insertError.message}`);
       }
 
+      insertedPayment = paymentData;
       console.log('✅ Pagamento salvo no banco:', insertedPayment);
 
       // Criar envio se dados de shipping foram fornecidos
-      if (shippingAddress && shippingOption && payment.status === 'CONFIRMED') {
+      if (shippingAddress && shippingOption && payment.status === 'CONFIRMED' && insertedPayment && insertedPayment.length > 0) {
         try {
           console.log('🚚 Criando envio para pagamento:', payment.id);
           
@@ -153,10 +171,30 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
-      console.log('⚠️ Usuário não autenticado, pagamento não será salvo no banco');
+      if (!user) {
+        console.log('⚠️ Usuário não autenticado, pagamento não será salvo no banco');
+      } else if (!isValidPlanType) {
+        console.log('⚠️ PlanType inválido para salvar no banco (produto da loja), pagamento criado apenas no Asaas');
+      }
     }
 
-    return NextResponse.json({ success: true, payment });
+    // Retornar payment_id para ser salvo no sessionStorage
+    // Isso será usado na página de entrega
+    const paymentId = insertedPayment && insertedPayment.length > 0 
+      ? insertedPayment[0].id 
+      : null;
+
+    return NextResponse.json({ 
+      success: true, 
+      payment: {
+        id: payment.id,
+        status: payment.status,
+        value: payment.value,
+        invoiceUrl: payment.invoiceUrl,
+      },
+      payment_id: paymentId, // ID do pagamento no banco (UUID)
+      asaas_payment_id: payment.id // ID do pagamento no Asaas
+    });
   } catch (err) {
     console.error('Erro ao processar pagamento com cartão:', err);
     const errMsg: string = err instanceof Error ? err.message : 'Erro desconhecido';

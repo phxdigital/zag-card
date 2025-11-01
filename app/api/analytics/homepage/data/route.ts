@@ -6,7 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { isAdminEmail } from '@/lib/auth-config';
 
 
@@ -166,11 +167,12 @@ async function getDailyPerformance(supabase: any, startDate: Date, endDate: Date
     });
 
     return Object.entries(dailyData).map(([date, metrics]) => ({
-      date,
-      visits: metrics.visits,
+      visit_date: date,
+      total_visits: metrics.visits,
+      unique_visitors: metrics.visits, // Simplified for now
       conversions: metrics.conversions,
       conversion_rate: metrics.visits > 0 ? (metrics.conversions / metrics.visits) * 100 : 0,
-      revenue: metrics.revenue
+      total_revenue: metrics.revenue
     }));
   } catch (error) {
     console.error('Error getting daily performance:', error);
@@ -312,6 +314,112 @@ async function validateAdminAccess(supabase: any): Promise<boolean> {
 }
 
 /**
+ * Get button click statistics for homepage
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getButtonStats(supabase: any, startDate: Date, endDate: Date) {
+  try {
+    const { data, error } = await supabase
+      .from('homepage_visits')
+      .select('button_id, button_text, button_type')
+      .eq('type', 'button_click')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .not('button_id', 'is', null);
+
+    if (error) {
+      console.error('Error getting button stats:', error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // Aggregate button data
+    const buttonCounts: { [key: string]: { button_text: string; button_type: string; count: number } } = {};
+    
+    data.forEach((visit: { button_id: string; button_text: string; button_type: string }) => {
+      const key = visit.button_id;
+      if (!buttonCounts[key]) {
+        buttonCounts[key] = {
+          button_text: visit.button_text || 'Unknown',
+          button_type: visit.button_type || 'unknown',
+          count: 0
+        };
+      }
+      buttonCounts[key].count++;
+    });
+
+    return Object.entries(buttonCounts)
+      .map(([button_id, data]) => ({
+        button_id,
+        button_text: data.button_text,
+        button_type: data.button_type,
+        click_count: data.count
+      }))
+      .sort((a, b) => b.click_count - a.click_count)
+      .slice(0, 10);
+  } catch (error) {
+    console.error('Error getting button stats:', error);
+    return [];
+  }
+}
+
+/**
+ * Get section time statistics for homepage
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getSectionStats(supabase: any, startDate: Date, endDate: Date) {
+  try {
+    const { data, error } = await supabase
+      .from('homepage_visits')
+      .select('section_id, time_spent_seconds')
+      .eq('type', 'section_time')
+      .gte('visited_at', startDate.toISOString())
+      .lte('visited_at', endDate.toISOString())
+      .not('section_id', 'is', null);
+
+    if (error) {
+      console.error('Error getting section stats:', error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // Aggregate section data
+    const sectionData: { [key: string]: { total_time: number; visit_count: number } } = {};
+    
+    data.forEach((visit: { section_id: string; time_spent_seconds: number }) => {
+      const sectionId = visit.section_id;
+      if (!sectionData[sectionId]) {
+        sectionData[sectionId] = {
+          total_time: 0,
+          visit_count: 0
+        };
+      }
+      sectionData[sectionId].total_time += Number(visit.time_spent_seconds) || 0;
+      sectionData[sectionId].visit_count++;
+    });
+
+    return Object.entries(sectionData)
+      .map(([section_id, data]) => ({
+        section_id,
+        total_time: data.total_time,
+        visit_count: data.visit_count,
+        avg_time: data.visit_count > 0 ? Math.round(data.total_time / data.visit_count) : 0
+      }))
+      .sort((a, b) => b.total_time - a.total_time)
+      .slice(0, 10);
+  } catch (error) {
+    console.error('Error getting section stats:', error);
+    return [];
+  }
+}
+
+/**
  * GET /api/analytics/homepage/data
  * 
  * Get comprehensive homepage analytics data.
@@ -329,59 +437,85 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Create Supabase client
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    
-    // Validate admin access
-    const isAdmin = await validateAdminAccess(supabase);
-    
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Access denied. Admin privileges required.' },
-        { status: 403 }
-      );
-    }
+    try {
+      // Create Supabase client
+      const cookieStore = cookies();
+      const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+      
+      // Validate admin access
+      const isAdmin = await validateAdminAccess(supabase);
+      
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: 'Access denied. Admin privileges required.' },
+          { status: 403 }
+        );
+      }
 
-    // Get date range
-    const { startDate, endDate } = getDateRange(period);
-    
-    // Get all analytics data
-    const [
-      summary,
-      trafficSources,
-      utmPerformance,
-      dailyPerformance,
-      conversionFunnel
-    ] = await Promise.all([
-      getHomepageSummary(supabase, startDate, endDate),
-      getTrafficSources(supabase, startDate, endDate),
-      getUTMPerformance(supabase, startDate, endDate),
-      getDailyPerformance(supabase, startDate, endDate),
-      getConversionFunnel(supabase, startDate, endDate)
-    ]);
-    
-    return NextResponse.json({
-      success: true,
-      data: {
+      // Get date range
+      const { startDate, endDate } = getDateRange(period);
+      
+      // Get all analytics data
+      const [
         summary,
         trafficSources,
         utmPerformance,
         dailyPerformance,
-        conversionFunnel
-      },
-      period,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString()
-    });
+        conversionFunnel,
+        buttonStats,
+        sectionStats
+      ] = await Promise.all([
+        getHomepageSummary(supabase, startDate, endDate),
+        getTrafficSources(supabase, startDate, endDate),
+        getUTMPerformance(supabase, startDate, endDate),
+        getDailyPerformance(supabase, startDate, endDate),
+        getConversionFunnel(supabase, startDate, endDate),
+        getButtonStats(supabase, startDate, endDate),
+        getSectionStats(supabase, startDate, endDate)
+      ]);
+      
+      // Debug log
+      console.log('Homepage Analytics Data:', {
+        buttonStats: buttonStats.length,
+        sectionStats: sectionStats.length,
+        buttonStatsData: buttonStats,
+        sectionStatsData: sectionStats
+      });
 
-  } catch (error) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          summary,
+          trafficSources,
+          utmPerformance,
+          dailyPerformance,
+          conversionFunnel,
+          buttonStats,
+          sectionStats
+        },
+        period,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      });
+    } catch (supabaseError: unknown) {
+      console.error('Supabase client error:', supabaseError);
+      return NextResponse.json(
+        { error: 'Database connection error', details: process.env.NODE_ENV === 'development' ? (supabaseError instanceof Error ? supabaseError.message : String(supabaseError)) : undefined },
+        { status: 500 }
+      );
+    }
+
+  } catch (error: unknown) {
     console.error('Homepage analytics API error:', error);
+    if (error instanceof Error && error.stack) {
+      console.error('Error stack:', error.stack);
+    }
     
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
+      },
       { status: 500 }
     );
   }

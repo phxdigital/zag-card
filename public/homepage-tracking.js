@@ -25,6 +25,9 @@
     let isTracking = false;
     let pageViews = 1;
     let conversionGoals = [];
+    let sectionTimes = {}; // Track time spent in each section
+    let currentSection = null;
+    let sectionStartTime = null;
     
     /**
      * Initialize tracking
@@ -48,6 +51,12 @@
             
             // Track UTM parameters
             trackUTMParameters();
+            
+            // Track button clicks
+            trackButtonClicks();
+            
+            // Track section visibility
+            setupSectionTracking();
             
             // Send initial page view
             sendHomepageView();
@@ -253,6 +262,7 @@
             type: 'page_view',
             session_id: sessionId,
             timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent,
             page_views: pageViews
         };
         
@@ -267,6 +277,7 @@
             type: 'conversion',
             session_id: sessionId,
             timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent,
             conversion_goal: conversion.goal,
             conversion_value: conversion.value
         };
@@ -282,6 +293,7 @@
             type: 'heartbeat',
             session_id: sessionId,
             timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent,
             duration_seconds: Math.floor((Date.now() - startTime) / 1000)
         };
         
@@ -296,6 +308,7 @@
             type: 'session_end',
             session_id: sessionId,
             timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent,
             duration_seconds: duration || Math.floor((Date.now() - startTime) / 1000),
             page_views: pageViews,
             conversion_goals: conversionGoals
@@ -351,9 +364,9 @@
         
         // Detect device type
         let deviceType = 'desktop';
-        if (/Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)) {
+        if (new RegExp('Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini', 'i').test(userAgent)) {
             deviceType = 'mobile';
-        } else if (/iPad|Android.*Tablet|Tablet/i.test(userAgent)) {
+        } else if (new RegExp('iPad|Android.*Tablet|Tablet', 'i').test(userAgent)) {
             deviceType = 'tablet';
         }
         
@@ -396,6 +409,163 @@
         } else {
             return 'direct';
         }
+    }
+    
+    /**
+     * Track button clicks
+     */
+    function trackButtonClicks() {
+        document.addEventListener('click', function(event) {
+            const target = event.target;
+            
+            // Check if it's a button or link
+            if (target.tagName === 'BUTTON' || 
+                (target.tagName === 'A' && target.href) ||
+                target.closest('button') ||
+                target.closest('a[href]')) {
+                
+                const button = target.closest('button') || target.closest('a[href]') || target;
+                const buttonId = button.id || button.className || 'unknown';
+                const buttonText = button.textContent?.trim() || button.getAttribute('aria-label') || 'unknown';
+                const buttonType = button.tagName.toLowerCase();
+                
+                sendButtonClick(buttonId, buttonText, buttonType);
+            }
+        });
+    }
+    
+    /**
+     * Setup section tracking
+     */
+    function setupSectionTracking() {
+        // Define sections to track for homepage
+        const sections = [
+            { id: 'header', selector: 'header, .header, nav, .nav' },
+            { id: 'hero', selector: '.hero, .banner, .main-banner, .jumbotron' },
+            { id: 'content', selector: 'main, .content, .main-content, .container' },
+            { id: 'features', selector: '.features, .benefits, .services' },
+            { id: 'cta', selector: '.cta, .call-to-action, .signup, .contact' },
+            { id: 'footer', selector: 'footer, .footer' }
+        ];
+        
+        // Create intersection observer for section tracking
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const sectionId = entry.target.getAttribute('data-section-id');
+                if (sectionId) {
+                    if (entry.isIntersecting) {
+                        // Section entered viewport
+                        if (currentSection && currentSection !== sectionId) {
+                            // Save time for previous section
+                            const timeSpent = Math.floor((Date.now() - sectionStartTime) / 1000);
+                            if (timeSpent > 0) {
+                                sectionTimes[currentSection] = (sectionTimes[currentSection] || 0) + timeSpent;
+                                sendSectionTime(currentSection, timeSpent);
+                            }
+                        }
+                        currentSection = sectionId;
+                        sectionStartTime = Date.now();
+                    } else {
+                        // Section left viewport
+                        if (currentSection === sectionId) {
+                            const timeSpent = Math.floor((Date.now() - sectionStartTime) / 1000);
+                            if (timeSpent > 0) {
+                                sectionTimes[currentSection] = (sectionTimes[currentSection] || 0) + timeSpent;
+                                sendSectionTime(currentSection, timeSpent);
+                            }
+                            currentSection = null;
+                            sectionStartTime = null;
+                        }
+                    }
+                }
+            });
+        }, {
+            threshold: 0.5, // Trigger when 50% of section is visible
+            rootMargin: '0px'
+        });
+        
+        // Observe all sections
+        sections.forEach(section => {
+            const elements = document.querySelectorAll(section.selector);
+            elements.forEach(element => {
+                element.setAttribute('data-section-id', section.id);
+                observer.observe(element);
+            });
+        });
+        
+        // Fallback: track scroll position for general section detection
+        let scrollTimeout = null;
+        
+        window.addEventListener('scroll', () => {
+            if (scrollTimeout) clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                // User stopped scrolling, update current section
+                const scrollY = window.scrollY;
+                const windowHeight = window.innerHeight;
+                const documentHeight = document.documentElement.scrollHeight;
+                
+                let sectionId = 'content'; // Default
+                
+                if (scrollY < windowHeight * 0.3) {
+                    sectionId = 'header';
+                } else if (scrollY > documentHeight - windowHeight * 1.5) {
+                    sectionId = 'footer';
+                } else if (scrollY < windowHeight * 1.5) {
+                    sectionId = 'hero';
+                } else if (scrollY < windowHeight * 3) {
+                    sectionId = 'features';
+                } else if (scrollY > documentHeight - windowHeight * 2) {
+                    sectionId = 'cta';
+                } else {
+                    sectionId = 'content';
+                }
+                
+                if (currentSection !== sectionId) {
+                    if (currentSection && sectionStartTime) {
+                        const timeSpent = Math.floor((Date.now() - sectionStartTime) / 1000);
+                        if (timeSpent > 0) {
+                            sectionTimes[currentSection] = (sectionTimes[currentSection] || 0) + timeSpent;
+                            sendSectionTime(currentSection, timeSpent);
+                        }
+                    }
+                    currentSection = sectionId;
+                    sectionStartTime = Date.now();
+                }
+            }, 1000); // Wait 1 second after scroll stops
+        });
+    }
+    
+    /**
+     * Send button click event
+     */
+    function sendButtonClick(buttonId, buttonText, buttonType) {
+        const data = {
+            type: 'button_click',
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent,
+            button_id: buttonId,
+            button_text: buttonText,
+            button_type: buttonType
+        };
+        
+        sendData(data);
+    }
+    
+    /**
+     * Send section time event
+     */
+    function sendSectionTime(sectionId, timeSpent) {
+        const data = {
+            type: 'section_time',
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent,
+            section_id: sectionId,
+            time_spent_seconds: timeSpent
+        };
+        
+        sendData(data);
     }
     
     /**

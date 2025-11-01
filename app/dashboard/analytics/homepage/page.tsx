@@ -56,6 +56,20 @@ interface HomepageSummary {
   paidTrafficPercent: number;
 }
 
+interface ButtonStats {
+  button_id: string;
+  button_text: string;
+  button_type: string;
+  click_count: number;
+}
+
+interface SectionStats {
+  section_id: string;
+  total_time: number;
+  visit_count: number;
+  avg_time: number;
+}
+
 interface TrafficSource {
   traffic_source: string;
   visit_count: number;
@@ -98,6 +112,8 @@ export default function HomepageAnalyticsPage() {
   const [utmPerformance, setUtmPerformance] = useState<UTMPerformance[]>([]);
   const [dailyPerformance, setDailyPerformance] = useState<DailyPerformance[]>([]);
   const [conversionFunnel, setConversionFunnel] = useState<ConversionFunnel[]>([]);
+  const [buttonStats, setButtonStats] = useState<ButtonStats[]>([]);
+  const [sectionStats, setSectionStats] = useState<SectionStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -130,6 +146,8 @@ export default function HomepageAnalyticsPage() {
         setUtmPerformance(data.data.utmPerformance);
         setDailyPerformance(data.data.dailyPerformance);
         setConversionFunnel(data.data.conversionFunnel);
+        setButtonStats(data.data.buttonStats || []);
+        setSectionStats(data.data.sectionStats || []);
       }
     } catch (error) {
       console.error('Error fetching homepage analytics:', error);
@@ -182,14 +200,19 @@ export default function HomepageAnalyticsPage() {
 
   // Prepare chart data
   const prepareDailyData = (dailyData: DailyPerformance[]) => {
-    return dailyData.map(item => ({
-      date: format(new Date(item.visit_date), 'dd/MM'),
-      visits: item.total_visits,
-      uniqueVisitors: item.unique_visitors,
-      conversions: item.conversions,
-      revenue: item.total_revenue,
-      conversionRate: item.conversion_rate
-    }));
+    return dailyData.map(item => {
+      const date = new Date(item.visit_date);
+      const isValidDate = !isNaN(date.getTime());
+      
+      return {
+        date: isValidDate ? format(date, 'dd/MM') : 'Data inválida',
+        visits: item.total_visits,
+        uniqueVisitors: item.unique_visitors,
+        conversions: item.conversions,
+        revenue: item.total_revenue,
+        conversionRate: item.conversion_rate
+      };
+    });
   };
 
   const prepareTrafficData = (trafficData: TrafficSource[]) => {
@@ -391,7 +414,7 @@ export default function HomepageAnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total de Visitas</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {summary.totalVisits.toLocaleString()}
+                  {(summary.totalVisits || 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -405,7 +428,7 @@ export default function HomepageAnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Visitantes Únicos</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {summary.uniqueVisitors.toLocaleString()}
+                  {(summary.uniqueVisitors || 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -419,7 +442,7 @@ export default function HomepageAnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Taxa de Conversão</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {summary.conversionRate.toFixed(2)}%
+                  {(summary.conversionRate || 0).toFixed(2)}%
                 </p>
               </div>
             </div>
@@ -433,7 +456,7 @@ export default function HomepageAnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Receita Total</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  R$ {summary.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  R$ {(summary.totalRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
               </div>
             </div>
@@ -464,7 +487,7 @@ export default function HomepageAnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Tráfego Pago</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {summary.paidTrafficPercent.toFixed(1)}%
+                  {(summary.paidTrafficPercent || 0).toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -478,7 +501,7 @@ export default function HomepageAnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Conversões</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {summary.conversions.toLocaleString()}
+                  {(summary.conversions || 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -526,7 +549,7 @@ export default function HomepageAnalyticsPage() {
                   cy="50%"
                   outerRadius={100}
                   dataKey="value"
-                  label={({ name, percentage }) => `${name} ${Number(percentage).toFixed(1)}%`}
+                  label={({ name, percentage }) => `${name} ${(Number(percentage) || 0).toFixed(1)}%`}
                 >
                   {trafficData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={`hsl(${index * 60}, 70%, 50%)`} />
@@ -556,12 +579,12 @@ export default function HomepageAnalyticsPage() {
                       <div>
                         <p className="font-medium text-gray-900">{step.step}</p>
                         <p className="text-sm text-gray-500">
-                          {step.conversionRate.toFixed(1)}% de conversão
+                          {(step.conversionRate || 0).toFixed(1)}% de conversão
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-900">{step.visitors.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-gray-900">{(step.visitors || 0).toLocaleString()}</p>
                       <p className="text-sm text-gray-500">visitantes</p>
                     </div>
                   </div>
@@ -613,16 +636,117 @@ export default function HomepageAnalyticsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {campaign.visit_count.toLocaleString()}
+                        {(campaign.visit_count || 0).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {campaign.conversion_count.toLocaleString()}
+                        {(campaign.conversion_count || 0).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {campaign.conversion_rate.toFixed(2)}%
+                        {(campaign.conversion_rate || 0).toFixed(2)}%
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        R$ {campaign.total_conversion_value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R$ {(campaign.total_conversion_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+
+        {/* Button Click Statistics */}
+        {buttonStats.length > 0 && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Estatísticas de Botões</h3>
+              <p className="text-sm text-gray-600">Botões mais clicados na homepage</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Botão
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tipo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Cliques
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {buttonStats.map((button, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Target className="h-4 w-4 text-gray-400 mr-2" />
+                          <span className="text-sm font-medium text-gray-900">
+                            {button.button_text}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {button.button_type}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {button.click_count.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Section Time Statistics */}
+        {sectionStats.length > 0 && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Tempo por Seção</h3>
+              <p className="text-sm text-gray-600">Tempo gasto pelos usuários em cada seção da homepage</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Seção
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tempo Total
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Visitas
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tempo Médio
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sectionStats.map((section, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                          <span className="text-sm font-medium text-gray-900 capitalize">
+                            {section.section_id}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {Math.floor(section.total_time / 60)}m {section.total_time % 60}s
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {section.visit_count.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {section.avg_time}s
                       </td>
                     </tr>
                   ))}

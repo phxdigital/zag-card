@@ -114,11 +114,11 @@ async function getGeolocation(ip: string): Promise<GeolocationData | null> {
 function validateAnalyticsData(data: Record<string, unknown>): data is Record<string, unknown> {
   return (
     data &&
-    typeof data.page_id === 'string' &&
+    (typeof data.page_id === 'string' || typeof data.page_id === 'number') &&
     typeof data.session_id === 'string' &&
     typeof data.timestamp === 'string' &&
     typeof data.user_agent === 'string' &&
-    ['page_view', 'heartbeat', 'click', 'session_end'].includes(String(data.type))
+    ['page_view', 'heartbeat', 'click', 'session_end', 'button_click', 'section_time'].includes(String(data.type))
   );
 }
 
@@ -194,9 +194,7 @@ async function handleAnalyticsEvent(data: Record<string, unknown>, ip: string, g
           visited_at: data.timestamp
         })
         .eq('session_id', data.session_id)
-        .eq('page_id', data.page_id)
-        .order('visited_at', { ascending: false })
-        .limit(1);
+        .eq('page_id', data.page_id);
       
       if (heartbeatError) {
         console.error('Heartbeat update error:', heartbeatError);
@@ -241,7 +239,8 @@ async function handleAnalyticsEvent(data: Record<string, unknown>, ip: string, g
         .from('page_visits')
         .update({
           duration_seconds: data.duration_seconds || 0,
-          clicked_links: data.clicked_links || []
+          clicked_links: data.clicked_links || [],
+          section_times: data.section_times || {}
         })
         .eq('session_id', data.session_id)
         .eq('page_id', data.page_id)
@@ -250,6 +249,65 @@ async function handleAnalyticsEvent(data: Record<string, unknown>, ip: string, g
       
       if (sessionError) {
         console.error('Session end update error:', sessionError);
+      }
+      
+      return { success: true };
+      
+    case 'button_click':
+      // Store button click event
+      const buttonData = {
+        page_id: data.page_id,
+        type: data.type,
+        timestamp: data.timestamp,
+        session_id: data.session_id,
+        button_id: data.button_id || 'unknown',
+        button_text: data.button_text || 'unknown',
+        button_type: data.button_type || 'unknown',
+        ip_address: ip,
+        country: geolocation?.country || 'Unknown',
+        city: geolocation?.city || 'Unknown',
+        region: geolocation?.region || 'Unknown',
+        timezone: geolocation?.timezone || 'UTC',
+        isp: geolocation?.isp || 'Unknown',
+        user_agent: data.user_agent
+      };
+      
+      const { error: buttonError } = await supabase
+        .from('page_visits')
+        .insert(buttonData);
+      
+      if (buttonError) {
+        console.error('Button click error:', buttonError);
+        return { success: false };
+      }
+      
+      return { success: true };
+      
+    case 'section_time':
+      // Store section time event
+      const sectionData = {
+        page_id: data.page_id,
+        type: data.type,
+        timestamp: data.timestamp,
+        session_id: data.session_id,
+        section_id: data.section_id || 'unknown',
+        time_spent_seconds: data.time_spent_seconds || 0,
+        ip_address: ip,
+        country: geolocation?.country || 'Unknown',
+        city: geolocation?.city || 'Unknown',
+        region: geolocation?.region || 'Unknown',
+        timezone: geolocation?.timezone || 'UTC',
+        isp: geolocation?.isp || 'Unknown',
+        user_agent: data.user_agent
+      };
+      
+      const { error: sectionError } = await supabase
+        .from('page_visits')
+        .insert(sectionData);
+      
+      if (sectionError) {
+        console.error('Section time error:', sectionError);
+        return { success: false };
       }
       
       return { success: true };

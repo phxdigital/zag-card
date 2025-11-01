@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -72,7 +72,7 @@ export default function AnalyticsDashboard() {
   };
 
   // Fetch analytics for all pages
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setRefreshing(true);
       const analyticsData: PageAnalytics[] = [];
@@ -115,7 +115,7 @@ export default function AnalyticsDashboard() {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [pages]);
 
   // Load data on component mount
   useEffect(() => {
