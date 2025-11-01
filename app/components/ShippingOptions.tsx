@@ -49,17 +49,32 @@ export default function ShippingOptions({
     setError(null);
 
     // Calcular peso total e dimensões fora do try para usar no catch
-    const totalWeight = products.reduce((sum, product) => sum + product.weight, 0);
-    const maxDimensions = {
-      length: Math.max(...products.map(p => p.dimensions.length)),
-      width: Math.max(...products.map(p => p.dimensions.width)),
-      height: products.reduce((sum, p) => sum + p.dimensions.height, 0)
-    };
+      const totalWeight = products.reduce((sum, product) => sum + product.weight, 0);
+      const maxDimensions = {
+        length: Math.max(...products.map(p => p.dimensions.length)),
+        width: Math.max(...products.map(p => p.dimensions.width)),
+        height: products.reduce((sum, p) => sum + p.dimensions.height, 0)
+      };
 
     try {
+      // Buscar CEP de origem da API
+      let originCep = '88010001'; // Fallback padrão
+      try {
+        const originResponse = await fetch('/api/shipping/origin-cep');
+        if (originResponse.ok) {
+          const originData = await originResponse.json();
+          if (originData.success && originData.originCep) {
+            originCep = originData.originCep;
+            console.log('✅ CEP de origem obtido:', originCep, `(fonte: ${originData.source})`);
+          }
+        }
+      } catch (originError) {
+        console.warn('⚠️ Erro ao buscar CEP de origem, usando padrão:', originError);
+      }
+
       // Calcular opções de frete
       const shippingOptions = await calculateShipping(
-        '88010001', // CEP de origem (Florianópolis)
+        originCep,
         address.postal_code || '',
         totalWeight,
         maxDimensions,
@@ -92,9 +107,23 @@ export default function ShippingOptions({
       const errorMessage = (err instanceof Error ? err.message : String(err)) || 'Erro ao calcular opções de frete';
       setError(errorMessage);
       console.error('Erro ao calcular frete:', err);
+      // Buscar CEP de origem novamente para o erro (se necessário)
+      let originCep = '88010001';
+      try {
+        const originResponse = await fetch('/api/shipping/origin-cep');
+        if (originResponse.ok) {
+          const originData = await originResponse.json();
+          if (originData.success && originData.originCep) {
+            originCep = originData.originCep;
+          }
+        }
+      } catch {
+        // Ignorar erro ao buscar CEP para o debug
+      }
+
       const errorDetails: Record<string, unknown> = {
         message: err instanceof Error ? err.message : String(err),
-        origin: '88010001',
+        origin: originCep,
         destination: address.postal_code || '',
         weight: totalWeight,
         dimensions: maxDimensions
