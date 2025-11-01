@@ -35,11 +35,26 @@ export async function POST(request: NextRequest) {
 
     if (options.length === 0) {
       console.warn('⚠️ Nenhuma opção de frete encontrada');
+      console.warn('⚠️ Parâmetros da requisição:', {
+        origin,
+        destination,
+        weight,
+        dimensions,
+        productsCount: products?.length || 0
+      });
       return NextResponse.json({ 
         success: false, 
         error: 'Nenhuma opção de frete disponível para este endereço',
         options: [],
-        count: 0
+        count: 0,
+        debug: {
+          origin,
+          destination,
+          weight,
+          dimensions,
+          productsCount: products?.length || 0,
+          message: 'Verifique se o CEP está correto e se há transportadoras disponíveis para esta rota'
+        }
       });
     }
 

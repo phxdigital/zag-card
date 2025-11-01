@@ -300,20 +300,47 @@ export async function calculateMelhorEnvioShipping(
         console.log('✅ Resposta de /shipments/calculate:', typeof response, Array.isArray(response) ? response.length : 'não é array');
       } catch (secondError) {
         console.error('❌ Erro em ambos os endpoints:', secondError);
+        if (secondError instanceof Error) {
+          console.error('Erro detalhado:', secondError.message);
+        }
         throw secondError;
       }
     }
 
+    // Verificar se response está definido
+    if (!response) {
+      console.error('❌ Resposta vazia da API Melhor Envio');
+      throw new Error('Resposta vazia da API Melhor Envio');
+    }
+
     // Se a resposta não for um array, pode ser um objeto com 'data'
     if (!Array.isArray(response)) {
-      console.log('📦 Resposta não é array, processando estrutura...', typeof response);
-      const responseObj = response as { data?: unknown } | unknown;
+      console.log('📦 Resposta não é array, processando estrutura...', typeof response, response);
+      const responseObj = response as { data?: unknown; errors?: unknown; message?: string } | unknown;
+      
+      // Verificar se há erros na resposta
+      if (typeof responseObj === 'object' && responseObj !== null && 'errors' in responseObj) {
+        const errors = (responseObj as { errors: unknown }).errors;
+        console.error('❌ Erros na resposta da API:', errors);
+        throw new Error(`Erro na API Melhor Envio: ${JSON.stringify(errors)}`);
+      }
+      
+      // Verificar se há mensagem de erro
+      if (typeof responseObj === 'object' && responseObj !== null && 'message' in responseObj) {
+        const message = (responseObj as { message: string }).message;
+        console.error('❌ Mensagem de erro da API:', message);
+        throw new Error(`Erro na API Melhor Envio: ${message}`);
+      }
+      
       const data = (typeof responseObj === 'object' && responseObj !== null && 'data' in responseObj) 
         ? (responseObj as { data: unknown }).data 
         : response;
       
       if (Array.isArray(data)) {
         console.log('✅ Array encontrado em data:', data.length);
+        if (data.length === 0) {
+          console.warn('⚠️ Array vazio retornado da API');
+        }
         return data as MelhorEnvioShippingOption[];
       }
       
@@ -327,6 +354,9 @@ export async function calculateMelhorEnvioShipping(
     }
 
     console.log('✅ Retornando', response.length, 'opções de frete');
+    if (response.length === 0) {
+      console.warn('⚠️ API retornou array vazio - nenhuma opção de frete disponível');
+    }
     return response;
   } catch (error) {
     console.error('❌ Erro ao calcular frete no Melhor Envio:', error);

@@ -174,9 +174,14 @@ async function calculateShippingServer(
       } catch (melhorEnvioError) {
         console.error('❌ Erro ao calcular frete via Melhor Envio:', melhorEnvioError);
         if (melhorEnvioError instanceof Error) {
-          console.error('Erro detalhado:', melhorEnvioError.message, melhorEnvioError.stack);
+          console.error('Erro detalhado:', melhorEnvioError.message);
+          console.error('Stack:', melhorEnvioError.stack);
+          // Se o erro for sobre 0 opções, propagar o erro em vez de usar fallback
+          if (melhorEnvioError.message.includes('0 opções')) {
+            console.warn('⚠️ Melhor Envio não retornou opções, tentando método alternativo...');
+          }
         }
-        console.warn('⚠️ Usando método alternativo (configurações do banco)...');
+        // Continuar para método alternativo (fallback)
       }
     } else {
       console.warn('⚠️ Token Melhor Envio não encontrado, usando método alternativo');
