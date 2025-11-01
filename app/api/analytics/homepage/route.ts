@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 // Rate limiting store (in production, use Redis or similar)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -141,9 +141,24 @@ function validateHomepageData(data: Record<string, unknown>): boolean {
 }
 
 /**
+ * Get Supabase client for server-side operations
+ */
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase configuration is missing');
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
+
+/**
  * Process and store homepage analytics data
  */
 async function processHomepageData(data: Record<string, unknown>, ip: string, geolocation: Record<string, unknown>) {
+  const supabase = getSupabaseClient();
   
   try {
     // Extract device information
@@ -224,6 +239,7 @@ async function processHomepageData(data: Record<string, unknown>, ip: string, ge
  * Handle different types of homepage analytics events
  */
 async function handleHomepageEvent(data: Record<string, unknown>, ip: string, geolocation: Record<string, unknown>) {
+  const supabase = getSupabaseClient();
   
   switch (data.type) {
     case 'homepage_view':
@@ -279,7 +295,7 @@ async function handleHomepageEvent(data: Record<string, unknown>, ip: string, ge
         
         return await processHomepageData(conversionData, ip, geolocation);
       }
-      break;
+      return { success: true };
       
     case 'heartbeat':
       // Update existing session with heartbeat
