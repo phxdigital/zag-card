@@ -161,6 +161,11 @@ async function makeRequest<T>(
   const token = getToken();
   const url = `${MELHOR_ENVIO_API_URL}${endpoint}`;
   
+  console.log(`🔗 Requisição Melhor Envio: ${method} ${endpoint}`);
+  if (body) {
+    console.log('📤 Body:', JSON.stringify(body, null, 2));
+  }
+  
   const headers: HeadersInit = {
     'Authorization': `Bearer ${token}`,
     'Accept': 'application/json',
@@ -174,13 +179,18 @@ async function makeRequest<T>(
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  console.log(`📥 Resposta: ${response.status} ${response.statusText}`);
+
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`❌ Erro na API Melhor Envio (${response.status}):`, errorText);
     throw new Error(`Erro na API Melhor Envio: ${response.status} - ${errorText}`);
   }
 
-  return response.json();
+  const jsonResponse = await response.json();
+  console.log('📦 Resposta JSON:', typeof jsonResponse, Array.isArray(jsonResponse) ? `${jsonResponse.length} itens` : 'objeto');
+  
+  return jsonResponse as T;
 }
 
 // ============================================
@@ -216,29 +226,70 @@ export async function calculateMelhorEnvioShipping(
       })),
     };
 
-    // Usar endpoint correto do Melhor Envio
-    // O endpoint correto é /shipments/calculate (plural) conforme documentação oficial
-    const response = await makeRequest<MelhorEnvioShippingOption[]>(
-      '/shipments/calculate',
-      'POST',
+    console.log('📦 Calculando frete no Melhor Envio:', {
+      origin: originPostalCode.replace(/\D/g, ''),
+      destination: destinationPostalCode.replace(/\D/g, ''),
+      productsCount: products.length,
       requestBody
-    );
+    });
+
+    // Tentar endpoint /cart/calculate primeiro (endpoint recomendado pela documentação)
+    let response: MelhorEnvioShippingOption[] | { data?: unknown } | unknown;
+    
+    try {
+      console.log('🔄 Tentando endpoint /cart/calculate...');
+      response = await makeRequest<MelhorEnvioShippingOption[]>(
+        '/cart/calculate',
+        'POST',
+        requestBody
+      );
+      console.log('✅ Resposta de /cart/calculate:', typeof response, Array.isArray(response) ? response.length : 'não é array');
+    } catch (error) {
+      console.warn('⚠️ Erro em /cart/calculate, tentando /shipments/calculate...', error);
+      
+      // Fallback para /shipments/calculate se /cart/calculate falhar
+      try {
+        response = await makeRequest<MelhorEnvioShippingOption[]>(
+          '/shipments/calculate',
+          'POST',
+          requestBody
+        );
+        console.log('✅ Resposta de /shipments/calculate:', typeof response, Array.isArray(response) ? response.length : 'não é array');
+      } catch (secondError) {
+        console.error('❌ Erro em ambos os endpoints:', secondError);
+        throw secondError;
+      }
+    }
 
     // Se a resposta não for um array, pode ser um objeto com 'data'
     if (!Array.isArray(response)) {
+      console.log('📦 Resposta não é array, processando estrutura...', typeof response);
       const responseObj = response as { data?: unknown } | unknown;
       const data = (typeof responseObj === 'object' && responseObj !== null && 'data' in responseObj) 
         ? (responseObj as { data: unknown }).data 
         : response;
+      
       if (Array.isArray(data)) {
+        console.log('✅ Array encontrado em data:', data.length);
         return data as MelhorEnvioShippingOption[];
       }
-      return [data as MelhorEnvioShippingOption];
+      
+      if (data && typeof data === 'object') {
+        console.log('✅ Objeto único encontrado, convertendo para array');
+        return [data as MelhorEnvioShippingOption];
+      }
+      
+      console.warn('⚠️ Formato de resposta não reconhecido:', typeof data, data);
+      return [];
     }
 
+    console.log('✅ Retornando', response.length, 'opções de frete');
     return response;
   } catch (error) {
     console.error('❌ Erro ao calcular frete no Melhor Envio:', error);
+    if (error instanceof Error) {
+      console.error('Erro detalhado:', error.message, error.stack);
+    }
     throw error;
   }
 }

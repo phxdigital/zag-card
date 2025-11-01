@@ -127,6 +127,7 @@ async function calculateShippingServer(
     
     if (melhorEnvioToken) {
       try {
+        console.log('🔄 Tentando calcular frete via Melhor Envio...');
         const { calculateMelhorEnvioShipping } = await import('./melhor-envio');
         
         const productsForCalculation = products || [{
@@ -136,11 +137,20 @@ async function calculateShippingServer(
           quantity: 1
         }];
 
+        console.log('📦 Produtos para cálculo:', productsForCalculation);
+
         const melhorEnvioOptions = await calculateMelhorEnvioShipping(
           origin,
           destination,
           productsForCalculation
         );
+
+        console.log('✅ Opções recebidas do Melhor Envio:', melhorEnvioOptions.length, melhorEnvioOptions);
+
+        if (melhorEnvioOptions.length === 0) {
+          console.warn('⚠️ Melhor Envio retornou 0 opções');
+          throw new Error('Melhor Envio retornou 0 opções de frete');
+        }
 
         // Converter opções do Melhor Envio para nosso formato
         const options: ShippingOption[] = melhorEnvioOptions.map(option => ({
@@ -154,12 +164,22 @@ async function calculateShippingServer(
           melhor_envio_service: option.id
         }));
 
+        console.log('✅ Opções convertidas:', options.length);
+
         if (options.length > 0) {
-          return options.sort((a, b) => a.cost - b.cost);
+          const sorted = options.sort((a, b) => a.cost - b.cost);
+          console.log('✅ Opções ordenadas por preço:', sorted.length, 'menor preço:', sorted[0]?.cost);
+          return sorted;
         }
       } catch (melhorEnvioError) {
-        console.warn('⚠️ Erro ao calcular frete via Melhor Envio, usando método alternativo:', melhorEnvioError);
+        console.error('❌ Erro ao calcular frete via Melhor Envio:', melhorEnvioError);
+        if (melhorEnvioError instanceof Error) {
+          console.error('Erro detalhado:', melhorEnvioError.message, melhorEnvioError.stack);
+        }
+        console.warn('⚠️ Usando método alternativo (configurações do banco)...');
       }
+    } else {
+      console.warn('⚠️ Token Melhor Envio não encontrado, usando método alternativo');
     }
 
     // Fallback: usar configurações do banco (método anterior)
