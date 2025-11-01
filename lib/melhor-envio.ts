@@ -8,7 +8,20 @@ import { loadEnv, getEnv } from './env-loader';
 // Carregar variáveis de ambiente
 loadEnv();
 
-const MELHOR_ENVIO_API_URL = 'https://www.melhorenvio.com.br/api/v2/me';
+// Determinar URL base da API (sandbox ou produção)
+function getApiUrl(): string {
+  const useSandbox = getEnv('MELHOR_ENVIO_USE_SANDBOX') === 'true' || getEnv('MELHOR_ENVIO_SANDBOX') === 'true';
+  
+  if (useSandbox) {
+    // URL do sandbox do Melhor Envio
+    return 'https://sandbox.melhorenvio.com.br/api/v2/me';
+  }
+  
+  // URL de produção (padrão)
+  return 'https://www.melhorenvio.com.br/api/v2/me';
+}
+
+const MELHOR_ENVIO_API_URL = getApiUrl();
 
 // Tipos da API do Melhor Envio
 interface MelhorEnvioCalculateRequest {
@@ -159,9 +172,12 @@ async function makeRequest<T>(
   body?: unknown
 ): Promise<T> {
   const token = getToken();
-  const url = `${MELHOR_ENVIO_API_URL}${endpoint}`;
+  const apiUrl = getApiUrl(); // Obter URL dinâmica (sandbox ou produção)
+  const url = `${apiUrl}${endpoint}`;
   
-  console.log(`🔗 Requisição Melhor Envio: ${method} ${endpoint}`);
+  const isSandbox = apiUrl.includes('sandbox');
+  console.log(`🔗 Requisição Melhor Envio ${isSandbox ? '(SANDBOX)' : '(PRODUÇÃO)'}: ${method} ${endpoint}`);
+  console.log(`🔗 URL completa: ${url}`);
   if (body) {
     console.log('📤 Body:', JSON.stringify(body, null, 2));
   }
@@ -208,6 +224,41 @@ export async function calculateMelhorEnvioShipping(
   }>
 ): Promise<MelhorEnvioShippingOption[]> {
   try {
+    // Validar e ajustar peso/dimensões (mínimos para API)
+    const processedProducts = products.map((product, index) => {
+      // Peso mínimo: 0.1kg (100g) - muitas transportadoras não aceitam menos
+      const minWeight = 0.1;
+      const weight = Math.max(product.weight, minWeight);
+      
+      // Dimensões mínimas: 10x10x1cm (padrão da maioria das transportadoras)
+      const minDimension = 1;
+      const dimensions = {
+        width: Math.max(product.dimensions.width, minDimension),
+        height: Math.max(product.dimensions.height, minDimension),
+        length: Math.max(product.dimensions.length, minDimension),
+      };
+      
+      // Garantir que há pelo menos alguma dimensão válida
+      if (dimensions.width === minDimension && dimensions.height === minDimension && dimensions.length === minDimension) {
+        // Se todas são mínimas, usar dimensões padrão de carta
+        dimensions.width = 20;
+        dimensions.height = 15;
+        dimensions.length = 2;
+      }
+      
+      console.log(`📦 Produto ${index + 1}: peso ${product.weight}kg → ${weight}kg, dims ${JSON.stringify(product.dimensions)} → ${JSON.stringify(dimensions)}`);
+      
+      return {
+        id: `product-${index}`,
+        width: dimensions.width,
+        height: dimensions.height,
+        length: dimensions.length,
+        weight: weight,
+        insurance_value: product.value || 0,
+        quantity: product.quantity || 1,
+      };
+    });
+
     const requestBody: MelhorEnvioCalculateRequest = {
       from: {
         postal_code: originPostalCode.replace(/\D/g, ''),
@@ -215,15 +266,7 @@ export async function calculateMelhorEnvioShipping(
       to: {
         postal_code: destinationPostalCode.replace(/\D/g, ''),
       },
-      products: products.map((product, index) => ({
-        id: `product-${index}`,
-        width: product.dimensions.width,
-        height: product.dimensions.height,
-        length: product.dimensions.length,
-        weight: product.weight,
-        insurance_value: product.value || 0,
-        quantity: product.quantity || 1,
-      })),
+      products: processedProducts,
     };
 
     console.log('📦 Calculando frete no Melhor Envio:', {
