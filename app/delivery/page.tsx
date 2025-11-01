@@ -18,6 +18,7 @@ export default function DeliveryPage() {
     name?: string;
     email?: string;
     phone?: string;
+    cpf?: string;
   }
   
   interface SavedAddress {
@@ -74,12 +75,12 @@ export default function DeliveryPage() {
         setShowAutoFillOption(true);
         
         // Se houver endereço salvo, criar endereço completo para preencher automaticamente
-        if (addressData) {
+        if (addressData && addressData.postal_code) {
           // Buscar endereço completo pelo CEP
           const loadFullAddress = async () => {
             try {
               const { validateCEP } = await import('@/lib/shipping');
-              const result = await validateCEP(addressData.postal_code);
+              const result = await validateCEP(addressData.postal_code!);
               
               if (result.valid && result.address) {
                 const fullAddress: ShippingAddress = {

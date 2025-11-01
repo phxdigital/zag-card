@@ -953,7 +953,7 @@ export default function AdminPanel() {
                                                                 <p className="text-gray-600">
                                                                     {shippingData[notification.id]?.address?.name}<br />
                                                                     {shippingData[notification.id]?.address?.street}, {shippingData[notification.id]?.address?.number}
-                                                                    {shippingData[notification.id]?.address?.complement && ` - ${shippingData[notification.id].address.complement}`}
+                                                                    {shippingData[notification.id]?.address?.complement ? ` - ${shippingData[notification.id]?.address?.complement}` : ''}
                                                                     <br />
                                                                     {shippingData[notification.id]?.address?.neighborhood}, {shippingData[notification.id]?.address?.city} - {shippingData[notification.id]?.address?.state}
                                                                     <br />
@@ -963,18 +963,18 @@ export default function AdminPanel() {
                                                                 </p>
                                                             </div>
                                                         )}
-                                                                {shippingData[notification.id].tracking_code && (
+                                                                {shippingData[notification.id]?.tracking_code && (
                                                             <div className="text-sm mb-3">
                                                                 <p className="font-semibold text-gray-700 mb-1">Código de Rastreamento:</p>
-                                                                <p className="text-gray-900 font-mono bg-gray-100 p-2 rounded">{shippingData[notification.id].tracking_code}</p>
+                                                                <p className="text-gray-900 font-mono bg-gray-100 p-2 rounded">{shippingData[notification.id]?.tracking_code}</p>
                                                             </div>
                                                         )}
                                                         
                                                         {/* Botões de Ação para Envios */}
                                                         <div className="flex items-center gap-2 mt-3 flex-wrap">
-                                                            {shippingData[notification.id].shipping?.label_url && (
+                                                            {shippingData[notification.id]?.shipping?.label_url && (
                                                                 <a
-                                                                    href={shippingData[notification.id].shipping.label_url}
+                                                                    href={shippingData[notification.id]?.shipping?.label_url}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
@@ -985,11 +985,11 @@ export default function AdminPanel() {
                                                             )}
                                                             
                                                             {/* Gerar Etiqueta - se tiver shipment_id do Melhor Envio */}
-                                                            {shippingData[notification.id].shipment?.melhor_envio_id && !shippingData[notification.id].shipping?.label_url && (
+                                                            {shippingData[notification.id]?.shipment?.melhor_envio_id && !shippingData[notification.id]?.shipping?.label_url && (
                                                                 <button
                                                                     onClick={async () => {
                                                                         try {
-                                                                            const response = await fetch(`/api/admin/shipments/${shippingData[notification.id].shipment.melhor_envio_id}/label`, {
+                                                                            const response = await fetch(`/api/admin/shipments/${shippingData[notification.id]?.shipment?.melhor_envio_id}/label`, {
                                                                                 method: 'GET'
                                                                             });
                                                                             
@@ -1023,7 +1023,7 @@ export default function AdminPanel() {
                                                             )}
                                                             
                                                             {/* Solicitar Coleta - se tiver shipment_id do Melhor Envio */}
-                                                            {shippingData[notification.id].shipment?.melhor_envio_id && notification.production_status === 'shipped' && (
+                                                            {shippingData[notification.id]?.shipment?.melhor_envio_id && notification.production_status === 'shipped' && (
                                                                 <button
                                                                     onClick={async () => {
                                                                         if (!confirm('Solicitar coleta para este envio?')) return;
@@ -1033,7 +1033,7 @@ export default function AdminPanel() {
                                                                                 method: 'POST',
                                                                                 headers: { 'Content-Type': 'application/json' },
                                                                                 body: JSON.stringify({
-                                                                                    shipmentIds: [shippingData[notification.id].shipment.melhor_envio_id]
+                                                                                    shipmentIds: [shippingData[notification.id]?.shipment?.melhor_envio_id].filter((id): id is number => id !== undefined)
                                                                                 })
                                                                             });
                                                                             
@@ -1180,7 +1180,7 @@ export default function AdminPanel() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex-1">
                                                     <p className="font-semibold text-gray-900">{option.name}</p>
-                                                    <p className="text-sm text-gray-600">{option.company}</p>
+                                                    <p className="text-sm text-gray-600">{option.company.name}</p>
                                                     {option.delivery_range && (
                                                         <p className="text-xs text-gray-500 mt-1">
                                                             Entrega: {option.delivery_range.min} a {option.delivery_range.max} dias úteis

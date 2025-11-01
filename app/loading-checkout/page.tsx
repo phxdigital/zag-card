@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-export default function LoadingCheckoutPage() {
+function LoadingCheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const checkoutType = searchParams.get('type'); // 'card' ou 'pix'
@@ -53,6 +53,28 @@ export default function LoadingCheckoutPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoadingCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="flex justify-center mb-6">
+            <img src="/zag-site.png" alt="Zag NFC" className="h-12 object-contain" />
+          </div>
+          <div className="flex justify-center mb-6">
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">
+            Carregando...
+          </h2>
+        </div>
+      </div>
+    }>
+      <LoadingCheckoutContent />
+    </Suspense>
   );
 }
 

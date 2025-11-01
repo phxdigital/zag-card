@@ -385,7 +385,7 @@ export async function POST(request: NextRequest) {
     // Process homepage analytics data
     const result = await handleHomepageEvent(data, ip, await geolocationPromise);
     
-    if (!result.success) {
+    if (!result || !result.success) {
       return NextResponse.json(
         { error: 'Failed to process homepage analytics data' },
         { status: 500 }
@@ -416,7 +416,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? error?.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
       },
       { status: 500 }
     );

@@ -30,6 +30,13 @@ interface MelhorEnvioCalculateRequest {
   services?: string; // IDs dos serviços separados por vírgula
 }
 
+interface MelhorEnvioCompany {
+  id: number;
+  name: string;
+  picture?: string;
+  status?: string;
+}
+
 interface MelhorEnvioShippingOption {
   id: number;
   name: string;
@@ -219,8 +226,14 @@ export async function calculateMelhorEnvioShipping(
 
     // Se a resposta não for um array, pode ser um objeto com 'data'
     if (!Array.isArray(response)) {
-      const data = (response as { data?: unknown } | unknown)['data'] || response;
-      return Array.isArray(data) ? data : [data];
+      const responseObj = response as { data?: unknown } | unknown;
+      const data = (typeof responseObj === 'object' && responseObj !== null && 'data' in responseObj) 
+        ? (responseObj as { data: unknown }).data 
+        : response;
+      if (Array.isArray(data)) {
+        return data as MelhorEnvioShippingOption[];
+      }
+      return [data as MelhorEnvioShippingOption];
     }
 
     return response;
@@ -432,14 +445,21 @@ export async function getMelhorEnvioAccountInfo(): Promise<{
   postal_code: string;
 }> {
   try {
-    const response = await makeRequest<MelhorEnvioCompany[]>(
+    const response = await makeRequest<Array<MelhorEnvioCompany & { email?: string; phone?: string; postal_code?: string }>>(
       '/companies',
       'GET'
     );
 
     // A API retorna um array, pegamos a primeira empresa
     if (Array.isArray(response) && response.length > 0) {
-      return response[0];
+      const company = response[0];
+      return {
+        id: company.id,
+        name: company.name,
+        email: company.email || '',
+        phone: company.phone || '',
+        postal_code: company.postal_code || ''
+      };
     }
 
     throw new Error('Nenhuma empresa encontrada na conta Melhor Envio');

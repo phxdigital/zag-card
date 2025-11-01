@@ -15,7 +15,7 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
     const pageUrl = `https://${subdomain}.zagnfc.com.br`;
     const [showShareModal, setShowShareModal] = useState(false);
     const qrCodeRef = useRef<HTMLDivElement>(null);
-    const [QRCode, setQRCode] = useState<((element: HTMLElement, text: string) => void) | null>(null);
+    const [QRCode, setQRCode] = useState<(new (element: HTMLElement, options: { text: string; width: number; height: number; colorDark: string; colorLight: string; correctLevel: number }) => void) | null>(null);
     
     // Carregar biblioteca QR Code
     useEffect(() => {
@@ -25,15 +25,15 @@ export default function SuccessPage({ subdomain, isEdit = false }: SuccessPagePr
             .then((mod) => {
                 if (!mounted) return;
                 
-                const factory = (() => {
+                const QRCodeClass = (() => {
                     const maybeDefault = (mod as unknown as { default?: unknown }).default;
-                    if (typeof maybeDefault === 'function') return maybeDefault as unknown as (element: HTMLElement, text: string) => void;
-                    if (typeof (mod as unknown) === 'function') return mod as unknown as (element: HTMLElement, text: string) => void;
+                    if (typeof maybeDefault === 'function') return maybeDefault as new (element: HTMLElement, options: { text: string; width: number; height: number; colorDark: string; colorLight: string; correctLevel: number }) => void;
+                    if (typeof (mod as unknown) === 'function') return mod as unknown as new (element: HTMLElement, options: { text: string; width: number; height: number; colorDark: string; colorLight: string; correctLevel: number }) => void;
                     return null;
                 })();
                 
-                if (factory) {
-                    setQRCode(() => factory);
+                if (QRCodeClass) {
+                    setQRCode(() => QRCodeClass);
                 }
             })
             .catch((err) => {

@@ -27,6 +27,19 @@ export async function POST(
         const cookieStore = cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
         
+        // Criar cliente admin para operações privilegiadas
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseServiceKey) {
+            return NextResponse.json(
+                { success: false, error: 'Configuração do Supabase não encontrada' },
+                { status: 500 }
+            );
+        }
+        
+        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+        
         // Verificar autenticação
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
@@ -283,6 +296,13 @@ export async function POST(
           status: string;
           shipped_at: string;
           melhor_envio_id?: number;
+          shipping_cost?: number;
+          declared_value?: number;
+          weight?: number;
+          dimensions?: { length: number; width: number; height: number };
+          shipment_id?: number;
+          page_id?: string;
+          label_url?: string;
           created_at: string;
         } = {
             payment_id: address.payment_id,
@@ -296,7 +316,8 @@ export async function POST(
             weight: 0.05,
             dimensions: { length: 20, width: 15, height: 1 },
             melhor_envio_id: shipment.id, // Salvar ID do envio no Melhor Envio
-            shipment_id: shipment.id // Campo alternativo caso melhor_envio_id não exista
+            shipment_id: shipment.id, // Campo alternativo caso melhor_envio_id não exista
+            created_at: new Date().toISOString()
         };
 
         // Vincular shipment com page_id se disponível

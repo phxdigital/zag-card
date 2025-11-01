@@ -146,7 +146,7 @@ export default function EditProductPage() {
     }
   };
 
-  const handleInputChange = (field: string, value: string | number | boolean | string[]) => {
+  const handleInputChange = (field: string, value: string | number | boolean | string[] | Record<string, unknown>) => {
     setFormData(prev => ({
       ...prev,
       [field]: value

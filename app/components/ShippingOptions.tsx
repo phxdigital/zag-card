@@ -48,15 +48,15 @@ export default function ShippingOptions({
     setCalculating(true);
     setError(null);
 
-    try {
-      // Calcular peso total e dimensões
-      const totalWeight = products.reduce((sum, product) => sum + product.weight, 0);
-      const maxDimensions = {
-        length: Math.max(...products.map(p => p.dimensions.length)),
-        width: Math.max(...products.map(p => p.dimensions.width)),
-        height: products.reduce((sum, p) => sum + p.dimensions.height, 0)
-      };
+    // Calcular peso total e dimensões fora do try para usar no catch
+    const totalWeight = products.reduce((sum, product) => sum + product.weight, 0);
+    const maxDimensions = {
+      length: Math.max(...products.map(p => p.dimensions.length)),
+      width: Math.max(...products.map(p => p.dimensions.width)),
+      height: products.reduce((sum, p) => sum + p.dimensions.height, 0)
+    };
 
+    try {
       // Calcular opções de frete
       const shippingOptions = await calculateShipping(
         '88010001', // CEP de origem (Florianópolis)
@@ -90,8 +90,8 @@ export default function ShippingOptions({
       console.error('Erro ao calcular frete:', err);
       const errorDetails: Record<string, unknown> = {
         message: err instanceof Error ? err.message : String(err),
-        origin,
-        destination,
+        origin: '88010001',
+        destination: address.postal_code || '',
         weight: totalWeight,
         dimensions: maxDimensions
       };
