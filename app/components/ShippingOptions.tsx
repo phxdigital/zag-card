@@ -74,7 +74,9 @@ export default function ShippingOptions({
       // Sistema escolhe automaticamente a opção com menor preço
       // As opções já vêm ordenadas por preço (menor primeiro)
       if (shippingOptions.length > 0) {
+        console.log('✅ Opções de frete encontradas:', shippingOptions.length, shippingOptions);
         const bestOption = shippingOptions[0]; // Primeira opção = menor preço
+        console.log('✅ Melhor opção selecionada:', bestOption);
         setOptions([bestOption]); // Mostrar apenas a melhor opção
         // Selecionar automaticamente apenas uma vez
         if (!hasAutoSelected) {
@@ -82,7 +84,9 @@ export default function ShippingOptions({
           setHasAutoSelected(true);
         }
       } else {
+        console.warn('⚠️ Nenhuma opção de frete retornada');
         setOptions([]);
+        setError('Nenhuma opção de frete disponível para este endereço. Verifique se o CEP está correto.');
       }
     } catch (err: unknown) {
       const errorMessage = (err instanceof Error ? err.message : String(err)) || 'Erro ao calcular opções de frete';

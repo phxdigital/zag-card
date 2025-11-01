@@ -163,15 +163,21 @@ async function calculateShippingServer(
     }
 
     // Fallback: usar configurações do banco (método anterior)
+    console.log('📊 Usando método alternativo (configurações do banco)...');
     // No servidor, precisamos criar um cliente diferente
     let supabase;
     if (typeof window === 'undefined') {
       // No servidor, usar createServerComponentClient ou importar diretamente
       const { createClient } = await import('@supabase/supabase-js');
-      supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-      );
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseKey) {
+        console.error('❌ Configuração do Supabase faltando');
+        return [];
+      }
+      
+      supabase = createClient(supabaseUrl, supabaseKey);
     } else {
       // No cliente, usar createClientComponentClient
       supabase = createClientComponentClient();
@@ -183,45 +189,57 @@ async function calculateShippingServer(
       .eq('is_active', true)
       .eq('origin_postal_code', origin);
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Erro ao buscar configurações de frete:', error);
+      throw error;
+    }
+
+    console.log('📦 Configurações encontradas:', configs?.length || 0);
 
     const options: ShippingOption[] = [];
 
-    for (const config of configs) {
-      const cost = Math.max(
-        config.base_cost + (weight * config.cost_per_kg),
-        config.min_cost
-      );
+    if (configs && configs.length > 0) {
+      for (const config of configs) {
+        const cost = Math.max(
+          config.base_cost + (weight * config.cost_per_kg),
+          config.min_cost
+        );
 
-      if (config.allowed_states && config.allowed_states.length > 0) {
-        const destinationState = await getStateFromCEP(destination);
-        if (!config.allowed_states.includes(destinationState)) {
-          continue;
+        if (config.allowed_states && config.allowed_states.length > 0) {
+          const destinationState = await getStateFromCEP(destination);
+          if (!config.allowed_states.includes(destinationState)) {
+            continue;
+          }
         }
-      }
 
-      if (config.excluded_states && config.excluded_states.length > 0) {
-        const destinationState = await getStateFromCEP(destination);
-        if (config.excluded_states.includes(destinationState)) {
-          continue;
+        if (config.excluded_states && config.excluded_states.length > 0) {
+          const destinationState = await getStateFromCEP(destination);
+          if (config.excluded_states.includes(destinationState)) {
+            continue;
+          }
         }
+
+        const estimatedDelivery = calculateEstimatedDelivery(config.max_days);
+
+        options.push({
+          carrier: config.carrier,
+          service_type: config.service_type,
+          cost: cost,
+          estimated_days: config.max_days,
+          estimated_delivery: estimatedDelivery,
+          description: getServiceDescription(config.carrier, config.service_type)
+        });
       }
-
-      const estimatedDelivery = calculateEstimatedDelivery(config.max_days);
-
-      options.push({
-        carrier: config.carrier,
-        service_type: config.service_type,
-        cost: cost,
-        estimated_days: config.max_days,
-        estimated_delivery: estimatedDelivery,
-        description: getServiceDescription(config.carrier, config.service_type)
-      });
     }
 
-    return options.sort((a, b) => a.cost - b.cost);
+    const sorted = options.sort((a, b) => a.cost - b.cost);
+    console.log('✅ Opções finais (fallback):', sorted.length);
+    return sorted;
   } catch (error) {
-    console.error('Erro ao calcular frete:', error);
+    console.error('❌ Erro ao calcular frete:', error);
+    if (error instanceof Error) {
+      console.error('Erro detalhado:', error.message, error.stack);
+    }
     return [];
   }
 }
@@ -267,19 +285,26 @@ export async function calculateShipping(
 
     if (response.ok) {
       const data = await response.json();
+      console.log('📦 Resposta da API de frete:', data);
       if (data.success && data.options && data.options.length > 0) {
+        console.log('✅ Opções de frete recebidas:', data.options.length);
         return data.options.sort((a: ShippingOption, b: ShippingOption) => a.cost - b.cost);
+      } else {
+        console.warn('⚠️ API retornou sucesso mas sem opções:', data);
+        throw new Error(data.error || 'Nenhuma opção de frete disponível');
       }
     } else {
       const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-      console.warn('⚠️ API de cálculo de frete retornou erro:', errorData);
+      console.error('❌ API de cálculo de frete retornou erro:', response.status, errorData);
+      throw new Error(errorData.error || `Erro ${response.status}: ${response.statusText}`);
     }
   } catch (apiError) {
-    console.warn('⚠️ Erro ao chamar API de cálculo de frete:', apiError);
+    console.error('❌ Erro ao chamar API de cálculo de frete:', apiError);
+    if (apiError instanceof Error) {
+      throw apiError; // Re-throw para que o componente possa tratar
+    }
+    throw new Error('Erro ao calcular frete. Tente novamente.');
   }
-
-  // Se API falhar, retornar array vazio
-  return [];
 }
 
 function calculateEstimatedDelivery(days: number): string {
@@ -566,7 +591,8 @@ async function createMelhorEnvioShipment(data: ShipmentData): Promise<{
       };
     }
 
-    // Criar envio no Melhor Envio
+    // Adicionar envio ao carrinho do Melhor Envio
+    // Isso adiciona ao carrinho, mas ainda não cria o envio
     const shipment = await createME({
       serviceId: parseInt(data.service_type) || 0, // Deve ser o ID do serviço do Melhor Envio
       from: {
@@ -608,9 +634,12 @@ async function createMelhorEnvioShipment(data: ShipmentData): Promise<{
       }],
     });
 
+    console.log('✅ Envio adicionado ao carrinho:', shipment);
+
     // FAZER CHECKOUT AUTOMÁTICO - "Comprar" o frete automaticamente
+    // Após checkout, o envio será criado e terá tracking_code
     let checkoutResult = null;
-    let finalTrackingCode = shipment.tracking;
+    let finalTrackingCode = shipment.tracking || '';
     
     try {
       const { purchaseMelhorEnvioCart } = await import('./melhor-envio');

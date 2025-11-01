@@ -328,8 +328,10 @@ export async function createMelhorEnvioShipment(
       volumes: shipmentData.volumes,
     };
 
+    // No Melhor Envio, o fluxo correto é adicionar ao carrinho primeiro
+    // Endpoint correto: POST /cart para adicionar envio ao carrinho
     const response = await makeRequest<MelhorEnvioShipmentResponse>(
-      '/shipment',
+      '/cart',
       'POST',
       requestBody
     );
