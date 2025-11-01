@@ -37,7 +37,22 @@ export async function GET(request: NextRequest) {
       }],
     };
     
-    const testResults: Record<string, unknown> = {
+    const testResults: {
+      config: {
+        useSandbox: boolean;
+        apiUrl: string;
+        hasToken: boolean;
+        tokenLength: number;
+      };
+      request: {
+        origin: string;
+        destination: string;
+        weight: number;
+        dimensions: { width: number; height: number; length: number };
+        requestBody: unknown;
+      };
+      results: Record<string, unknown>;
+    } = {
       config: {
         useSandbox,
         apiUrl,
@@ -51,7 +66,7 @@ export async function GET(request: NextRequest) {
         dimensions: { width, height, length },
         requestBody,
       },
-      results: {} as Record<string, unknown>,
+      results: {},
     };
     
     // Testar /cart/calculate
